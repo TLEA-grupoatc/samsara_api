@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "identifier": "samsara-dev-rel",
+      "source": "@samsara-dev-rel/v2019.01.01#fzhv0517lwz7s9zb",
+      "integrity": "sha512-3W2sw4bNyPEKcKzDeugJfWjCMDJVOALZYwbuy6m3Ip3rIKCi/7f5GJHAhOtuGfK8gB9GFEgETuzWrBFRX4UDEw==",
+      "installerVersion": "6.1.1"
+    }
+  ]
+}
