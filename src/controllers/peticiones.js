@@ -183,6 +183,7 @@ module.exports = app => {
     app.obtenerSnapshot = (req, res) => {
         console.log("ha paso un min");
         var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
+        var paraValidadfecha = moment(new Date()).format('YYYY-MM-DD');
         var fechahora = fecha + 'Z';
 
         Samsara.getVehicleStats({
@@ -193,41 +194,43 @@ module.exports = app => {
         .then(result => {
             result['data']['data'].forEach(async (element) => {
 
-                var miakm = Number(element['ecuSpeedMph'].value) * 1.609
+                var validarfecha = element['ecuSpeedMph'].time.split('T')[0];
 
-                let nuevoReporte = new reporte({
-                    id_unidad: element.id,
-                    unidad: element.name,
-                    fechahorakm: element['ecuSpeedMph'].time,
-                    km: miakm.toFixed(),
-                    fechahoragps: element['gps'].time,
-                    latitud: element['gps'].latitude,
-                    longitud: element['gps'].longitude,
-                    location: element['gps'].reverseGeo.formattedLocation,
-                    fechaodo: element['obdOdometerMeters'].time,
-                    odometer: element['obdOdometerMeters'].value
-                });
+                if(paraValidadfecha == validarfecha) {
+                    var miakm = Number(element['ecuSpeedMph'].value) * 1.609
 
-                await reporte.create(nuevoReporte.dataValues, {
-                    fields: [
-                        'id_unidad',
-                        'unidad',
-                        'fechahorakm',
-                        'km',
-                        'fechahoragps',
-                        'latitud',
-                        'longitud',
-                        'location',
-                        'fechaodo',
-                        'odometer'
-                    ]
-                })
-                .then(result => {
-                    // console.log('indsertado');
-                })
-                .catch(error => {
-                    console.log(error.message);
-                });
+                    let nuevoReporte = new reporte({
+                        id_unidad: element.id,
+                        unidad: element.name,
+                        fechahorakm: element['ecuSpeedMph'].time,
+                        km: miakm.toFixed(),
+                        fechahoragps: element['gps'].time,
+                        latitud: element['gps'].latitude,
+                        longitud: element['gps'].longitude,
+                        location: element['gps'].reverseGeo.formattedLocation,
+                        fechaodo: element['obdOdometerMeters'].time,
+                        odometer: element['obdOdometerMeters'].value
+                    });
+    
+                    await reporte.create(nuevoReporte.dataValues, {
+                        fields: [
+                            'id_unidad',
+                            'unidad',
+                            'fechahorakm',
+                            'km',
+                            'fechahoragps',
+                            'latitud',
+                            'longitud',
+                            'location',
+                            'fechaodo',
+                            'odometer'
+                        ]
+                    })
+                    .then(result => {})
+                    .catch(error => {
+                        console.log(error.message);
+                    });
+                }
             });
 
             res.json({
@@ -296,6 +299,27 @@ module.exports = app => {
                 error: "Error al obtener el reporte"
             });
         }
+    }
+
+    app.obtenerDetalleReporte = (req, res) => {
+        reporte.findAll({
+            where: {
+                unidad: req.params.unidad,
+                fechahorakm: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                }
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Detalle: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
     }
     
     return app;
