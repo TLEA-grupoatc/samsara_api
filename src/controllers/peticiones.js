@@ -2,7 +2,6 @@ const moment = require('moment');
 const _ = require('lodash');
 
 module.exports = app => {
-
     const Samsara = require("@api/samsara-dev-rel");
     Samsara.auth('samsara_api_hstw6FzOAtotyCJGFJmuIxmQfJPvhO');
 
@@ -112,6 +111,43 @@ module.exports = app => {
         });
     }
 
+    app.totalUnidades = (req, res) => {
+        unidad.count({})
+        .then(result => {
+            res.json({
+                OK: true,
+                Total: result
+            });
+        })
+        .catch(err => {
+            res.json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.totalUnidadesGobernadas = (req, res) => {
+        unidad.count({
+            where: {
+                gobernada: 1
+            }
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Total: result
+            });
+        })
+        .catch(err => {
+            res.json({
+                OK: false,
+                msg: err
+            });
+        });
+
+    }
+
     app.obtenerInfo = async (req, res) => {
         const datos = await unidad.findAll({});
 
@@ -181,7 +217,6 @@ module.exports = app => {
     }
 
     app.obtenerSnapshot = (req, res) => {
-        console.log("ha paso un min");
         var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
         var paraValidadfecha = moment(new Date()).format('YYYY-MM-DD');
         var fechahora = fecha + 'Z';
@@ -190,15 +225,12 @@ module.exports = app => {
             time: fechahora,
             tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
             types: 'ecuSpeedMph,gps,obdOdometerMeters'
-        })
-        .then(result => {
+        }).then(result => {
             result['data']['data'].forEach(async (element) => {
-
                 var validarfecha = element['ecuSpeedMph'].time.split('T')[0];
+                var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
 
                 if(paraValidadfecha == validarfecha) {
-                    var miakm = Number(element['ecuSpeedMph'].value) * 1.609
-
                     let nuevoReporte = new reporte({
                         id_unidad: element.id,
                         unidad: element.name,
@@ -236,7 +268,7 @@ module.exports = app => {
             res.json({
                 OK: true,
                 fechayhora: fechahora,
-            })
+            });
         })
         .catch(error => {
             res.status(412).json({
@@ -247,21 +279,45 @@ module.exports = app => {
 
     app.obtenerReporte = async (req, res) => {
         try {
-            const datos = await unidad.findAll({});
+            const datos = await reporte.findAll({
+                attributes: [
+                    'id_reporte', 
+                    'id_unidad', 
+                    'unidad', 
+                    'fechahorakm', 
+                    'km', 
+                    'fechahoragps', 
+                    'latitud', 
+                    'longitud', 
+                    'location', 
+                    'fechaodo', 
+                    'odometer'
+                ],
+                where: {
+                    fechahorakm: {
+                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    },
+                    km: {
+                        [Op.gte]: 8,
+                    },
+                },
+                group: ['unidad'],
+            });
+
             const dataJSON = JSON.parse(JSON.stringify(datos));
             let dataRows = [];
-    
+
             for(const value of dataJSON) {
                 const result = await reporte.findOne({
                     attributes: [
                         'unidad',
                         [reporte.sequelize.fn('COUNT', reporte.sequelize.col('km')), 'min'],
                         [reporte.sequelize.fn('MAX', reporte.sequelize.col('km')), 'velocidad_maxima'],
-                        [reporte.sequelize.literal(`(SELECT COUNT(km) FROM reporte WHERE unidad = '` + value.name + `' AND km BETWEEN 8 AND 93 AND fechahorakm BETWEEN '` + req.params.fechainicio + `' AND '` + req.params.fechafin + `')`),'dentro'],
-                        [reporte.sequelize.literal(`(SELECT COUNT(km) FROM reporte WHERE unidad = '` + value.name + `' AND km BETWEEN 94 AND 250 AND fechahorakm BETWEEN '` + req.params.fechainicio + `' AND '` + req.params.fechafin + `')`),'fuera']
+                        [reporte.sequelize.literal(`(SELECT COUNT(km) FROM reporte WHERE unidad = '` + value.unidad + `' AND km BETWEEN 8 AND 93 AND fechahorakm BETWEEN '` + req.params.fechainicio + `' AND '` + req.params.fechafin + `')`),'dentro'],
+                        [reporte.sequelize.literal(`(SELECT COUNT(km) FROM reporte WHERE unidad = '` + value.unidad + `' AND km BETWEEN 94 AND 250 AND fechahorakm BETWEEN '` + req.params.fechainicio + `' AND '` + req.params.fechafin + `')`),'fuera']
                     ],
                     where: {
-                        unidad: value.name,
+                        unidad: value.unidad,
                         fechahorakm: {
                             [Op.between]: [req.params.fechainicio, req.params.fechafin],
                         },
@@ -292,7 +348,8 @@ module.exports = app => {
                 Total: dataRows.length,
                 Reporte: dataRows
             });
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Error al obtener el reporte:", error);
             res.status(500).json({
                 OK: false,
@@ -314,6 +371,34 @@ module.exports = app => {
                 OK: true,
                 Detalle: result
             })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerEventos = (req, res) => {
+        var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
+        var fechahora = fecha + 'Z';
+
+        var dataCreate = [];
+
+        Samsara.getSafetyActivityEventFeed({startTime: fechahora}).then(result => {
+            
+            // result['data']['data'].forEach(async (element) => {
+            //     if(element.type == "CreateSafetyEventActivityType"){
+            //         dataCreate.push(element);
+            //     }
+            // });
+
+            res.json({
+                OK: true,
+                FechayHora: fechahora,
+                // Eventos: dataCreate,
+                Eventos: result['data']['data'],
+            });
         })
         .catch(error => {
             res.status(412).json({

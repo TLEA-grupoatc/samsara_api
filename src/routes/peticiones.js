@@ -6,11 +6,15 @@ module.exports = app => {
     
     app.get('/obtenerParaGuardarUnidades', Peticion.obtenerParaGuardarUnidades);
 
-    app.get('/obtenerParaGuardarUnidades', Peticion.obtenerParaGuardarUnidades);
+    app.get('/totalUnidades', Peticion.totalUnidades);
+
+    app.get('/totalUnidadesGobernadas', Peticion.totalUnidadesGobernadas);
 
     app.get('/obtenerVehiculos', Peticion.obtenerVehiculos);
 
     app.get('/obtenerSnapshot', Peticion.obtenerSnapshot);
+
+    app.get('/obtenerEventos', Peticion.obtenerEventos);
 
 
 

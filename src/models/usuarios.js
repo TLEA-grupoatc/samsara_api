@@ -22,6 +22,19 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: false
         },
+        cargo: {
+            type: DataType.STRING,
+            allowNull: false
+        },
+        numero_empleado: {
+            type: DataType.INTEGER,
+            allowNull: false
+        },
+        status: {
+            type: DataType.ENUM,
+            values: ['A', 'I'],
+            allowNull: true     
+        },
         fecha_creacion: {
             type: DataType.DATE,
             allowNull: true    
@@ -29,11 +42,6 @@ module.exports = (sequelize, DataType) => {
         fecha_ultima_modificacion: {
             type: DataType.DATE,
             allowNull: true   
-        },
-        status: {
-            type: DataType.ENUM,
-            values: ['A', 'I'],
-            allowNull: true     
         }
     },{
         tableName: 'usuarios',
