@@ -230,7 +230,10 @@ module.exports = app => {
                 var validarfecha = element['ecuSpeedMph'].time.split('T')[0];
                 var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
 
-                if(paraValidadfecha == validarfecha) {
+                var miakmparavalidad = miakm.toFixed();
+                console.log(miakmparavalidad);
+
+                if(paraValidadfecha == validarfecha && miakmparavalidad >= 8) {
                     let nuevoReporte = new reporte({
                         id_unidad: element.id,
                         unidad: element.name,
@@ -278,84 +281,39 @@ module.exports = app => {
     }
 
     app.obtenerReporte = async (req, res) => {
-        try {
-            const datos = await reporte.findAll({
-                attributes: [
-                    'id_reporte', 
-                    'id_unidad', 
-                    'unidad', 
-                    'fechahorakm', 
-                    'km', 
-                    'fechahoragps', 
-                    'latitud', 
-                    'longitud', 
-                    'location', 
-                    'fechaodo', 
-                    'odometer'
-                ],
-                where: {
-                    fechahorakm: {
-                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
-                    },
-                    km: {
-                        [Op.gte]: 8,
-                    },
+        reporte.findAll({
+            attributes: [
+                'unidad',
+                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('km')), 'min'],
+                [reporte.sequelize.fn('MAX', reporte.sequelize.col('km')), 'velocidad_maxima'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 8 AND 93 THEN 1 ELSE 0 END")), 'dentro'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 94 AND 250 THEN 1 ELSE 0 END")), 'fuera']
+            ],
+            where: {
+                fechahorakm: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
                 },
-                group: ['unidad'],
-            });
-
-            const dataJSON = JSON.parse(JSON.stringify(datos));
-            let dataRows = [];
-
-            for(const value of dataJSON) {
-                const result = await reporte.findOne({
-                    attributes: [
-                        'unidad',
-                        [reporte.sequelize.fn('COUNT', reporte.sequelize.col('km')), 'min'],
-                        [reporte.sequelize.fn('MAX', reporte.sequelize.col('km')), 'velocidad_maxima'],
-                        [reporte.sequelize.literal(`(SELECT COUNT(km) FROM reporte WHERE unidad = '` + value.unidad + `' AND km BETWEEN 8 AND 93 AND fechahorakm BETWEEN '` + req.params.fechainicio + `' AND '` + req.params.fechafin + `')`),'dentro'],
-                        [reporte.sequelize.literal(`(SELECT COUNT(km) FROM reporte WHERE unidad = '` + value.unidad + `' AND km BETWEEN 94 AND 250 AND fechahorakm BETWEEN '` + req.params.fechainicio + `' AND '` + req.params.fechafin + `')`),'fuera']
-                    ],
-                    where: {
-                        unidad: value.unidad,
-                        fechahorakm: {
-                            [Op.between]: [req.params.fechainicio, req.params.fechafin],
-                        },
-                        km: {
-                            [Op.gte]: 8,
-                        }
-                    },
-                    group: ['unidad'],
-                    order: [
-                        ['unidad', 'ASC']
-                    ],
-                });
-    
-                if(result) {
-                    dataRows.push({
-                        unidad: result.unidad,
-                        min: result.dataValues.min,
-                        velocidad_maxima: result.dataValues.velocidad_maxima,
-                        dentro: result.dataValues.dentro,
-                        fuera: result.dataValues.fuera
-                    });
+                km: {
+                    [Op.gte]: 8,
                 }
-            }
-    
+            },
+            group: ['unidad'],
+            order: [
+                ['unidad', 'ASC']
+            ],
+        }).then(result => {
             res.json({
                 OK: true,
                 fechas: req.params.fechainicio + ' ' + req.params.fechafin,
-                Total: dataRows.length,
-                Reporte: dataRows
+                Total: result.length,
+                Reporte: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
             });
-        }
-        catch (error) {
-            console.error("Error al obtener el reporte:", error);
-            res.status(500).json({
-                OK: false,
-                error: "Error al obtener el reporte"
-            });
-        }
+        });
     }
 
     app.obtenerDetalleReporte = (req, res) => {
