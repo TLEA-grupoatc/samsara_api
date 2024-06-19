@@ -231,7 +231,6 @@ module.exports = app => {
                 var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
 
                 var miakmparavalidad = miakm.toFixed();
-                console.log(miakmparavalidad);
 
                 if(paraValidadfecha == validarfecha && miakmparavalidad >= 8) {
                     let nuevoReporte = new reporte({
@@ -357,6 +356,67 @@ module.exports = app => {
                 // Eventos: dataCreate,
                 Eventos: result['data']['data'],
             });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+    app.obtenerMarcasVehiculo = (req, res) => {
+        unidad.findAll({
+            attributes: ['make'],
+            group: ['make'],
+            order: [
+                ['make', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Marcas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerModelosVehiculo = (req, res) => {
+        unidad.findAll({
+            attributes: ['model'],
+            group: ['model'],
+            order: [
+                ['model', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Modelos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerAnnosVehiculo = (req, res) => {
+        unidad.findAll({
+            attributes: ['year'],
+            group: ['year'],
+            order: [
+                ['year', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Annos: result
+            })
         })
         .catch(error => {
             res.status(412).json({
