@@ -148,6 +148,27 @@ module.exports = app => {
 
     }
 
+    app.totalUnidadesGobernadasCapana = (req, res) => {
+        unidad.count({
+            where: {
+                gobernada: 2
+            }
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Total: result
+            });
+        })
+        .catch(err => {
+            res.json({
+                OK: false,
+                msg: err
+            });
+        });
+
+    }
+
     app.obtenerInfo = async (req, res) => {
         const datos = await unidad.findAll({});
 
@@ -363,7 +384,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.obtenerMarcasVehiculo = (req, res) => {
         unidad.findAll({

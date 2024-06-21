@@ -10,6 +10,8 @@ module.exports = app => {
 
     app.get('/totalUnidadesGobernadas', Peticion.totalUnidadesGobernadas);
 
+    app.get('/totalUnidadesGobernadasCapana', Peticion.totalUnidadesGobernadasCapana);
+
     app.get('/obtenerVehiculos', Peticion.obtenerVehiculos);
 
     app.get('/obtenerSnapshot', Peticion.obtenerSnapshot);
