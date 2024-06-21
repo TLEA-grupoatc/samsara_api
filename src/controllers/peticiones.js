@@ -36,6 +36,7 @@ module.exports = app => {
                     tagid: element['tags'][0]['id'],
                     tag: element['tags'][0]['name'],
                     gobernada: 0,
+                    fechagobernada: null,
                     staticAssignedDriver_id: null,
                     staticAssignedDriver_name: null,
                     vin: element.vin,
@@ -67,6 +68,7 @@ module.exports = app => {
                         'tagid',
                         'tag',
                         'gobernada',
+                        'fechagobernada',
                         'staticAssignedDriver_id',
                         'staticAssignedDriver_name',
                         'vin',
@@ -167,74 +169,6 @@ module.exports = app => {
             });
         });
 
-    }
-
-    app.obtenerInfo = async (req, res) => {
-        const datos = await unidad.findAll({});
-
-        const dataJSON = JSON.parse(JSON.stringify(datos));
-
-        var lista = [];
-
-        dataJSON.forEach((dj) => {
-            lista.push(dj.id_unidad)
-        });
-
-        await Samsara.getVehicleStatsHistory({
-            startTime: '2024-06-06T00:00:00-06:00',
-            endTime: '2024-06-06T23:59:59-06:00',
-            vehicleIds: '281474989947461',
-            types: 'ecuSpeedMph,obdOdometerMeters',
-            decorations: 'ecuSpeedMph,gps'
-        }).then(result => {
-            result['data']['data'][0]['ecuSpeedMph'].forEach(async (element) => {
-
-                var miakm = Number(element.value) * 1.609
-
-                let nuevoReporte = new reporte({
-                    id_unidad: result['data']['data'][0].id,
-                    unidad: result['data']['data'][0].name,
-                    fechahorakm: element.time,
-                    km: miakm.toFixed(),
-                    fechahoragps: element.time,
-                    latitud: element.decorations.gps.latitude,
-                    longitud: element.decorations.gps.longitude,
-                    location: element.decorations.gps.reverseGeo.formattedLocation,
-                    fechaodo: result['data']['data'][0]['obdOdometerMeters'][0]['time'],
-                    odometer: result['data']['data'][0]['obdOdometerMeters'][0]['value']
-                });
-
-                await reporte.create(nuevoReporte.dataValues, {
-                    fields: [
-                        'id_unidad',
-                        'unidad',
-                        'fechahorakm',
-                        'km',
-                        'fechahoragps',
-                        'latitud',
-                        'longitud',
-                        'location',
-                        'fechaodo',
-                        'odometer'
-                    ]
-                })
-                .then(result => {
-                    // console.log('indsertado');
-                })
-                .catch(error => {
-                    console.log(error.message);
-                });
-            });
-
-            res.json({
-                OK: true
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
     }
 
     app.obtenerSnapshot = (req, res) => {

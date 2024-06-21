@@ -76,6 +76,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        fechagobernada:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         staticAssignedDriver_id:{
             type: DataType.INTEGER,
             allowNull: true
