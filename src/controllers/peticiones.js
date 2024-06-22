@@ -1,9 +1,10 @@
+const dotenv = require('dotenv').config();
 const moment = require('moment');
 const _ = require('lodash');
 
 module.exports = app => {
     const Samsara = require("@api/samsara-dev-rel");
-    Samsara.auth('samsara_api_hstw6FzOAtotyCJGFJmuIxmQfJPvhO');
+    Samsara.auth(process.env.KEYSAM);
 
     const unidad = app.database.models.Unidades;
     const reporte = app.database.models.Reportes;
@@ -14,7 +15,6 @@ module.exports = app => {
 
     app.obtenerParaGuardarUnidades = (req, res) => {
         Samsara.listVehicles({limit: '512'}).then(result => {
-
             result['data']['data'].forEach(async (element) => {
                 let nuevaUnidad = new unidad({
                     id_unidad: element.id,
@@ -311,6 +311,26 @@ module.exports = app => {
                 // Eventos: dataCreate,
                 Eventos: result['data']['data'],
             });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerDivisionesVehiculo = (req, res) => {
+        unidad.findAll({
+            attributes: ['tag'],
+            group: ['tag'],
+            order: [
+                ['tag', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Division: result
+            })
         })
         .catch(error => {
             res.status(412).json({

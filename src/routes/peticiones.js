@@ -19,12 +19,12 @@ module.exports = app => {
     app.get('/obtenerEventos', Peticion.obtenerEventos);
 
 
-
     app.get('/obtenerReporte/:fechainicio/:fechafin', Peticion.obtenerReporte);
 
     app.get('/obtenerDetalleReporte/:unidad/:fechainicio/:fechafin', Peticion.obtenerDetalleReporte);
 
 
+    app.get('/obtenerDivisionesVehiculo', Peticion.obtenerDivisionesVehiculo);
 
     app.get('/obtenerMarcasVehiculo', Peticion.obtenerMarcasVehiculo);
 
