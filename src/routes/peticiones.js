@@ -32,5 +32,12 @@ module.exports = app => {
 
     app.get('/obtenerModelosVehiculo', Peticion.obtenerModelosVehiculo);
     
-    app.get('/obtenerAnnosVehiculo', Peticion.obtenerAnnosVehiculo);
+    
+    
+    
+    
+    
+    
+    
+    app.post('/vistaWebHooks', Peticion.vistaWebHooks);
 }

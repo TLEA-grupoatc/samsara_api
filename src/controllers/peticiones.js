@@ -374,11 +374,12 @@ module.exports = app => {
 
     app.obtenerEventos = (req, res) => {
         var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
-        var fechahora = fecha + 'Z';
+        var fechahora = fecha + '-06:00';
 
         var dataCreate = [];
 
         Samsara.getSafetyActivityEventFeed({startTime: fechahora}).then(result => {
+        // Samsara.getSafetyActivityEventFeed().then(result => {
             
             // result['data']['data'].forEach(async (element) => {
             //     if(element.type == "CreateSafetyEventActivityType"){
@@ -478,6 +479,14 @@ module.exports = app => {
                 msg: error.message
             });
         });
+    }
+
+    app.vistaWebHooks = (req, res) => {
+        console.log('Solicitud de Web Hook recibida:', req.body);
+
+    res.sendStatus(200);
+
+
     }
     
     return app;

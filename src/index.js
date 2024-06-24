@@ -7,6 +7,7 @@ const app = express();
 const consign = require('consign');
 const cookieParser = require('cookie-parser');
 const http = require('http').createServer(app);
+const bodyParser = require('body-parser');
 
 app.use(express.static('./public'));
 app.set('port', process.env.PORT || 3010);
@@ -34,8 +35,24 @@ setInterval(() => {
       })
   };
 
-  app.obtenerSnapshot(req, res);
-}, 60000); 
+  // app.obtenerSnapshot(req, res);
+  app.obtenerEventos(req, res);
+}, 1000); 
+
+
+
+app.use(bodyParser.json());
+
+// Endpoint para recibir el webhook
+app.post('/webhookSamsara', (req, res) => {
+  const payload = req.body;
+
+  // Aquí puedes procesar el payload recibido
+  console.log('Webhook received:', payload);
+
+  // Responde al servicio del webhook para confirmar la recepción
+  res.status(200).send('Webhook received successfully');
+});
 
 //Iniciar Server
 http.listen(app.get('port'), () => {
