@@ -113,6 +113,87 @@ module.exports = app => {
         });
     }
 
+    app.actualizarUnidad = (req, res) => {
+        let body = req.body;
+
+        let editarRegistro = new unidad({
+            auxInputType1: body.auxInputType1,
+            auxInputType2: body.auxInputType2,
+            auxInputType3: body.auxInputType3,
+            cameraSerial: body.cameraSerial,
+            samsara_serial: body.samsara_serial,
+            samsara_vin:  body.samsara_vin,
+            gateway_serial: body.gateway_serial,
+            gateway_model: body.gateway_model,
+            harshAccelerationSettingType: body.harshAccelerationSettingType,
+            licensePlate: body.licensePlate,
+            make: body.make,
+            model: body.model,
+            name: body.name,
+            notes: body.notes,
+            serial: body.serial,
+            tagid: body.tagid,
+            tag: body.tag,
+            gobernada: body.gobernada,
+            fechagobernada: body.fechagobernada,
+            staticAssignedDriver_id: body.staticAssignedDriver_id,
+            staticAssignedDriver_name: body.staticAssignedDriver_name,
+            vin: body.vin,
+            year: body.year,
+            vehicleRegulationMode: body.vehicleRegulationMode,
+            createdAtTime: body.createdAtTime,
+            updatedAtTime: body.updatedAtTime,
+            esn: body.esn
+        });
+
+        unidad.update(editarRegistro.dataValues, {
+            where: {
+                id_unidad: req.params.id_unidad
+            },
+            fields: [
+                'auxInputType1', 
+                'auxInputType2', 
+                'auxInputType3', 
+                'cameraSerial', 
+                'samsara_serial', 
+                'samsara_vin', 
+                'gateway_serial', 
+                'gateway_model', 
+                'harshAccelerationSettingType', 
+                'licensePlate', 
+                'make', 
+                'model', 
+                'name', 
+                'notes', 
+                'serial', 
+                'tagid', 
+                'tag', 
+                'gobernada', 
+                'fechagobernada', 
+                'staticAssignedDriver_id', 
+                'staticAssignedDriver_name', 
+                'vin', 
+                'year', 
+                'vehicleRegulationMode', 
+                'createdAtTime', 
+                'updatedAtTime', 
+                'esn'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
     app.totalUnidades = (req, res) => {
         unidad.count({})
         .then(result => {
