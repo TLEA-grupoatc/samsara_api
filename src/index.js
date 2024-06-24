@@ -35,9 +35,9 @@ setInterval(() => {
       })
   };
 
-  // app.obtenerSnapshot(req, res);
-  app.obtenerEventos(req, res);
-}, 1000); 
+  app.obtenerSnapshot(req, res);
+  // app.obtenerEventos(req, res);
+}, 60000); 
 
 
 
