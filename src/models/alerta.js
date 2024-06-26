@@ -54,5 +54,10 @@ module.exports = (sequelize, DataType) => {
         timestamps: false
     });
 
+    // Alertas.addHook('beforeCreate', 'hookBeforeCreate', (alerta, options) => {        
+    //     console.log(options);
+    //     return Promise.reject(new Error);
+    // });
+    
     return Alertas;
 }

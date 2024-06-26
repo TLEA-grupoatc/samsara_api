@@ -8,6 +8,7 @@ module.exports = app => {
 
     const unidad = app.database.models.Unidades;
     const reporte = app.database.models.Reportes;
+    const alerta = app.database.models.Alertas;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -472,6 +473,24 @@ module.exports = app => {
             res.json({
                 OK: true,
                 Annos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerAlertas = (req, res) => {
+        alerta.findAll({
+            order: [
+                ['fecha_creacion', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Alertas: result
             })
         })
         .catch(error => {

@@ -1,14 +1,22 @@
 require('colors');
-
 const express = require('express');
 const cors = require('cors')
 const app = express();
-
 const consign = require('consign');
 const cookieParser = require('cookie-parser');
 const http = require('http').createServer(app);
+const socketIO = require('socket.io')(http, {
+  cors: {
+      origin: ["http://localhost:4200"],
+      credentials: true,
+      methods: ["GET", "POST"]
+    }
+  }
+);
 const bodyParser = require('body-parser');
-
+const ngrok = require("@ngrok/ngrok");
+const moment = require('moment');
+const dotenv = require('dotenv').config();
 
 app.use(express.static('./public'));
 app.set('port', process.env.PORT || 3010);
@@ -18,18 +26,23 @@ app.use(express.json({ limit: "100mb" }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(cookieParser());
+app.io = socketIO;
 app.use(cors());
 
-consign({cwd: 'src'})
-.include('libs/config.js')
-.then('./database.js')
-.then('middlewares')
-.then('controllers')
-.then('routes')
-.into(app); 
+consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('middlewares').then('controllers').then('routes').then('sockets').into(app); 
 
 const alerta = app.database.models.Alertas;
-const moment = require('moment');
+
+http.on('connection', (socket) => {
+
+  socket.on('SHOW_ALERTS', function(alerta){
+    console.log(alerta);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Un usuario se ha desconectado');
+  });
+});
 
 setInterval(() => {
   const req = {};
@@ -45,9 +58,8 @@ setInterval(() => {
 
 //https://apisamsara.tlea.online/webhookSamsara
 app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-  var fecha = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
   const payload = req.body;
-  console.log(payload);
+  // console.log(payload);
 
   if(payload.eventType == 'Alert') {
     var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
@@ -63,8 +75,7 @@ app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (r
       alertEventURL: payload.event.alertEventUrl,
       incidentUrl: null,
       id_unidad: payload.event.device.id,
-      unidad: payload.event.device.name,
-      fecha_creacion: fecha
+      unidad: payload.event.device.name
     });
 
     await alerta.create(nuevaAlerta.dataValues, {
@@ -78,8 +89,7 @@ app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (r
           'alertEventURL', 
           'incidentUrl', 
           'id_unidad', 
-          'unidad',
-          'fecha_creacion'
+          'unidad'
         ]
     })
     .then(result => {})
@@ -98,8 +108,7 @@ app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (r
       alertEventURL: null,
       incidentUrl: payload.data.incidentUrl,
       id_unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['id'] : data['details']['insideGeofence']['vehicle']['id'],
-      unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['name'] : data['details']['insideGeofence']['vehicle']['name'],
-      fecha_creacion: fecha
+      unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['name'] : data['details']['insideGeofence']['vehicle']['name']
     });
 
     await alerta.create(nuevaAlerta.dataValues, {
@@ -113,8 +122,7 @@ app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (r
         'alertEventURL', 
         'incidentUrl', 
         'id_unidad', 
-        'unidad',
-        'fecha_creacion'
+        'unidad'
       ]
   })
   .then(result => {})
@@ -124,7 +132,18 @@ app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (r
   res.status(200).send('Ok');
 });
 
-//Iniciar Server
-http.listen(app.get('port'), () => {
-  console.log(`Server on port ${app.get('port')}`.random);
+// http.listen(app.get('port'), () => {
+//   console.log(`Server on port ${app.get('port')}`.random);
+// });
+
+http.listen(app.get('port'), async () => {
+  try {
+    await ngrok.authtoken(process.env.TOKENNGROK);
+    const url = await ngrok.forward(app.get('port'));
+    console.log(`Server on port ${app.get('port')}`.random);
+    console.log(url.url());
+  }
+  catch (error) {
+    console.error('Error al iniciar el túnel Ngrok:', error);
+  }
 });

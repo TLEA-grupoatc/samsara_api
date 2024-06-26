@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>API SAMSARA</title>
+    <title>API SAMSARA X TLEA</title>
 </head>
 <body>
-    <p>API IS WORKING</p>
-
-    <!-- <script src="/socket.io/socket.io.js"></script>
-
+    <h3>API is Working</h3>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
- 
+
         socket.on('connect', function() {
             console.log('Contectado al servidor');
         });
@@ -21,6 +19,10 @@
         socket.on('disconnect', function(){
             console.log('Se perdio conexion con el servidor');
         });
-    </script> -->
+
+        socket.on('SHOW_ALERTS', function(alerta){
+            console.log(alerta);
+        });
+    </script>
 </body>
 </html>

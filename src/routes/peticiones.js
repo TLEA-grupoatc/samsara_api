@@ -31,4 +31,8 @@ module.exports = app => {
     app.get('/obtenerMarcasVehiculo', Peticion.obtenerMarcasVehiculo);
 
     app.get('/obtenerModelosVehiculo', Peticion.obtenerModelosVehiculo);
+
+
+
+    app.get('/obtenerAlertas', Peticion.obtenerAlertas);
 }
