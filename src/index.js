@@ -9,11 +9,13 @@ const cookieParser = require('cookie-parser');
 const http = require('http').createServer(app);
 const bodyParser = require('body-parser');
 
+
 app.use(express.static('./public'));
 app.set('port', process.env.PORT || 3010);
 app.use(express.urlencoded({extended: false}));         
 app.use('/images', express.static('images'));
 app.use(express.json({ limit: "100mb" }));
+app.use(bodyParser.json());
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
@@ -26,6 +28,9 @@ consign({cwd: 'src'})
 .then('routes')
 .into(app); 
 
+const alerta = app.database.models.Alertas;
+const moment = require('moment');
+
 setInterval(() => {
   const req = {};
   const res = {
@@ -35,23 +40,88 @@ setInterval(() => {
       })
   };
 
-  app.obtenerSnapshot(req, res);
-  // app.obtenerEventos(req, res);
+  // app.obtenerSnapshot(req, res);
 }, 60000); 
 
-
-
-app.use(bodyParser.json());
-
-// Endpoint para recibir el webhook
-app.post('/webhookSamsara', (req, res) => {
+//https://apisamsara.tlea.online/webhookSamsara
+app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+  var fecha = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
   const payload = req.body;
+  console.log(payload);
 
-  // Aquí puedes procesar el payload recibido
-  console.log('Webhook received:', payload);
+  if(payload.eventType == 'Alert') {
+    var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
+    var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
 
-  // Responde al servicio del webhook para confirmar la recepción
-  res.status(200).send('Webhook received successfully');
+    let nuevaAlerta = new alerta({
+      eventId: payload.eventId,
+      eventType: payload.eventType,
+      event: eventoformat2,
+      eventDescription: payload.event.details,
+      eventTime: null,
+      eventMs: payload.eventMs,
+      alertEventURL: payload.event.alertEventUrl,
+      incidentUrl: null,
+      id_unidad: payload.event.device.id,
+      unidad: payload.event.device.name,
+      fecha_creacion: fecha
+    });
+
+    await alerta.create(nuevaAlerta.dataValues, {
+        fields: [
+          'eventId', 
+          'eventType', 
+          'event', 
+          'eventDescription', 
+          'eventTime', 
+          'eventMs', 
+          'alertEventURL', 
+          'incidentUrl', 
+          'id_unidad', 
+          'unidad',
+          'fecha_creacion'
+        ]
+    })
+    .then(result => {})
+    .catch(error => { console.log(error.message); });
+  }
+  else  {
+    var data = payload.data.conditions[0];
+    var validar = data['description'];
+    let nuevaAlerta = new alerta({
+      eventId: payload.eventId,
+      eventType: payload.eventType,
+      event: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
+      eventDescription: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
+      eventTime: payload.eventTime,
+      eventMs: null,
+      alertEventURL: null,
+      incidentUrl: payload.data.incidentUrl,
+      id_unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['id'] : data['details']['insideGeofence']['vehicle']['id'],
+      unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['name'] : data['details']['insideGeofence']['vehicle']['name'],
+      fecha_creacion: fecha
+    });
+
+    await alerta.create(nuevaAlerta.dataValues, {
+      fields: [
+        'eventId', 
+        'eventType', 
+        'event', 
+        'eventDescription', 
+        'eventTime', 
+        'eventMs', 
+        'alertEventURL', 
+        'incidentUrl', 
+        'id_unidad', 
+        'unidad',
+        'fecha_creacion'
+      ]
+  })
+  .then(result => {})
+  .catch(error => { console.log(error.message); });
+  }
+
+  res.status(200).send('Ok');
 });
 
 //Iniciar Server

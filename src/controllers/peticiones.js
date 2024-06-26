@@ -480,14 +480,6 @@ module.exports = app => {
             });
         });
     }
-
-    app.vistaWebHooks = (req, res) => {
-        console.log('Solicitud de Web Hook recibida:', req.body);
-
-    res.sendStatus(200);
-
-
-    }
     
     return app;
 }
