@@ -34,5 +34,5 @@ module.exports = app => {
 
 
 
-    app.get('/obtenerAlertas', Peticion.obtenerAlertas);
+    app.get('/obtenerAlertas/:fechainicio/:fechafin', Peticion.obtenerAlertas);
 }

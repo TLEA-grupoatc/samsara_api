@@ -7,19 +7,18 @@ const cookieParser = require('cookie-parser');
 const http = require('http').createServer(app);
 const socketIO = require('socket.io')(http, {
   cors: {
-      origin: ["http://localhost:4200"],
-      credentials: true,
-      methods: ["GET", "POST"]
-    }
+    origin: ["http://localhost:4200"],
+    credentials: true,
+    methods: ["GET", "POST"]
   }
-);
+});
 const bodyParser = require('body-parser');
 const ngrok = require("@ngrok/ngrok");
 const moment = require('moment');
 const dotenv = require('dotenv').config();
 
 app.use(express.static('./public'));
-app.set('port', process.env.PORT || 3010);
+app.set('port', 3010);
 app.use(express.urlencoded({extended: false}));         
 app.use('/images', express.static('images'));
 app.use(express.json({ limit: "100mb" }));
@@ -33,16 +32,15 @@ consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('midd
 
 const alerta = app.database.models.Alertas;
 
-http.on('connection', (socket) => {
+// http.on('connection', (socket) => {
+//   socket.on('SHOW_ALERTS', function(alerta){
+//     console.log(alerta);
+//   });
 
-  socket.on('SHOW_ALERTS', function(alerta){
-    console.log(alerta);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('Un usuario se ha desconectado');
-  });
-});
+//   socket.on('disconnect', () => {
+//     console.log('Un usuario se ha desconectado');
+//   });
+// });
 
 setInterval(() => {
   const req = {};
@@ -56,29 +54,160 @@ setInterval(() => {
   // app.obtenerSnapshot(req, res);
 }, 60000); 
 
-//https://apisamsara.tlea.online/webhookSamsara
-app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+// app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+//   const payload = req.body;
+
+//   console.log(payload);
+
+//   if(payload.eventType == 'Alert') {
+//     var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
+//     var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
+
+//     const timestamp = payload.eventMs;
+//     const date = new Date(timestamp);
+//     const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
+
+//     let nuevaAlerta = new alerta({
+//       eventId: payload.eventId,
+//       eventType: payload.eventType,
+//       event: eventoformat2,
+//       eventDescription: payload.event.details,
+//       eventTime: formato,
+//       eventMs: null,
+//       alertEventURL: payload.event.alertEventUrl,
+//       incidentUrl: null,
+//       id_unidad: payload.event.device.id,
+//       unidad: payload.event.device.name
+//     });
+
+//     await alerta.create(nuevaAlerta.dataValues, {
+//         fields: [
+//           'eventId', 
+//           'eventType', 
+//           'event', 
+//           'eventDescription', 
+//           'eventTime', 
+//           'eventMs', 
+//           'alertEventURL', 
+//           'incidentUrl', 
+//           'id_unidad', 
+//           'unidad'
+//         ]
+//     })
+//     .then(result => {})
+//     .catch(error => { console.log(error.message); });
+//   }
+//   else  {
+//     console.log(payload.data.conditions[0]);
+
+
+//     var data = payload.data.conditions[0];
+//     var validar = data['description'];
+//     const date = payload.eventTime;
+//     const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
+
+//     let nuevaAlerta = new alerta({
+//       eventId: payload.eventId,
+//       eventType: payload.eventType,
+//       event: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
+//       eventDescription: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
+//       eventTime: formato,
+//       eventMs: null,
+//       alertEventURL: payload.data.incidentUrl,
+//       incidentUrl: null,
+//       id_unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['id'] : data['details']['insideGeofence']['vehicle']['id'],
+//       unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['name'] : data['details']['insideGeofence']['vehicle']['name']
+//     });
+
+//     await alerta.create(nuevaAlerta.dataValues, {
+//       fields: [
+//         'eventId', 
+//         'eventType', 
+//         'event', 
+//         'eventDescription', 
+//         'eventTime', 
+//         'eventMs', 
+//         'alertEventURL', 
+//         'incidentUrl', 
+//         'id_unidad', 
+//         'unidad'
+//       ]
+//   })
+//   .then(result => {})
+//   .catch(error => { console.log(error.message); });
+//   }
+
+//   res.status(200).send('Ok');
+// });
+
+app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
-  // console.log(payload);
+  console.log(payload);
 
   if(payload.eventType == 'Alert') {
+    const timestamp = payload.eventMs;
+    const date = new Date(timestamp);
+    const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
+
     var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
     var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
 
+    var eventoformat3 = payload.event.details.replace('Se presionó el ', "");
+    var eventoformat4 = eventoformat3.split(' para el vehículo')[0];
+  
     let nuevaAlerta = new alerta({
       eventId: payload.eventId,
       eventType: payload.eventType,
-      event: eventoformat2,
+      alertConditionId: payload.event.alertConditionId,
+      webhookId: payload.webhookId,
+      event: payload.event.alertConditionId == 'DeviceLocationInsideGeofence' ? 'Parada no Autorizada' : eventoformat2,
       eventDescription: payload.event.details,
-      eventTime: null,
-      eventMs: payload.eventMs,
+      eventTime: formato,
       alertEventURL: payload.event.alertEventUrl,
-      incidentUrl: null,
       id_unidad: payload.event.device.id,
       unidad: payload.event.device.name
     });
-
+  
     await alerta.create(nuevaAlerta.dataValues, {
+        fields: [
+          'eventId', 
+          'eventType',
+          'alertConditionId',
+          'webhookId',
+          'event', 
+          'eventDescription', 
+          'eventTime', 
+          'alertEventURL', 
+          'id_unidad', 
+          'unidad'
+        ]
+    })
+    .then(result => {})
+    .catch(error => { console.log(error.message); });
+  }
+  else {
+      console.log(payload.data.conditions[0]);
+  
+  
+      var data = payload.data.conditions[0];
+      var validar = data['description'];
+      const date = payload.eventTime;
+      const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
+  
+      let nuevaAlerta = new alerta({
+        eventId: payload.eventId,
+        eventType: payload.eventType,
+        event: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
+        eventDescription: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
+        eventTime: formato,
+        eventMs: null,
+        alertEventURL: payload.data.incidentUrl,
+        incidentUrl: null,
+        id_unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['id'] : data['details']['insideGeofence']['vehicle']['id'],
+        unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['name'] : data['details']['insideGeofence']['vehicle']['name']
+      });
+  
+      await alerta.create(nuevaAlerta.dataValues, {
         fields: [
           'eventId', 
           'eventType', 
@@ -94,40 +223,7 @@ app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (r
     })
     .then(result => {})
     .catch(error => { console.log(error.message); });
-  }
-  else  {
-    var data = payload.data.conditions[0];
-    var validar = data['description'];
-    let nuevaAlerta = new alerta({
-      eventId: payload.eventId,
-      eventType: payload.eventType,
-      event: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
-      eventDescription: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
-      eventTime: payload.eventTime,
-      eventMs: null,
-      alertEventURL: null,
-      incidentUrl: payload.data.incidentUrl,
-      id_unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['id'] : data['details']['insideGeofence']['vehicle']['id'],
-      unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['name'] : data['details']['insideGeofence']['vehicle']['name']
-    });
-
-    await alerta.create(nuevaAlerta.dataValues, {
-      fields: [
-        'eventId', 
-        'eventType', 
-        'event', 
-        'eventDescription', 
-        'eventTime', 
-        'eventMs', 
-        'alertEventURL', 
-        'incidentUrl', 
-        'id_unidad', 
-        'unidad'
-      ]
-  })
-  .then(result => {})
-  .catch(error => { console.log(error.message); });
-  }
+  }    
 
   res.status(200).send('Ok');
 });

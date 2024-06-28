@@ -12,6 +12,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        alertConditionId:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        webhookId:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         event:{
             type: DataType.STRING,
             allowNull: true
@@ -24,15 +32,7 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
-        eventMs:{
-            type: DataType.STRING,
-            allowNull: true
-        },
         alertEventURL:{
-            type: DataType.STRING,
-            allowNull: true
-        },
-        incidentUrl:{
             type: DataType.STRING,
             allowNull: true
         },

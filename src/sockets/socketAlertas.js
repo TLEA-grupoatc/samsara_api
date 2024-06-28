@@ -1,17 +1,24 @@
+const moment = require('moment');
+
 module.exports = app => {
 
     const alerta = app.database.models.Alertas;
-    
-    app.getAlertas = () => {   
-        console.log('SoketIO');     
+    const Sequelize = require('sequelize');
+    const { literal } = require('sequelize');
+    const Op = Sequelize.Op;
+
+    app.getAlertas = () => {
+        var fecha = moment(new Date()).format('YYYY-MM-DD');
+        var horainicio = fecha + " 00:00:00";
+        var horafin = fecha + " 23:59:59";
         alerta.findAll({
-            // where: {
-            //     fecha_creacion: {
-            //         [Op.between]: [req.params.fechainicio, req.params.fechafin],
-            //     }
-            // },
+            where: {
+                eventTime: {
+                    [Op.between]: [horainicio, horafin],
+                }
+            },
             order: [
-                ['fecha_creacion', 'DESC']
+                ['eventTime', 'DESC']
             ],
         }).then(result => {            
             app.io.emit('SHOW_ALERTS', {Alertas: result});

@@ -484,8 +484,13 @@ module.exports = app => {
 
     app.obtenerAlertas = (req, res) => {
         alerta.findAll({
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                }
+            },
             order: [
-                ['fecha_creacion', 'DESC']
+                ['eventTime', 'DESC']
             ],
         }).then(result => {
             res.json({
