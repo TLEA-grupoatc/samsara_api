@@ -35,4 +35,15 @@ module.exports = app => {
 
 
     app.get('/obtenerAlertas/:fechainicio/:fechafin', Peticion.obtenerAlertas);
+
+    app.get('/obtenerCatalagoEventos', Peticion.obtenerCatalagoEventos);
+
+
+
+    app.put('/primeraInteraccion/:id_alerta', Peticion.primeraInteraccion);
+
+    app.post('/crearSeguimiento', Peticion.crearSeguimiento);
+
+
+    app.get('/obtenerSeguimientoUsuario/:fechainicio/:fechafin/:usuario', Peticion.obtenerSeguimientoUsuario);
 }

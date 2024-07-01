@@ -9,6 +9,10 @@ module.exports = app => {
         client.on('SHOW_ALERTS', (data, callback)=> {            
             client.broadcast.emit('SHOW_ALERTS', data);
         });
+
+        // client.on('SHOW_SEUS', (data, callback)=> {            
+        //     client.broadcast.emit('SHOW_SEUS', data);
+        // });
     });   
 
     return app;

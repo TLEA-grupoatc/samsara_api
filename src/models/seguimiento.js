@@ -1,42 +1,35 @@
 module.exports = (sequelize, DataType) => {
-    const Alertas = sequelize.define('Alertas',{
+    const Seguimientos = sequelize.define('Seguimientos',{
+        id_seguimiento:{
+            type: DataType.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
         id_alerta:{
             type: DataType.INTEGER,
-            primaryKey: true
+            allowNull: true
         },
-        eventId:{
+        nivel:{
             type: DataType.STRING,
             allowNull: true
         },
-        eventType:{
+        usuario:{
             type: DataType.STRING,
             allowNull: true
         },
-        alertConditionId:{
+        evento:{
             type: DataType.STRING,
             allowNull: true
         },
-        webhookId:{
+        descripcionEvento:{
             type: DataType.STRING,
             allowNull: true
         },
-        event:{
+        fechahoraEvento:{
             type: DataType.STRING,
             allowNull: true
         },
-        eventDescription:{
-            type: DataType.STRING,
-            allowNull: true
-        },
-        eventTime:{
-            type: DataType.STRING,
-            allowNull: true
-        },
-        alertEventURL:{
-            type: DataType.STRING,
-            allowNull: true
-        },
-        id_unidad:{
+        urlEvento:{
             type: DataType.STRING,
             allowNull: true
         },
@@ -44,27 +37,26 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        accion:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        solucion:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         estado:{
             type: DataType.STRING,
             allowNull: true
         },
-        fecha_creacion:{
-            type: DataType.DATE,
-            allowNull: true
-        },
-        primer_interaccion:{
-            type: DataType.STRING,
-            allowNull: true
-        },
-        fechahora_interaccion:{
+        fechahora:{
             type: DataType.DATE,
             allowNull: true
         }
     },
     {
-        tableName: 'alerta',        
+        tableName: 'seguimiento',        
         timestamps: false
     });
-
-    return Alertas;
+    return Seguimientos;
 }

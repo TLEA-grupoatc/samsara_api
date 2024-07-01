@@ -11,6 +11,7 @@ module.exports = app => {
         var fecha = moment(new Date()).format('YYYY-MM-DD');
         var horainicio = fecha + " 00:00:00";
         var horafin = fecha + " 23:59:59";
+
         alerta.findAll({
             where: {
                 eventTime: {
@@ -19,7 +20,7 @@ module.exports = app => {
             },
             order: [
                 ['eventTime', 'DESC']
-            ],
+            ]
         }).then(result => {            
             app.io.emit('SHOW_ALERTS', {Alertas: result});
         })

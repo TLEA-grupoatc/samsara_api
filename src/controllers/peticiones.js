@@ -9,6 +9,7 @@ module.exports = app => {
     const unidad = app.database.models.Unidades;
     const reporte = app.database.models.Reportes;
     const alerta = app.database.models.Alertas;
+    const seguimiento = app.database.models.Seguimientos;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -505,5 +506,130 @@ module.exports = app => {
         });
     }
     
+    app.obtenerCatalagoEventos = (req, res) => {
+        alerta.findAll({
+            attributes: ['event'],
+            group: ['event'],
+            order: [
+                ['event', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Eventos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.primeraInteraccion = (req, res) => {
+        let body = req.body;
+
+        let asignacion = new alerta({
+            estado: body.estado,
+            primer_interaccion: body.primer_interaccion,
+            fechahora_interaccion: body.fechahora_interaccion
+        });
+
+        alerta.update(asignacion.dataValues, {
+            where: {
+                id_alerta: req.params.id_alerta
+            },
+            fields: [
+                'estado',
+                'primer_interaccion',
+                'fechahora_interaccion'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.crearSeguimiento = (req, res) => {
+        let body = req.body;
+        const date = new Date(body.fechahora);
+        const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
+        
+        let nuevoRegistro = new seguimiento({
+            id_alerta: body.id_alerta,
+            nivel: body.nivel,
+            usuario: body.usuario,
+            evento: body.evento, 
+            descripcionEvento: body.descripcionEvento, 
+            fechahoraEvento: body.fechahoraEvento, 
+            urlEvento: body.urlEvento, 
+            unidad: body.unidad, 
+            accion: body.accion,
+            solucion: body.solucion,
+            estado: body.estado,
+            fechahora: formato
+        });
+
+        seguimiento.create(nuevoRegistro.dataValues, {
+            fields: [
+                'id_alerta',
+                'nivel',
+                'usuario',
+                'evento', 
+                'descripcionEvento', 
+                'fechahoraEvento', 
+                'urlEvento', 
+                'unidad', 
+                'accion',
+                'solucion',
+                'estado',
+                'fechahora'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Seguimiento: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerSeguimientoUsuario = (req, res) => {
+        seguimiento.findAll({
+            where: {
+                usuario: req.params.usuario,
+                fechahora: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                },
+            },
+            order: [
+                ['fechahora', 'DESC']
+            ]
+        }).then(result => {
+            res.json({
+                OK: true,
+                SeguimientoUsuario: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     return app;
 }
