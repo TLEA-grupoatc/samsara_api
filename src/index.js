@@ -4,6 +4,10 @@ const cors = require('cors')
 const app = express();
 const consign = require('consign');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const ngrok = require("@ngrok/ngrok");
+const moment = require('moment');
+const dotenv = require('dotenv').config();
 const http = require('http').createServer(app);
 const socketIO = require('socket.io')(http, {
   cors: {
@@ -12,10 +16,6 @@ const socketIO = require('socket.io')(http, {
     methods: ["GET", "POST"]
   }
 });
-const bodyParser = require('body-parser');
-const ngrok = require("@ngrok/ngrok");
-const moment = require('moment');
-const dotenv = require('dotenv').config();
 
 app.use(express.static('./public'));
 app.set('port', 3010);
@@ -31,16 +31,6 @@ app.use(cors());
 consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('middlewares').then('controllers').then('routes').then('sockets').into(app); 
 
 const alerta = app.database.models.Alertas;
-
-// http.on('connection', (socket) => {
-//   socket.on('SHOW_ALERTS', function(alerta){
-//     console.log(alerta);
-//   });
-
-//   socket.on('disconnect', () => {
-//     console.log('Un usuario se ha desconectado');
-//   });
-// });
 
 setInterval(() => {
   const req = {};
@@ -146,18 +136,74 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
   const timestamp = payload.eventMs;
   const date = new Date(timestamp);
   const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
+  var validacionEvento = '';
+  var eventoCase;
   
   var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
   var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
+  var eventoformat2 = eventoformat2.split(' event was')[0];
+
+  if(payload.event.alertConditionId == 'DeviceLocationInsideGeofence') {
+    validacionEvento = 'Parada no Autorizada';
+  }
   
+  if(payload.event.alertConditionId == 'PanicButtonPressed') {
+    validacionEvento = 'Botón de pánico';
+  }
+
+  if(validacionEvento != '') {
+    eventoformat2 = validacionEvento.trim();
+  }
+  else {
+    eventoformat2.trim()
+  }
+
   console.log(payload);
+  
+  switch(eventoformat2) {
+    case 'Alto omitido': eventoCase = 'Alto omitido'; break;
+    case 'Rolling Stop': eventoCase = 'Alto omitido'; break;
+
+    case 'Botón de pánico': eventoCase = 'Botón de pánico'; break;
+
+    case 'Colisión': eventoCase = 'Accidente'; break;
+    case 'Crash': eventoCase = 'Accidente'; break;
+
+    case 'Conducción distraída': eventoCase = 'Conducción distraída'; break;
+    case 'Distracted Driving': eventoCase = 'Conducción distraída'; break;
+
+    case 'Cuasi-colisión': eventoCase = 'Advertencia de Colisión Frontal'; break;
+    case 'Forward Collision Warning': eventoCase = 'Advertencia de Colisión Frontal'; break;
+
+    case 'Cámara obstruida': eventoCase = 'Cámara obstruida'; break;
+    case 'Obstructed Camera': eventoCase = 'Cámara obstruida'; break;
+
+    case 'Distancia de seguimiento': eventoCase = 'Distancia de seguimiento'; break;
+    case 'Following Distance': eventoCase = 'Distancia de seguimiento'; break;
+
+    case 'Frenado brusco': eventoCase = 'Frenado brusco'; break;
+    case 'Harsh Brake': eventoCase = 'Frenado brusco'; break;
+
+    case 'Giro brusco': eventoCase = 'Giro brusco'; break;
+    case 'Harsh Turn': eventoCase = 'Giro brusco'; break;
+
+    case 'Parada no Autorizada': eventoCase = 'Parada no Autorizada'; break;
+    
+    case 'Sin cinturón de seguridad': eventoCase = 'Sin cinturón de seguridad'; break;
+    case 'No Seat Belt': eventoCase = 'Sin cinturón de seguridad'; break;
+
+    case 'Uso del móvil': eventoCase = 'Uso del móvil'; break;
+    case 'Mobile Usage': eventoCase = 'Uso del móvil'; break;
+
+    default: 'Otros Eventos'; break;
+  }
 
   let nuevaAlerta = new alerta({
     eventId: payload.eventId,
     eventType: payload.eventType,
     alertConditionId: payload.event.alertConditionId,
     webhookId: payload.webhookId,
-    event: payload.event.alertConditionId == 'DeviceLocationInsideGeofence' ? 'Parada no Autorizada' : payload.event.alertConditionId == 'PanicButtonPressed' ? 'Botón de pánico' : eventoformat2,
+    event: eventoCase,
     eventDescription: payload.event.details,
     eventTime: formato,
     alertEventURL: payload.event.alertEventUrl,
@@ -178,12 +224,32 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
       'id_unidad', 
       'unidad'
     ]
-  })
-  .then(result => {})
-  .catch(error => { console.log(error.message); });
+  }).then(result => {}).catch(error => { console.log(error.message); });
 
   res.status(200).send('Ok');
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // http.listen(app.get('port'), () => {
 //   console.log(`Server on port ${app.get('port')}`.random);
@@ -193,6 +259,7 @@ http.listen(app.get('port'), async () => {
   try {
     await ngrok.authtoken(process.env.TOKENNGROK);
     const url = await ngrok.forward(app.get('port'));
+
     console.log(`Server on port ${app.get('port')}`.random);
     console.log(url.url());
   }

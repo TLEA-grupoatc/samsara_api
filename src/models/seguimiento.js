@@ -49,6 +49,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        fechahora_interaccion:{
+            type: DataType.DATE,
+            allowNull: true
+        },
         fechahora:{
             type: DataType.DATE,
             allowNull: true

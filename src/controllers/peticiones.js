@@ -81,9 +81,7 @@ module.exports = app => {
                         'esn'
                     ]
                 })
-                .then(result => {
-                    console.log(result);
-                })
+                .then(result => {})
                 .catch(error => {
                     console.log(error.message);
                 });
@@ -539,6 +537,7 @@ module.exports = app => {
             where: {
                 id_alerta: req.params.id_alerta
             },
+            individualHooks: true, 
             fields: [
                 'estado',
                 'primer_interaccion',
@@ -627,6 +626,34 @@ module.exports = app => {
         .catch(error => {
             res.status(412).json({
                 msg: error.message
+            });
+        });
+    }
+
+    app.primeraInteraccionSeguimiento = (req, res) => {
+        let body = req.body;
+
+        let asignacion = new seguimiento({
+            fechahora_interaccion: body.fechahora_interaccion
+        });
+
+        seguimiento.update(asignacion.dataValues, {
+            where: {
+                id_seguimiento: req.params.id_seguimiento
+            },
+            individualHooks: true, 
+            fields: [
+                'fechahora_interaccion'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
             });
         });
     }
