@@ -11,7 +11,7 @@ const dotenv = require('dotenv').config();
 const http = require('http').createServer(app);
 const socketIO = require('socket.io')(http, {
   cors: {
-    origin: ["http://localhost:4200"],
+    origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online"],
     credentials: true,
     methods: ["GET", "POST"]
   }
@@ -41,7 +41,7 @@ setInterval(() => {
       })
   };
 
-  // app.obtenerSnapshot(req, res);
+  app.obtenerSnapshot(req, res);
 }, 60000); 
 
 // app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
@@ -129,12 +129,6 @@ setInterval(() => {
 
 //   res.status(200).send('Ok');
 // });
-
-app.post('/webhookWhatsApp', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-  const payload = req.body;
-  console.log(payload);
-
-});
 
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
@@ -261,19 +255,19 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
 
 
 
-// http.listen(app.get('port'), () => {
-//   console.log(`Server on port ${app.get('port')}`.random);
-// });
-
-http.listen(app.get('port'), async () => {
-  try {
-    await ngrok.authtoken(process.env.TOKENNGROK);
-    const url = await ngrok.forward(app.get('port'));
-
-    console.log(`Server on port ${app.get('port')}`.random);
-    console.log(url.url());
-  }
-  catch (error) {
-    console.error('Error al iniciar el túnel Ngrok:', error);
-  }
+http.listen(app.get('port'), () => {
+  console.log(`Server on port ${app.get('port')}`.random);
 });
+
+// http.listen(app.get('port'), async () => {
+//   try {
+//     await ngrok.authtoken(process.env.TOKENNGROK);
+//     const url = await ngrok.forward(app.get('port'));
+
+//     console.log(`Server on port ${app.get('port')}`.random);
+//     console.log(url.url());
+//   }
+//   catch (error) {
+//     console.error('Error al iniciar el túnel Ngrok:', error);
+//   }
+// });
