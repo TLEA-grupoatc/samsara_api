@@ -195,7 +195,11 @@ module.exports = app => {
     }
 
     app.totalUnidades = (req, res) => {
-        unidad.count({})
+        unidad.count({
+            where: {
+                estado: 'A'
+            }
+        })
         .then(result => {
             res.json({
                 OK: true,
@@ -213,7 +217,8 @@ module.exports = app => {
     app.totalUnidadesGobernadas = (req, res) => {
         unidad.count({
             where: {
-                gobernada: 1
+                gobernada: 1,
+                estado: 'A'
             }
         })
         .then(result => {
@@ -234,7 +239,8 @@ module.exports = app => {
     app.totalUnidadesGobernadasCapana = (req, res) => {
         unidad.count({
             where: {
-                gobernada: 2
+                gobernada: 2,
+                estado: 'A'
             }
         })
         .then(result => {

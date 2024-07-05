@@ -112,6 +112,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        estado:{
+            type: DataType.STRING,
+            allowNull: true
+        },
     },
     {
         tableName: 'unidad',        

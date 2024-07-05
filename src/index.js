@@ -130,6 +130,12 @@ setInterval(() => {
 //   res.status(200).send('Ok');
 // });
 
+app.post('/webhookWhatsApp', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+  const payload = req.body;
+  console.log(payload);
+
+});
+
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
@@ -208,7 +214,9 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
     eventTime: formato,
     alertEventURL: payload.event.alertEventUrl,
     id_unidad: payload.event.device.id,
-    unidad: payload.event.device.name
+    unidad: payload.event.device.name,
+    fecha_cierre: null,
+    primer_interaccion: ''
   });
 
   await alerta.create(nuevaAlerta.dataValues, {
@@ -222,7 +230,9 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
       'eventTime', 
       'alertEventURL', 
       'id_unidad', 
-      'unidad'
+      'unidad',
+      'fecha_cierre',
+      'primer_interaccion'
     ]
   }).then(result => {}).catch(error => { console.log(error.message); });
 
