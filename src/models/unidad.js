@@ -80,6 +80,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        paromotor:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        fechaparomotor:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         staticAssignedDriver_id:{
             type: DataType.INTEGER,
             allowNull: true

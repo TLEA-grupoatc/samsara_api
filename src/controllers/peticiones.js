@@ -136,6 +136,8 @@ module.exports = app => {
             tag: body.tag,
             gobernada: body.gobernada,
             fechagobernada: body.fechagobernada,
+            paromotor: body.paromotor,
+            fechaparomotor: body.fechaparomotor,
             staticAssignedDriver_id: body.staticAssignedDriver_id,
             staticAssignedDriver_name: body.staticAssignedDriver_name,
             vin: body.vin,
@@ -170,6 +172,8 @@ module.exports = app => {
                 'tag', 
                 'gobernada', 
                 'fechagobernada', 
+                'paromotor', 
+                'fechaparomotor', 
                 'staticAssignedDriver_id', 
                 'staticAssignedDriver_name', 
                 'vin', 
@@ -364,7 +368,10 @@ module.exports = app => {
                 fechahorakm: {
                     [Op.between]: [req.params.fechainicio, req.params.fechafin],
                 }
-            }
+            },
+            order: [
+                ['fechahorakm', 'DESC']
+            ],
         }).then(result => {
             res.json({
                 OK: true,
