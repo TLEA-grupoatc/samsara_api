@@ -12,6 +12,8 @@ module.exports = app => {
 
     app.get('/totalUnidadesGobernadasCapana', Peticion.totalUnidadesGobernadasCapana);
 
+    app.get('/totalUnidadesConParoMotor', Peticion.totalUnidadesConParoMotor);
+
     app.get('/obtenerVehiculos', Peticion.obtenerVehiculos);
 
     app.put('/actualizarUnidad/:id_unidad', Peticion.actualizarUnidad);

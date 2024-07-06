@@ -259,7 +259,27 @@ module.exports = app => {
                 msg: err
             });
         });
+    }
 
+    app.totalUnidadesConParoMotor = (req, res) => {
+        unidad.count({
+            where: {
+                paromotor: 1,
+                estado: 'A'
+            }
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Total: result
+            });
+        })
+        .catch(err => {
+            res.json({
+                OK: false,
+                msg: err
+            });
+        });
     }
 
     app.obtenerSnapshot = (req, res) => {
