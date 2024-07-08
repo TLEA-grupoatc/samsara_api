@@ -5,10 +5,10 @@ const app = express();
 const consign = require('consign');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const ngrok = require("@ngrok/ngrok");
 const moment = require('moment');
-const dotenv = require('dotenv').config();
 const http = require('http').createServer(app);
+const ngrok = require("@ngrok/ngrok");
+const dotenv = require('dotenv').config();
 const socketIO = require('socket.io')(http, {
   cors: {
     origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online"],
@@ -233,13 +233,10 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
   res.status(200).send('Ok');
 });
 
-
-
 app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
   console.log(payload.data.conditions);
   console.log(payload.data.conditions[0]['details']);
-
 });
 
 
