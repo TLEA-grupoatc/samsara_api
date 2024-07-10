@@ -6,66 +6,82 @@ module.exports = app => {
     const Samsara = require("@api/samsara-dev-rel");
     Samsara.auth(process.env.KEYSAM);
 
-    const reporte = app.database.models.Reportes;
+    const reporteconvoy = app.database.models.ReportesConvoy;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
 
     app.obtenerSnapshotConvoy = (req, res) => {
-        var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
-        var paraValidadfecha = moment(new Date()).format('YYYY-MM-DD');
-        var fechahora = fecha + 'Z';
+        var unidades = req.body.unidades;
+        var convoy = req.body.convoy;
 
-        Samsara.getVehicleStats({
-            time: fechahora,    
-            tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
-            types: 'ecuSpeedMph,gps,obdOdometerMeters'
-        }).then(result => {
+        var registros = [];
+        var distancias = [];
+
+        Samsara.getVehicleStats({vehicleIds: unidades,types: 'gps'}).then(result => {
             result['data']['data'].forEach(async (element) => {
-                var validarfecha = element['ecuSpeedMph'].time.split('T')[0];
-                var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
 
-                var miakmparavalidad = miakm.toFixed();
-
-                if(paraValidadfecha == validarfecha && miakmparavalidad >= 8) {
-                    let nuevoReporte = new reporte({
+                    let nuevoReporte = ({
                         id_unidad: element.id,
                         unidad: element.name,
-                        fechahorakm: element['ecuSpeedMph'].time,
-                        km: miakm.toFixed(),
-                        fechahoragps: element['gps'].time,
                         latitud: element['gps'].latitude,
                         longitud: element['gps'].longitude,
-                        location: element['gps'].reverseGeo.formattedLocation,
-                        fechaodo: element['obdOdometerMeters'].time,
-                        odometer: element['obdOdometerMeters'].value
+                        location: element['gps'].reverseGeo.formattedLocation
                     });
+
+                    registros.push(nuevoReporte);
+
+                    // console.log(registros);
+
+
     
-                    await reporte.create(nuevoReporte.dataValues, {
-                        fields: [
-                            'id_unidad',
-                            'unidad',
-                            'fechahorakm',
-                            'km',
-                            'fechahoragps',
-                            'latitud',
-                            'longitud',
-                            'location',
-                            'fechaodo',
-                            'odometer'
-                        ]
-                    })
-                    .then(result => {})
-                    .catch(error => {
-                        console.log(error.message);
-                    });
-                }
+                    // await reporteconvoy.create(nuevoReporte.dataValues, {
+                    //     fields: [
+                    //         'id_unidad',
+                    //         'unidad',
+                    //         'fechahorakm',
+                    //         'km',
+                    //         'fechahoragps',
+                    //         'latitud',
+                    //         'longitud',
+                    //         'location',
+                    //         'fechaodo',
+                    //         'odometer'
+                    //     ]
+                    // })
+                    // .then(result => {})
+                    // .catch(error => {
+                    //     console.log(error.message);
+                    // });
+                
             });
+
+            var ordenadocoor = registros.sort(compare);
+
+            for(let i = 0; i < ordenadocoor.length; i++) {
+                if(i + 1 < ordenadocoor.length) {
+                    let distances = ({
+                        unidades: ordenadocoor[i].unidad + ' - ' + ordenadocoor[i + 1].unidad,
+                        distancia: saberdistancia(ordenadocoor[i].latitud, ordenadocoor[i].longitud, ordenadocoor[i + 1].latitud, ordenadocoor[i + 1].longitud)
+                    });
+
+                    distancias.push(distances);
+                } 
+                else {
+                    let distances = ({
+                        unidades: ordenadocoor[i].unidad + ' - ' + ordenadocoor[0].unidad,
+                        distancia: saberdistancia(ordenadocoor[i].latitud, ordenadocoor[i].longitud, ordenadocoor[0].latitud, ordenadocoor[0].longitud)
+                    });
+
+                    distancias.push(distances);
+                }
+            }
 
             res.json({
                 OK: true,
-                fechayhora: fechahora,
+                Convoy: convoy,
+                ReporteConvoy: distancias
             });
         })
         .catch(error => {
@@ -73,6 +89,31 @@ module.exports = app => {
                 msg: error.message
             });
         });
+    }
+
+    //crear modelo aqui de conboy y unidades convoys
+    
+    saberdistancia = (lat1, lon1, lat2, lon2) => {
+        const toRad = angle => (angle * Math.PI) / 180;
+        
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const calculo = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+        const resultado = 2 * Math.atan2(Math.sqrt(calculo), Math.sqrt(1 - calculo)); 
+        const distanciakm = 6371 * resultado;
+        
+        return distanciakm.toFixed(2);
+    }
+
+    compare = (a, b ) => {
+        if( b.latitud < a.latitud ){
+          return -1;
+        }
+        if( b.latitud > a.latitud ){
+          return 1;
+        }
+
+        return 0;
     }
 
     return app;
