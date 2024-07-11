@@ -9,24 +9,24 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
-        comienza:{
+        id_unidad:{
             type: DataType.STRING,
             allowNull: true
         },
-        termina:{
+        unidad:{
             type: DataType.STRING,
             allowNull: true
         },
-        unidades:{
-            type: DataType.INTEGER,
+        fecha_entrada_a:{
+            type: DataType.DATE,
             allowNull: true
         },
-        registro:{
-            type: DataType.STRING,
+        fecha_salida_a:{
+            type: DataType.DATE,
             allowNull: true
         },
-        registrado_por:{
-            type: DataType.STRING,
+        fecha_llegada_b:{
+            type: DataType.DATE,
             allowNull: true
         },
         estado:{

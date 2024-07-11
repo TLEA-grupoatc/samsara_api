@@ -138,6 +138,8 @@ module.exports = app => {
             fechagobernada: body.fechagobernada,
             paromotor: body.paromotor,
             fechaparomotor: body.fechaparomotor,
+            instaladoen: body.instaladoen,
+            fechacompromisopm: body.fechacompromisopm,
             staticAssignedDriver_id: body.staticAssignedDriver_id,
             staticAssignedDriver_name: body.staticAssignedDriver_name,
             vin: body.vin,
@@ -174,6 +176,8 @@ module.exports = app => {
                 'fechagobernada', 
                 'paromotor', 
                 'fechaparomotor', 
+                'instaladoen', 
+                'fechacompromisopm', 
                 'staticAssignedDriver_id', 
                 'staticAssignedDriver_name', 
                 'vin', 
@@ -687,6 +691,36 @@ module.exports = app => {
             res.status(412).json({
                 OK: false,
                 msg: err
+            });
+        });
+    }
+
+
+
+    app.obtenerGeocercas = (req, res) => {
+
+        var geocercas = [];
+
+        Samsara.listAddresses().then(result => {
+            result['data']['data'].forEach(async (element) => {
+
+                let geos = ({
+                    id_geo: element.id,
+                    geocerca: element.name,
+                    direccion: element.formattedAddress
+                });
+
+                geocercas.push(geos);
+            });
+
+            res.json({
+                OK: true,
+                Geocercas: geocercas,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
             });
         });
     }

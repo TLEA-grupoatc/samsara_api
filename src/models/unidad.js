@@ -88,6 +88,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        instaladoen:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        fechacompromisopm:{
+            type: DataType.DATE,
+            allowNull: true
+        },
         staticAssignedDriver_id:{
             type: DataType.INTEGER,
             allowNull: true

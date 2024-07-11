@@ -7,10 +7,44 @@ module.exports = app => {
     Samsara.auth(process.env.KEYSAM);
 
     const reporteconvoy = app.database.models.ReportesConvoy;
+    const convoy = app.database.models.Convoys;
+    const unidadesConvoy = app.database.models.UnidadesConvoy;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
+
+    app.obtenerConvoys = (req, res) => {
+        convoy.findAll({}).then(result => {
+            res.json({
+                OK: true,
+                Convoys: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerUnidadesConvoy = (req, res) => {
+        unidadesConvoy.findAll({
+            where: {
+                id_convoy: req.params.id_convoy
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                UnidadesConvoy: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
     app.obtenerSnapshotConvoy = (req, res) => {
         var unidades = req.body.unidades;
@@ -21,40 +55,15 @@ module.exports = app => {
 
         Samsara.getVehicleStats({vehicleIds: unidades,types: 'gps'}).then(result => {
             result['data']['data'].forEach(async (element) => {
+                let nuevoReporte = ({
+                    id_unidad: element.id,
+                    unidad: element.name,
+                    latitud: element['gps'].latitude,
+                    longitud: element['gps'].longitude,
+                    location: element['gps'].reverseGeo.formattedLocation
+                });
 
-                    let nuevoReporte = ({
-                        id_unidad: element.id,
-                        unidad: element.name,
-                        latitud: element['gps'].latitude,
-                        longitud: element['gps'].longitude,
-                        location: element['gps'].reverseGeo.formattedLocation
-                    });
-
-                    registros.push(nuevoReporte);
-
-                    // console.log(registros);
-
-
-    
-                    // await reporteconvoy.create(nuevoReporte.dataValues, {
-                    //     fields: [
-                    //         'id_unidad',
-                    //         'unidad',
-                    //         'fechahorakm',
-                    //         'km',
-                    //         'fechahoragps',
-                    //         'latitud',
-                    //         'longitud',
-                    //         'location',
-                    //         'fechaodo',
-                    //         'odometer'
-                    //     ]
-                    // })
-                    // .then(result => {})
-                    // .catch(error => {
-                    //     console.log(error.message);
-                    // });
-                
+                registros.push(nuevoReporte);
             });
 
             var ordenadocoor = registros.sort(compare);
@@ -91,8 +100,6 @@ module.exports = app => {
         });
     }
 
-    //crear modelo aqui de conboy y unidades convoys
-    
     saberdistancia = (lat1, lon1, lat2, lon2) => {
         const toRad = angle => (angle * Math.PI) / 180;
         

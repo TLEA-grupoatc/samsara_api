@@ -4,6 +4,9 @@ module.exports = app => {
     const { verificarToken } = app.middlewares.auth;
     const Convoys = app.controllers.convoy;
     
-    app.post('/obtenerSnapshotConvoy', Convoys.obtenerSnapshotConvoy);
+    app.get('/obtenerConvoys', Convoys.obtenerConvoys);
 
+    app.get('/obtenerUnidadesConvoy/:id_convoy', Convoys.obtenerUnidadesConvoy);
+    
+    app.post('/obtenerSnapshotConvoy', Convoys.obtenerSnapshotConvoy);
 }

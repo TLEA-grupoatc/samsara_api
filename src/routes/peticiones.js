@@ -50,4 +50,7 @@ module.exports = app => {
     app.get('/obtenerSeguimientoUsuario/:fechainicio/:fechafin/:usuario', Peticion.obtenerSeguimientoUsuario);
 
     app.put('/primeraInteraccionSeguimiento/:id_seguimiento', Peticion.primeraInteraccionSeguimiento);
+
+
+    app.get('/obtenerGeocercas', Peticion.obtenerGeocercas);
 }
