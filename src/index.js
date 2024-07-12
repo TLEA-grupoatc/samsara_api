@@ -41,7 +41,7 @@ setInterval(() => {
       })
   };
 
-  // app.obtenerSnapshot(req, res);
+  app.obtenerSnapshot(req, res);
 }, 60000); 
 
 // app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
@@ -256,19 +256,19 @@ app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (re
 
 
 
-// http.listen(app.get('port'), () => {
-//   console.log(`Server on port ${app.get('port')}`.random);
-// });
-
-http.listen(app.get('port'), async () => {
-  try {
-    await ngrok.authtoken(process.env.TOKENNGROK);
-    const url = await ngrok.forward(app.get('port'));
-
-    console.log(`Server on port ${app.get('port')}`.random);
-    console.log(url.url());
-  }
-  catch (error) {
-    console.error('Error al iniciar el túnel Ngrok:', error);
-  }
+http.listen(app.get('port'), () => {
+  console.log(`Server on port ${app.get('port')}`.random);
 });
+
+// http.listen(app.get('port'), async () => {
+//   try {
+//     await ngrok.authtoken(process.env.TOKENNGROK);
+//     const url = await ngrok.forward(app.get('port'));
+
+//     console.log(`Server on port ${app.get('port')}`.random);
+//     console.log(url.url());
+//   }
+//   catch (error) {
+//     console.error('Error al iniciar el túnel Ngrok:', error);
+//   }
+// });
