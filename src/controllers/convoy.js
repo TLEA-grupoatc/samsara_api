@@ -15,7 +15,11 @@ module.exports = app => {
     const Op = Sequelize.Op;
 
     app.obtenerConvoys = (req, res) => {
-        convoy.findAll({}).then(result => {
+        convoy.findAll({
+            order: [
+                ['registro', 'DESC']
+            ],
+        }).then(result => {
             res.json({
                 OK: true,
                 Convoys: result
@@ -41,6 +45,76 @@ module.exports = app => {
         })
         .catch(error => {
             res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearConvoys = (req, res) => {
+        let body = req.body;
+        let lista = req.body.listaunidades;
+
+        let nuevoRegistro = new convoy({
+            nombre: body.nombre, 
+            caseta: body.caseta, 
+            cliente: body.cliente, 
+            fecha: body.fecha,
+            horario: body.horario,
+            unidades: body.unidades,
+            registro: body.registro, 
+            registrado_por: body.registrado_por, 
+            estado: body.estado
+        });
+
+        convoy.create(nuevoRegistro.dataValues, {
+            fields: [
+                'nombre', 
+                'caseta', 
+                'cliente', 
+                'fecha', 
+                'horario', 
+                'unidades', 
+                'registro', 
+                'registrado_por', 
+                'estado'
+            ]
+        })
+        .then(async result => {
+            console.log(result);
+
+            for(var i = 0; i < lista.length; i ++) {
+                let nuevoRegistro = new unidadesConvoy({
+                    id_convoy: result.id_convoy, 
+                    id_unidad: lista[i].split(' ')[0], 
+                    unidad: lista[i].split(' ')[1], 
+                    fecha_entrada_a: null,
+                    fecha_salida_a: null, 
+                    fecha_llegada_b: null, 
+                    estado: 'A'
+                  });
+                
+                  await unidadesConvoy.create(nuevoRegistro.dataValues, {
+                    fields: [
+                        'id_convoy', 
+                        'id_unidad', 
+                        'unidad', 
+                        'fecha_entrada_a', 
+                        'fecha_salida_a', 
+                        'fecha_llegada_b', 
+                        'estado'
+                    ]
+                  }).then(result => {}).catch(error => { console.log(error.message); });
+            }
+
+
+            res.json({
+                OK: true,
+                Convoy: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
                 msg: error.message
             });
         });

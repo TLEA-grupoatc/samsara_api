@@ -9,11 +9,19 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
-        comienza:{
+        caseta:{
             type: DataType.STRING,
             allowNull: true
         },
-        termina:{
+        cliente:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        fecha:{
+            type: DataType.DATE,
+            allowNull: true
+        },
+        horario:{
             type: DataType.STRING,
             allowNull: true
         },

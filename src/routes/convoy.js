@@ -8,5 +8,7 @@ module.exports = app => {
 
     app.get('/obtenerUnidadesConvoy/:id_convoy', Convoys.obtenerUnidadesConvoy);
     
+    app.post('/crearConvoys', Convoys.crearConvoys);
+
     app.post('/obtenerSnapshotConvoy', Convoys.obtenerSnapshotConvoy);
 }
