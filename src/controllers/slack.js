@@ -47,16 +47,8 @@ module.exports = app => {
     const channelName = channelInfo.channel.name;
   
     console.log(`Nuevo mensaje en #${channelName}: ${event.text}`);
+    console.log(`Nuevo mensaje en #${channelName}: ${event}`);
   });
 
-  // (async () => {
-  //   try {
-  //     await rtm.start();
-  //     console.log('Conectado a Slack');
-  //   } catch (error) {
-  //     console.error('Error al conectar a Slack:', error);
-  //   }
-  // })();
-  
   return app;
 }

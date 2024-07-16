@@ -158,7 +158,6 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
     eventoformat2.trim()
   }
 
-  console.log(payload);
   
   switch(eventoformat2) {
     case 'Alto omitido': eventoCase = 'Alto omitido'; break;
@@ -239,7 +238,7 @@ app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (re
   console.log(payload.data.conditions[0]['details']);
 });
 
-app.post('/slack/events', (req, res) => {
+app.post('/slack/events',  async (req, res) => {
   const { type, challenge, event } = req.body;
 
   if(type === 'url_verification') {
@@ -247,9 +246,52 @@ app.post('/slack/events', (req, res) => {
     return;
   }
 
-  if(type === 'event_callback' && event && event.type === 'message') {
-    console.log(`Nuevo mensaje: ${event.text}`);
-  }
+  var payload = event;
+  const timestamp = payload.event_ts;
+  const date = new Date(timestamp * 1000);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+  var nombreunidadesp = payload.attachments[0]['title'].split(' se ha detenido dentro')[0];
+  var nombreunidad = nombreunidadesp.split(' has stopped inside')[0];
+
+  let nuevaAlerta = new alerta({
+    eventId: payload.bot_id,
+    eventType: 'Alert',
+    alertConditionId: 'DeviceLocationStopGeofence',
+    webhookId: 'SlackWebhook',
+    event: 'Parada no Autorizada',
+    eventDescription: payload.attachments[0]['title'],
+    eventTime: formattedDate,
+    alertEventURL: payload.attachments[0]['title_link'],
+    id_unidad: nombreunidad.trim(),
+    unidad: nombreunidad.trim(),
+    fecha_cierre: null,
+    primer_interaccion: ''
+  });
+
+  await alerta.create(nuevaAlerta.dataValues, {
+    fields: [
+      'eventId', 
+      'eventType',
+      'alertConditionId',
+      'webhookId',
+      'event', 
+      'eventDescription', 
+      'eventTime', 
+      'alertEventURL', 
+      'id_unidad', 
+      'unidad',
+      'fecha_cierre',
+      'primer_interaccion'
+    ]
+  }).then(result => {}).catch(error => { console.log(error.message); });
 
   res.status(200).send('OK');
 });

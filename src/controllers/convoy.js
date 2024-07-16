@@ -35,7 +35,8 @@ module.exports = app => {
     app.obtenerUnidadesConvoy = (req, res) => {
         unidadesConvoy.findAll({
             where: {
-                id_convoy: req.params.id_convoy
+                id_convoy: req.params.id_convoy,
+                estado: 'A'
             }
         }).then(result => {
             res.json({
@@ -80,13 +81,12 @@ module.exports = app => {
             ]
         })
         .then(async result => {
-            console.log(result);
-
-            for(var i = 0; i < lista.length; i ++) {
+            lista.forEach(async re => {
                 let nuevoRegistro = new unidadesConvoy({
                     id_convoy: result.id_convoy, 
-                    id_unidad: lista[i].split(' ')[0], 
-                    unidad: lista[i].split(' ')[1], 
+                    id_unidad: re.id_unidad, 
+                    unidad: re.unidad,
+                    operador: re.operador,
                     fecha_entrada_a: null,
                     fecha_salida_a: null, 
                     fecha_llegada_b: null, 
@@ -97,15 +97,15 @@ module.exports = app => {
                     fields: [
                         'id_convoy', 
                         'id_unidad', 
-                        'unidad', 
+                        'unidad',
+                        'operador',
                         'fecha_entrada_a', 
                         'fecha_salida_a', 
                         'fecha_llegada_b', 
                         'estado'
                     ]
                   }).then(result => {}).catch(error => { console.log(error.message); });
-            }
-
+            });
 
             res.json({
                 OK: true,
@@ -116,6 +116,90 @@ module.exports = app => {
             res.status(412).json({
                 OK: false,
                 msg: error.message
+            });
+        });
+    }
+
+    app.actualizarConvoy = (req, res) => {
+        let body = req.body;
+
+        let actualizarRegistro = new convoy({
+            nombre: body.nombre, 
+            caseta: body.caseta, 
+            cliente: body.cliente, 
+            fecha: body.fecha,
+            horario: body.horario,
+            unidades: body.unidades,
+            registro: body.registro, 
+            registrado_por: body.registrado_por, 
+            estado: body.estado
+        });
+
+        convoy.update(actualizarRegistro.dataValues, {
+            where: {
+                id_convoy: req.params.id_convoy
+            },
+            fields: [
+                'nombre', 
+                'caseta', 
+                'cliente', 
+                'fecha', 
+                'horario', 
+                'unidades', 
+                'registro', 
+                'registrado_por', 
+                'estado'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.actualizarUnidadConvoy = (req, res) => {
+        let body = req.body;
+
+        let actualizarRegistro = new unidadesConvoy({
+            id_convoy: body.id_convoy, 
+            id_unidad: body.id_unidad, 
+            unidad: body.unidad, 
+            operador: body.operador, 
+            fecha_entrada_a: body.fecha_entrada_a, 
+            fecha_salida_a: body.fecha_salida_a, 
+            fecha_llegada_b: body.fecha_llegada_b, 
+            estado: body.estado
+        });
+
+        unidadesConvoy.update(actualizarRegistro.dataValues, {
+            where: {
+                id_unidadconvoy: req.params.id_unidadconvoy
+            },
+            fields: [
+                'id_convoy', 
+                'id_unidad', 
+                'unidad', 
+                'operador', 
+                'fecha_entrada_a', 
+                'fecha_salida_a', 
+                'fecha_llegada_b', 
+                'estado'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
             });
         });
     }

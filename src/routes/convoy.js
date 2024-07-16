@@ -10,5 +10,9 @@ module.exports = app => {
     
     app.post('/crearConvoys', Convoys.crearConvoys);
 
+    app.put('/actualizarConvoy/:id_convoy', Convoys.actualizarConvoy);
+
+    app.put('/actualizarUnidadConvoy/:id_unidadconvoy', Convoys.actualizarUnidadConvoy);
+
     app.post('/obtenerSnapshotConvoy', Convoys.obtenerSnapshotConvoy);
 }
