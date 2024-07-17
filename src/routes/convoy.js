@@ -14,6 +14,8 @@ module.exports = app => {
     
     app.delete('/eliminarConvoy/:id_convoy', Convoys.eliminarConvoy);
 
+    app.post('/agregarUnidadConvoy', Convoys.agregarUnidadConvoy);
+
     app.put('/actualizarUnidadConvoy/:id_unidadconvoy', Convoys.actualizarUnidadConvoy);
 
     app.delete('/eliminarUnidadConvoy/:id_unidadconvoy', Convoys.eliminarUnidadConvoy);

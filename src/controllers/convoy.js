@@ -189,6 +189,48 @@ module.exports = app => {
         });
     }
 
+    app.agregarUnidadConvoy = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new unidadesConvoy({
+            id_convoy: body.id_convoy, 
+            id_unidad: body.id_unidad, 
+            unidad: body.unidad,
+            operador: body.operador,
+            cliente: body.cliente,
+            fecha_entrada_a: body.fecha_entrada_a,
+            fecha_salida_a: body.fecha_salida_a, 
+            fecha_llegada_b: body.fecha_llegada_b, 
+            estado: body.estado
+          });
+
+          unidadesConvoy.create(nuevoRegistro.dataValues, {
+            fields: [
+                'id_convoy', 
+                'id_unidad', 
+                'unidad',
+                'operador',
+                'cliente',
+                'fecha_entrada_a', 
+                'fecha_salida_a', 
+                'fecha_llegada_b', 
+                'estado'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                UnidadConvoy: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
     app.actualizarUnidadConvoy = (req, res) => {
         let body = req.body;
 

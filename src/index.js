@@ -41,7 +41,7 @@ setInterval(() => {
       })
   };
 
-  // app.obtenerSnapshot(req, res);
+  app.obtenerSnapshot(req, res);
 }, 60000); 
 
 // app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
@@ -234,7 +234,7 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
 
 app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
-  console.log(payload.data.conditions);
+  console.log(payload);
   console.log(payload.data.conditions[0]['details']);
 });
 
