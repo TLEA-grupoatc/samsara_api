@@ -11,8 +11,12 @@ module.exports = app => {
     app.post('/crearConvoys', Convoys.crearConvoys);
 
     app.put('/actualizarConvoy/:id_convoy', Convoys.actualizarConvoy);
+    
+    app.delete('/eliminarConvoy/:id_convoy', Convoys.eliminarConvoy);
 
     app.put('/actualizarUnidadConvoy/:id_unidadconvoy', Convoys.actualizarUnidadConvoy);
+
+    app.delete('/eliminarUnidadConvoy/:id_unidadconvoy', Convoys.eliminarUnidadConvoy);
 
     app.post('/obtenerSnapshotConvoy', Convoys.obtenerSnapshotConvoy);
 }

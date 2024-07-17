@@ -16,6 +16,9 @@ module.exports = app => {
 
     app.obtenerConvoys = (req, res) => {
         convoy.findAll({
+            where: {
+                estado: 'A'
+            },
             order: [
                 ['registro', 'DESC']
             ],
@@ -57,8 +60,7 @@ module.exports = app => {
 
         let nuevoRegistro = new convoy({
             nombre: body.nombre, 
-            caseta: body.caseta, 
-            cliente: body.cliente, 
+            caseta: body.caseta,
             fecha: body.fecha,
             horario: body.horario,
             unidades: body.unidades,
@@ -70,8 +72,7 @@ module.exports = app => {
         convoy.create(nuevoRegistro.dataValues, {
             fields: [
                 'nombre', 
-                'caseta', 
-                'cliente', 
+                'caseta',
                 'fecha', 
                 'horario', 
                 'unidades', 
@@ -87,6 +88,7 @@ module.exports = app => {
                     id_unidad: re.id_unidad, 
                     unidad: re.unidad,
                     operador: re.operador,
+                    cliente: re.cliente,
                     fecha_entrada_a: null,
                     fecha_salida_a: null, 
                     fecha_llegada_b: null, 
@@ -99,6 +101,7 @@ module.exports = app => {
                         'id_unidad', 
                         'unidad',
                         'operador',
+                        'cliente',
                         'fecha_entrada_a', 
                         'fecha_salida_a', 
                         'fecha_llegada_b', 
@@ -125,8 +128,7 @@ module.exports = app => {
 
         let actualizarRegistro = new convoy({
             nombre: body.nombre, 
-            caseta: body.caseta, 
-            cliente: body.cliente, 
+            caseta: body.caseta,
             fecha: body.fecha,
             horario: body.horario,
             unidades: body.unidades,
@@ -142,7 +144,6 @@ module.exports = app => {
             fields: [
                 'nombre', 
                 'caseta', 
-                'cliente', 
                 'fecha', 
                 'horario', 
                 'unidades', 
@@ -163,6 +164,31 @@ module.exports = app => {
         });
     }
 
+    app.eliminarConvoy = (req, res) => {
+        let id = req.params.id_convoy;
+
+        let deconvoy = new convoy({
+            estado: 'I'
+        });
+
+        convoy.update(deconvoy.dataValues, {
+            where: {
+                id_convoy: id
+            },
+            fields: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
     app.actualizarUnidadConvoy = (req, res) => {
         let body = req.body;
 
@@ -170,7 +196,8 @@ module.exports = app => {
             id_convoy: body.id_convoy, 
             id_unidad: body.id_unidad, 
             unidad: body.unidad, 
-            operador: body.operador, 
+            operador: body.operador,
+            cliente: body.cliente,
             fecha_entrada_a: body.fecha_entrada_a, 
             fecha_salida_a: body.fecha_salida_a, 
             fecha_llegada_b: body.fecha_llegada_b, 
@@ -186,12 +213,38 @@ module.exports = app => {
                 'id_unidad', 
                 'unidad', 
                 'operador', 
+                'cliente', 
                 'fecha_entrada_a', 
                 'fecha_salida_a', 
                 'fecha_llegada_b', 
                 'estado'
             ]
         }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.eliminarUnidadConvoy = (req, res) => {
+        let id = req.params.id_unidadconvoy;
+
+        let deleteunidad = new unidadesConvoy({
+            estado: 'I'
+        });
+
+        unidadesConvoy.update(deleteunidad.dataValues, {
+            where: {
+                id_unidadconvoy: id
+            },
+            fields: ['estado']
+        }).then(result => {
             res.json({
                 OK: true,
                 rows_affected: result[0]

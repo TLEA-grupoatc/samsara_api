@@ -21,6 +21,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        cliente:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         fecha_entrada_a:{
             type: DataType.DATE,
             allowNull: true

@@ -3,4 +3,6 @@ module.exports = app => {
     const Send = app.controllers.send_msg;
     
     app.post('/send_message', Send.send_message);
+
+    app.post('/sendConvoy', Send.sendConvoy);
 }

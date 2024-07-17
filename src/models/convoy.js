@@ -13,10 +13,6 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
-        cliente:{
-            type: DataType.STRING,
-            allowNull: true
-        },
         fecha:{
             type: DataType.DATE,
             allowNull: true

@@ -2,6 +2,7 @@ const dotenv = require('dotenv').config();
 const moment = require('moment');
 const _ = require('lodash');
 const axios = require('axios');
+const FormData = require('form-data');
 
 module.exports = app => {
 
@@ -51,6 +52,61 @@ module.exports = app => {
         res.status(500).json({ error: 'Error sending message' });
       }
   }
+
+  app.sendConvoy = async (req, res) => {
+    let body = req.body;
+
+    const imageBuffer = Buffer.from(body.imageBase64, 'base64');
+
+    const formData = new FormData();
+    formData.append('file', imageBuffer, { filename: 'image.png', contentType: 'image/png' });
+    formData.append('messaging_product', 'whatsapp');
+    formData.append('type', 'image/png');
+    var mediaId;
+
+    await axios.post(process.env.URLIDM, formData, {
+      headers: {
+        Authorization: `Bearer ${process.env.TOKENWP}`,
+        ...formData.getHeaders()
+      }
+    })
+    .then(response => {
+      mediaId = response.data.id;
+    })
+    .catch(error => {
+      console.error('Error al subir la imagen:');
+    });
+
+    var numeros = ['528135520947', '528117658634'];
+    
+      try {
+        for(var i = 0; i < numeros.length; i++) {
+          console.log(numeros[i]);
+          const data = {
+            messaging_product: 'whatsapp',
+            to: numeros[i],
+            type: 'image',
+            image: {
+              id: mediaId
+            }
+          }
+        
+          const response = await axios.post(process.env.URLID, data,{
+            headers: {
+              Authorization: `Bearer ${process.env.TOKENWP}`,
+              'Content-Type': 'application/json',
+            },
+          });
+    
+        }
+
+        res.status(200).json(response.data);
+      } 
+      catch (error) {
+        res.status(500).json({ success: false, error: error.response ? error.response.data : error.message });
+        console.log('Error al enviar: ');
+      }
+  };
   
   return app;
 }
