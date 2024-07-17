@@ -725,5 +725,34 @@ module.exports = app => {
         });
     }
 
+
+
+
+    app.obtenerReporteParoMotor = (req, res) => {
+        unidad.findAll({
+            attributes: [
+                'tag',
+                [unidad.sequelize.fn('COUNT', unidad.sequelize.col('paromotor')), 'total'],
+            ],
+            where: {
+                paromotor: 1
+            },
+            group: ['tag'],
+            order: [
+                ['tag', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Reporte: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     return app;
 }

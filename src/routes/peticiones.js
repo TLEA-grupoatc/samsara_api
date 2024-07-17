@@ -53,4 +53,6 @@ module.exports = app => {
 
 
     app.get('/obtenerGeocercas', Peticion.obtenerGeocercas);
+
+    app.get('/obtenerReporteParoMotor', Peticion.obtenerReporteParoMotor);
 }
