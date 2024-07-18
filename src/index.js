@@ -238,6 +238,11 @@ app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (re
   console.log(payload.data.conditions[0]['details']);
 });
 
+app.post('/webhookPuerta', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+  const payload = req.body;
+  console.log(payload);
+});
+
 app.post('/slack/events',  async (req, res) => {
   const { type, challenge, event } = req.body;
 

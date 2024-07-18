@@ -52,6 +52,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.DATE,
             allowNull: true
         },
+        fecha_cierre:{
+            type: DataType.DATE,
+            allowNull: true
+        },
         primer_interaccion:{
             type: DataType.STRING,
             allowNull: true

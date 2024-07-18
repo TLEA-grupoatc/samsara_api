@@ -44,6 +44,8 @@ module.exports = app => {
 
     app.put('/primeraInteraccion/:id_alerta', Peticion.primeraInteraccion);
 
+    app.put('/cierreDeAlertas/:id_alerta', Peticion.cierreDeAlertas);
+
     app.post('/crearSeguimiento', Peticion.crearSeguimiento);
 
 

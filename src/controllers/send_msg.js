@@ -103,7 +103,7 @@ module.exports = app => {
         res.status(200).json(response.data);
       } 
       catch (error) {
-        res.status(500).json({ success: false, error: error.response ? error.response.data : error.message });
+        res.status(412).json({ success: false, error: error.response ? error.response.data : error.message });
         console.log('Error al enviar: ');
       }
   };

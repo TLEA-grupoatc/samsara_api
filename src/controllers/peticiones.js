@@ -593,6 +593,37 @@ module.exports = app => {
         });
     }
 
+    app.cierreDeAlertas = (req, res) => {
+        let body = req.body;
+
+        let asignacion = new alerta({
+            estado: body.estado,
+            fecha_cierre: body.fecha_cierre,
+        });
+
+        alerta.update(asignacion.dataValues, {
+            where: {
+                id_alerta: req.params.id_alerta
+            },
+            individualHooks: true, 
+            fields: [
+                'estado',
+                'fecha_cierre'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
     app.crearSeguimiento = (req, res) => {
         let body = req.body;
         const date = new Date(body.fechahora);
