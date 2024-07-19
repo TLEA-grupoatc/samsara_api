@@ -39,6 +39,10 @@ module.exports = app => {
                     tag: element['tags'][0]['name'],
                     gobernada: 0,
                     fechagobernada: null,
+                    paromotor: 0,
+                    fechaparomotor: null,
+                    instaladoen: '',
+                    fechacompromisopm: null,
                     staticAssignedDriver_id: null,
                     staticAssignedDriver_name: null,
                     vin: element.vin,
@@ -47,49 +51,13 @@ module.exports = app => {
                     createdAtTime: element.createdAtTime,
                     updatedAtTime: element.updatedAtTime,
                     esn: element.esn,
+                    estado: 'A'
                 });
-
-                await unidad.create(nuevaUnidad.dataValues, {
-                    fields: [
-                        'id_unidad',
-                        'auxInputType1',
-                        'auxInputType2',
-                        'auxInputType3',
-                        'cameraSerial',
-                        'samsara_serial',
-                        'samsara_vin',
-                        'gateway_serial',
-                        'gateway_model',
-                        'harshAccelerationSettingType',
-                        'licensePlate',
-                        'make',
-                        'model',
-                        'name',
-                        'notes',
-                        'serial',
-                        'tagid',
-                        'tag',
-                        'gobernada',
-                        'fechagobernada',
-                        'staticAssignedDriver_id',
-                        'staticAssignedDriver_name',
-                        'vin',
-                        'year',
-                        'vehicleRegulationMode',
-                        'createdAtTime',
-                        'updatedAtTime',
-                        'esn'
-                    ]
-                })
-                .then(result => {})
-                .catch(error => {
-                    console.log(error.message);
-                });
+                console.log(nuevaUnidad);
             });
 
             res.json({
                 OK: true,
-                Vehiculos: result['data']['data'],
             })
         })
         .catch(error => {
@@ -100,7 +68,11 @@ module.exports = app => {
     }
 
     app.obtenerVehiculos = (req, res) => {
-        unidad.findAll({}).then(result => {
+        unidad.findAll({
+            order: [
+                ['name', 'DESC']
+            ],
+        }).then(result => {
             res.json({
                 OK: true,
                 Unidades: result

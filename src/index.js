@@ -41,7 +41,7 @@ setInterval(() => {
       })
   };
 
-  app.obtenerSnapshot(req, res);
+  // app.obtenerSnapshot(req, res);
 }, 60000); 
 
 // app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
@@ -158,7 +158,6 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
     eventoformat2.trim()
   }
 
-  
   switch(eventoformat2) {
     case 'Alto omitido': eventoCase = 'Alto omitido'; break;
     case 'Rolling Stop': eventoCase = 'Alto omitido'; break;
@@ -238,9 +237,50 @@ app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (re
   console.log(payload.data.conditions[0]['details']);
 });
 
-app.post('/webhookPuerta', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
-  console.log(payload);
+
+  const date = payload.eventTime;
+  const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
+
+  let nuevaAlerta = new alerta({
+    eventId: payload.eventId,
+    eventType: payload.eventType,
+    alertConditionId: 'gatewayUnplugged',
+    webhookId: payload.webhookId,
+    event: 'GPS Desconectado',
+    eventDescription: 'Se ah Desconectado la Puerta de enlace',
+    eventTime: formato,
+    alertEventURL: payload.data.incidentUrl,
+    id_unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['id'],
+    unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['name'],
+    fecha_cierre: null,
+    primer_interaccion: ''
+  });
+
+  await alerta.create(nuevaAlerta.dataValues, {
+    fields: [
+      'eventId', 
+      'eventType',
+      'alertConditionId',
+      'webhookId',
+      'event', 
+      'eventDescription', 
+      'eventTime', 
+      'alertEventURL', 
+      'id_unidad', 
+      'unidad',
+      'fecha_cierre',
+      'primer_interaccion'
+    ]
+  }).then(result => {}).catch(error => { console.log(error.message); });
+});
+
+
+app.post('/webhookManipulacion', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+  const payload = req.body;
+  console.log(payload.data.conditions);
+  console.log(payload.data.conditions[0]);
 });
 
 app.post('/slack/events',  async (req, res) => {
@@ -316,19 +356,20 @@ app.post('/slack/events',  async (req, res) => {
 
 
 
-http.listen(app.get('port'), () => {
-  console.log(`Server on port ${app.get('port')}`.random);
-});
 
-// http.listen(app.get('port'), async () => {
-//   try {
-//     await ngrok.authtoken(process.env.TOKENNGROK);
-//     const url = await ngrok.forward(app.get('port'));
-
-//     console.log(`Server on port ${app.get('port')}`.random);
-//     console.log(url.url());
-//   }
-//   catch (error) {
-//     console.error('Error al iniciar el túnel Ngrok:', error);
-//   }
+// http.listen(app.get('port'), () => {
+//   console.log(`Server on port ${app.get('port')}`.random);
 // });
+
+http.listen(app.get('port'), async () => {
+  try {
+    await ngrok.authtoken(process.env.TOKENNGROK);
+    const url = await ngrok.forward(app.get('port'));
+
+    console.log(`Server on port ${app.get('port')}`.random);
+    console.log(url.url());
+  }
+  catch (error) {
+    console.error('Error al iniciar el túnel Ngrok:', error);
+  }
+});
