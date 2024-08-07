@@ -17,7 +17,10 @@ module.exports = app => {
     app.obtenerConvoys = (req, res) => {
         convoy.findAll({
             where: {
-                estado: 'A'
+                estado: 'A',
+                registro: {
+                    [Op.between]: [req.params.fecha + ' 00:00:00', req.params.fecha + ' 23:59:59']
+                }
             },
             order: [
                 ['registro', 'DESC']
