@@ -327,8 +327,8 @@ module.exports = app => {
                 'unidad',
                 [reporte.sequelize.fn('COUNT', reporte.sequelize.col('km')), 'min'],
                 [reporte.sequelize.fn('MAX', reporte.sequelize.col('km')), 'velocidad_maxima'],
-                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 8 AND 93 THEN 1 ELSE 0 END")), 'dentro'],
-                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 94 AND 250 THEN 1 ELSE 0 END")), 'fuera']
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 8 AND 100 THEN 1 ELSE 0 END")), 'dentro'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 101 AND 250 THEN 1 ELSE 0 END")), 'fuera']
             ],
             where: {
                 fechahorakm: {
