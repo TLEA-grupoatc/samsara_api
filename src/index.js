@@ -41,7 +41,7 @@ setInterval(() => {
       })
   };
 
-  app.obtenerSnapshot(req, res);
+  // app.obtenerSnapshot(req, res);
 }, 60000); 
 
 // app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
