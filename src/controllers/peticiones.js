@@ -819,18 +819,19 @@ module.exports = app => {
                 attributes: ['tag']
             },
             attributes: [
+                'id_alerta',
                 'event',
-                [alerta.sequelize.fn('COUNT', reporte.sequelize.col('event')), 'total'],
+                [alerta.sequelize.fn('COUNT', alerta.sequelize.col('event')), 'total'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado LIKE 'A%' THEN '' END")), 'activo'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado LIKE 'P%' THEN '' END")), 'proceso'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado LIKE 'T%' THEN '' END")), 'terminado'],
-                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('id_alerta')), 'namas'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado LIKE 'T%' THEN '' END")), 'terminado']
             ],
             where: {
                 eventTime: {
                     [Op.between]: [req.params.fechainicio, req.params.fechafin],
                 }
             },
+            require: false,
             group: ['Unidades.tag', 'event'],
             order: [
                 ['event', 'ASC']
