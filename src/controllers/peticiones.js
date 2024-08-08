@@ -703,7 +703,6 @@ module.exports = app => {
 
 
     app.obtenerGeocercas = (req, res) => {
-
         var geocercas = [];
 
         Samsara.listAddresses().then(result => {
@@ -804,6 +803,73 @@ module.exports = app => {
     }
 
 
+
+
+
+
+
+
+
+
+    app.obtenerReporteGeneral = (req, res) => {
+        alerta.findAll({
+            attributes: [
+                'event',
+                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('event')), 'total'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN estado LIKE 'A%' THEN '' END")), 'activo'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN estado LIKE 'P%' THEN '' END")), 'proceso'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN estado LIKE 'T%' THEN '' END")), 'terminado']
+            ],
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                }
+            },
+            group: ['event'],
+            order: [
+                ['event', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                ReporteAlertas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerReporteAlertas = (req, res) => {
+        alerta.findAll({
+            attributes: [
+                'event',
+                'estado',
+                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total']
+            ],
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                }
+            },
+            group: ['event', 'estado'],
+            order: [
+                ['event', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                ReporteAlertas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
     return app;

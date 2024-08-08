@@ -59,4 +59,10 @@ module.exports = app => {
     app.get('/obtenerReporteParoMotor', Peticion.obtenerReporteParoMotor);
 
     app.get('/obtenerGraficaGobernadas', Peticion.obtenerGraficaGobernadas);
+
+
+
+    app.get('/obtenerReporteAlertas/:fechainicio/:fechafin', Peticion.obtenerReporteAlertas);
+
+    app.get('/obtenerReporteGeneral/:fechainicio/:fechafin', Peticion.obtenerReporteGeneral);
 }
