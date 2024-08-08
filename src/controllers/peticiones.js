@@ -854,7 +854,10 @@ module.exports = app => {
             attributes: [
                 'event',
                 'estado',
-                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total']
+                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'A' THEN '' END")), 'activo'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'P' THEN '' END")), 'proceso'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'T' THEN '' END")), 'terminado']
             ],
             where: {
                 eventTime: {

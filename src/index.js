@@ -143,6 +143,7 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
   var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
   var eventoformat2 = eventoformat2.split(' event was')[0];
 
+
   if(payload.event.alertConditionId == 'DeviceLocationInsideGeofence') {
     validacionEvento = 'Parada no Autorizada';
   }
