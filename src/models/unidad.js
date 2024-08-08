@@ -138,5 +138,12 @@ module.exports = (sequelize, DataType) => {
         timestamps: false
     });
 
+    // Unidades.associate = (models) => {        
+    //     Unidades.belongsToMany(models.Alertas, {
+    //         foreignKey: 'id_unidad',
+    //         sourceKey: 'id_unidad'
+    //     });
+    // }
+
     return Unidades;
 }

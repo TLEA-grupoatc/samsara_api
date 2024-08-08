@@ -37,7 +37,7 @@ setInterval(() => {
   const res = {
       json: (data) => console.log(data),
       status: (statusCode) => ({
-          json: (data) => console.log(statusCode, data)
+        json: (data) => console.log(statusCode, data)
       })
   };
 
@@ -275,7 +275,6 @@ app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), asy
     ]
   }).then(result => {}).catch(error => { console.log(error.message); });
 });
-
 
 app.post('/webhookManipulacion', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;

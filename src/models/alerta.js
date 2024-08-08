@@ -70,5 +70,13 @@ module.exports = (sequelize, DataType) => {
         timestamps: false
     });
 
+
+    Alertas.associate = (models) => {        
+        Alertas.hasMany(models.Unidades, {
+            foreignKey: 'id_unidad',
+            sourceKey: 'id_unidad'
+        });
+    }
+
     return Alertas;
 }

@@ -813,22 +813,29 @@ module.exports = app => {
 
     app.obtenerReporteGeneral = (req, res) => {
         alerta.findAll({
+            include: {
+                model: unidad, 
+                as: 'Unidades',
+                attributes: ['tag']
+            },
             attributes: [
+                'Unidades.tag',
                 'event',
                 [reporte.sequelize.fn('COUNT', reporte.sequelize.col('event')), 'total'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN estado LIKE 'A%' THEN '' END")), 'activo'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN estado LIKE 'P%' THEN '' END")), 'proceso'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN estado LIKE 'T%' THEN '' END")), 'terminado']
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado LIKE 'A%' THEN '' END")), 'activo'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado LIKE 'P%' THEN '' END")), 'proceso'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado LIKE 'T%' THEN '' END")), 'terminado']
             ],
             where: {
                 eventTime: {
                     [Op.between]: [req.params.fechainicio, req.params.fechafin],
                 }
             },
-            group: ['event'],
+            group: ['Unidades.tag', 'event'],
             order: [
                 ['event', 'ASC']
             ],
+
         }).then(result => {
             res.json({
                 OK: true,
