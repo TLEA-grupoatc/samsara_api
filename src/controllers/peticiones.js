@@ -819,6 +819,8 @@ module.exports = app => {
                 attributes: ['tag']
             },
             attributes: [
+                'id_alerta',
+                'Unidades.id_unidad',
                 'Unidades.tag',
                 'event',
                 [reporte.sequelize.fn('COUNT', reporte.sequelize.col('event')), 'total'],
