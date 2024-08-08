@@ -819,7 +819,7 @@ module.exports = app => {
                 attributes: ['tag']
             },
             attributes: [
-                [alerta.sequelize.fn('SUM', alerta.sequelize.col('id_alerta')), 'namas'],
+                [alerta.sequelize.fn('COUNT', alerta.sequelize.col('id_alerta')), 'namas'], // Cambié de SUM a COUNT
                 'event',
                 [alerta.sequelize.fn('COUNT', alerta.sequelize.col('event')), 'total'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'A' THEN '' END")), 'activo'],
@@ -831,13 +831,12 @@ module.exports = app => {
                     [Op.between]: [req.params.fechainicio, req.params.fechafin],
                 }
             },
-            require: false,
             group: ['Unidades.tag', 'event'],
             order: [
                 ['event', 'ASC']
             ],
-
-        }).then(result => {
+        })
+        .then(result => {
             res.json({
                 OK: true,
                 ReporteAlertas: result
