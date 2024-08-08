@@ -833,7 +833,7 @@ module.exports = app => {
                     [Op.between]: [req.params.fechainicio, req.params.fechafin],
                 }
             },
-            group: ['Unidades.tag', 'event'],
+            group: ['Unidades.tag', 'event', 'id_alerta'],
             order: [
                 ['event', 'ASC']
             ],
