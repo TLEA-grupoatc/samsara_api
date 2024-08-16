@@ -93,7 +93,7 @@ module.exports = (sequelize, DataType) => {
             allowNull: true
         },
         fechacompromisopm:{
-            type: DataType.DATE,
+            type: DataType.STRING,
             allowNull: true
         },
         staticAssignedDriver_id:{
