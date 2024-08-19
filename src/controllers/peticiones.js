@@ -87,6 +87,27 @@ module.exports = app => {
         });
     }
 
+    app.obtenerVehiculosxTag = (req, res) => {
+        unidad.findAll({
+            where: {
+                tag: req.params.tag
+            },
+            order: [
+                ['name', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Unidades: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.actualizarUnidad = (req, res) => {
         let body = req.body;
 

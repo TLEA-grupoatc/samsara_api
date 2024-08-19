@@ -16,6 +16,8 @@ module.exports = app => {
 
     app.get('/obtenerVehiculos', Peticion.obtenerVehiculos);
 
+    app.get('/obtenerVehiculosxTag/:tag', Peticion.obtenerVehiculosxTag);
+
     app.put('/actualizarUnidad/:id_unidad', Peticion.actualizarUnidad);
 
     app.get('/obtenerSnapshot', Peticion.obtenerSnapshot);
