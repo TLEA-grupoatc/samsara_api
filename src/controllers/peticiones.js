@@ -514,6 +514,31 @@ module.exports = app => {
     }
 
     app.obtenerAlertas = (req, res) => {
+        var paralagrafica = [];
+        alerta.findAll({
+            attributes: ['event', [Sequelize.fn('COUNT', Sequelize.col('event')), 'total']],
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                }
+            },
+            group: ['event'],
+        }).then(result => {
+            paralagrafica = result;
+            // res.json({
+            //     OK: true,
+            //     Alertas: result
+            // })
+        })
+        .catch(error => {
+            console.log(error);
+            
+            // res.status(412).json({
+            //     msg: error.message
+            // });
+        });
+
+
         alerta.findAll({
             where: {
                 eventTime: {
@@ -526,7 +551,8 @@ module.exports = app => {
         }).then(result => {
             res.json({
                 OK: true,
-                Alertas: result
+                Alertas: result,
+                Grafica: paralagrafica
             })
         })
         .catch(error => {
@@ -901,6 +927,41 @@ module.exports = app => {
             });
         });
     }
+
+
+    app.obtenerCumplientoAlertas = (req, res) => {
+        alerta.findAll({
+            attributes: [
+                'event',
+                'primer_interaccion',
+                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total'],
+                'estado'
+            ],
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                }
+            },
+            group: ['event', 'estado', 'primer_interaccion'],
+            order: [
+                ['event', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                ReporteAlertas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
 
 
     return app;

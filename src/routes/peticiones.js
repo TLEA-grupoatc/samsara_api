@@ -64,7 +64,10 @@ module.exports = app => {
 
 
 
+    
+    app.get('/obtenerReporteGeneral/:fechainicio/:fechafin', Peticion.obtenerReporteGeneral);
+
     app.get('/obtenerReporteAlertas/:fechainicio/:fechafin', Peticion.obtenerReporteAlertas);
 
-    app.get('/obtenerReporteGeneral/:fechainicio/:fechafin', Peticion.obtenerReporteGeneral);
+    app.get('/obtenerCumplientoAlertas/:fechainicio/:fechafin', Peticion.obtenerCumplientoAlertas);
 }
