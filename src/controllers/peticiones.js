@@ -900,7 +900,6 @@ module.exports = app => {
         alerta.findAll({
             attributes: [
                 'event',
-                'estado',
                 [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'A' THEN '' END")), 'activo'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'P' THEN '' END")), 'proceso'],
@@ -911,7 +910,7 @@ module.exports = app => {
                     [Op.between]: [req.params.fechainicio, req.params.fechafin],
                 }
             },
-            group: ['event', 'estado'],
+            group: ['event'],
             order: [
                 ['event', 'ASC']
             ],
