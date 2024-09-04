@@ -1008,8 +1008,7 @@ module.exports = app => {
 
             res.json({
                 OK: true,
-                TiempoRespuesta: promedio,
-                TiempoRespu: result
+                TiempoRespuesta: promedio.toFixed(2)
             })
         })
         .catch(error => {
