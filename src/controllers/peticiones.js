@@ -1012,7 +1012,7 @@ module.exports = app => {
 
             res.json({
                 OK: true,
-                TiempoRespuesta: pro
+                TiempoRespuesta: [pro]
             })
         })
         .catch(error => {
