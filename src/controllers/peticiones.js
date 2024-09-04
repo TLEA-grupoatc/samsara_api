@@ -1006,9 +1006,13 @@ module.exports = app => {
 
             var promedio = totales / result.length;
 
+            let pro = ({
+                promedio: promedio.toFixed(2)
+            });
+
             res.json({
                 OK: true,
-                TiempoRespuesta: promedio.toFixed(2)
+                TiempoRespuesta: pro
             })
         })
         .catch(error => {
