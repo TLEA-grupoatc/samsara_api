@@ -963,5 +963,69 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerTiempoDeRespuesta = (req, res) => {
+        alerta.findAll({
+            attributes: [
+                'id_alerta',
+                'event',
+                [Sequelize.fn('TIMESTAMPDIFF', Sequelize.literal("MINUTE, eventTime, fecha_cierre")), 'minutos'],
+            ],
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                },
+                estado: 'T'
+            }
+        }).then(result => {
+            var min = []
+
+            result.forEach((re) => {
+                min.push(re.dataValues.minutos)
+            });
+
+            var totales = min.reduce((a, b) => a + b, 0);
+
+            var promedio = totales / result.length;
+
+            res.json({
+                OK: true,
+                TiempoRespuesta: promedio,
+                TiempoRespu: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
     return app;
 }

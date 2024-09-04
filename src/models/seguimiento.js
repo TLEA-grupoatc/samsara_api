@@ -50,7 +50,7 @@ module.exports = (sequelize, DataType) => {
             allowNull: true
         },
         fechahora_interaccion:{
-            type: DataType.DATE,
+            type: DataType.STRING,
             allowNull: true
         },
         fechahora:{

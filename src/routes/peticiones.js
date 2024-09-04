@@ -68,4 +68,9 @@ module.exports = app => {
     app.get('/obtenerReporteAlertas/:fechainicio/:fechafin', Peticion.obtenerReporteAlertas);
 
     app.get('/obtenerCumplientoAlertas/:fechainicio/:fechafin', Peticion.obtenerCumplientoAlertas);
+
+
+
+
+    app.get('/obtenerTiempoDeRespuesta/:fechainicio/:fechafin', Peticion.obtenerTiempoDeRespuesta);
 }
