@@ -60,6 +60,8 @@ module.exports = app => {
 
     app.get('/obtenerGraficaGobernadas', Peticion.obtenerGraficaGobernadas);
 
+    app.get('/obtenerGraficaUnidadesParoMotor', Peticion.obtenerGraficaUnidadesParoMotor);
+
 
 
     

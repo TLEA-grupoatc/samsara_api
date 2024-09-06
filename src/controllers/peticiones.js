@@ -831,7 +831,51 @@ module.exports = app => {
         groupedByType = resultadounidades.reduce((acc, registro) => {
             const fecha = parseISO(registro.fechagobernada + ' 00:00:00');
             const startOfCurrentWeek = startOfWeek(fecha, { weekStartsOn: 1 });
-            const weekNumber = 'S' + differenceInCalendarWeeks(startOfCurrentWeek, new Date(year, 0, 1), { weekStartsOn: 1 });
+            const weekNumber = differenceInCalendarWeeks(startOfCurrentWeek, new Date(year, 0, 1), { weekStartsOn: 1 });
+            
+            if(!acc[weekNumber]) {
+                acc[weekNumber] = [];
+            }
+
+            acc[weekNumber].push(registro);
+            
+            return acc;
+        }, {});
+
+
+        res.json({
+            OK: true,
+            Grafica: groupedByType
+        })
+    }
+
+
+    app.obtenerGraficaUnidadesParoMotor = async (req, res) => {
+        var today = new Date();
+        var year = today.getFullYear();
+        var resultadounidades  = [];
+        var groupedByType;
+
+        await unidad.findAll({
+            where: {
+                fechaparomotor: {
+                    [Op.startsWith]: year
+                }
+            },
+            order: [
+                ['name', 'DESC']
+            ],
+        }).then(result => {resultadounidades = result})
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+
+        groupedByType = resultadounidades.reduce((acc, registro) => {
+            const fecha = parseISO(registro.fechagobernada + ' 00:00:00');
+            const startOfCurrentWeek = startOfWeek(fecha, { weekStartsOn: 1 });
+            const weekNumber = differenceInCalendarWeeks(startOfCurrentWeek, new Date(year, 0, 1), { weekStartsOn: 1 });
             
             if(!acc[weekNumber]) {
                 acc[weekNumber] = [];
