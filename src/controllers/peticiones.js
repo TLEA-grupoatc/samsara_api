@@ -974,6 +974,36 @@ module.exports = app => {
         });
     }
 
+    app.obtenerCumplientoAlertas = (req, res) => {
+        alerta.findAll({
+            attributes: [
+                'event',
+                'primer_interaccion',
+                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total'],
+                'estado'
+            ],
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                }
+            },
+            group: ['event', 'estado', 'primer_interaccion'],
+            order: [
+                ['event', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                ReporteAlertas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.obtenerReporteAlertas = async (req, res) => {
         if(req.params.division == 'Todas') {
             alerta.findAll({
@@ -1042,77 +1072,89 @@ module.exports = app => {
     }
 
 
-    app.obtenerCumplientoAlertas = (req, res) => {
-        alerta.findAll({
-            attributes: [
-                'event',
-                'primer_interaccion',
-                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total'],
-                'estado'
-            ],
-            where: {
-                eventTime: {
-                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+    app.obtenerTiempoDeRespuesta = async (req, res) => {
+        if(req.params.division == 'Todas') {
+            alerta.findAll({
+                attributes: [
+                    'id_alerta',
+                    'event',
+                    [Sequelize.fn('TIMESTAMPDIFF', Sequelize.literal("MINUTE, eventTime, fecha_cierre")), 'minutos'],
+                ],
+                where: {
+                    eventTime: {
+                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    },
+                    estado: 'T'
                 }
-            },
-            group: ['event', 'estado', 'primer_interaccion'],
-            order: [
-                ['event', 'ASC']
-            ],
-        }).then(result => {
-            res.json({
-                OK: true,
-                ReporteAlertas: result
+            }).then(result => {
+                var min = []
+
+                result.forEach((re) => {
+                    min.push(re.dataValues.minutos)
+                });
+
+                var totales = min.reduce((a, b) => a + b, 0);
+
+                var promedio = totales / result.length;
+
+                let pro = ({
+                    promedio: promedio.toFixed(2)
+                });
+
+                res.json({
+                    OK: true,
+                    TiempoRespuesta: [pro]
+                })
             })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
             });
-        });
-    }
+        }
+        else {
+            var divi = await getUnidadesDivision(req.params.division);
+            alerta.findAll({
+                attributes: [
+                    'id_alerta',
+                    'event',
+                    [Sequelize.fn('TIMESTAMPDIFF', Sequelize.literal("MINUTE, eventTime, fecha_cierre")), 'minutos'],
+                ],
+                where: {
+                    id_unidad: {
+                        [Op.in]: divi
+                    },
+                    eventTime: {
+                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    },
+                    estado: 'T'
+                }
+            }).then(result => {
+                var min = []
 
+                result.forEach((re) => {
+                    min.push(re.dataValues.minutos)
+                });
 
+                var totales = min.reduce((a, b) => a + b, 0);
 
+                var promedio = totales / result.length;
 
-    app.obtenerTiempoDeRespuesta = (req, res) => {
-        alerta.findAll({
-            attributes: [
-                'id_alerta',
-                'event',
-                [Sequelize.fn('TIMESTAMPDIFF', Sequelize.literal("MINUTE, eventTime, fecha_cierre")), 'minutos'],
-            ],
-            where: {
-                eventTime: {
-                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
-                },
-                estado: 'T'
-            }
-        }).then(result => {
-            var min = []
+                let pro = ({
+                    promedio: promedio.toFixed(2)
+                });
 
-            result.forEach((re) => {
-                min.push(re.dataValues.minutos)
-            });
-
-            var totales = min.reduce((a, b) => a + b, 0);
-
-            var promedio = totales / result.length;
-
-            let pro = ({
-                promedio: promedio.toFixed(2)
-            });
-
-            res.json({
-                OK: true,
-                TiempoRespuesta: [pro]
+                res.json({
+                    OK: true,
+                    TiempoRespuesta: [pro]
+                })
             })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
             });
-        });
+        }
     }
 
 

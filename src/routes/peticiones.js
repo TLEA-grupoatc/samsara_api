@@ -74,5 +74,5 @@ module.exports = app => {
 
 
 
-    app.get('/obtenerTiempoDeRespuesta/:fechainicio/:fechafin', Peticion.obtenerTiempoDeRespuesta);
+    app.get('/obtenerTiempoDeRespuesta/:division/:fechainicio/:fechafin', Peticion.obtenerTiempoDeRespuesta);
 }
