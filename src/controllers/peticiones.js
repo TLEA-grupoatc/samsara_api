@@ -873,7 +873,7 @@ module.exports = app => {
         });
 
         groupedByType = resultadounidades.reduce((acc, registro) => {
-            const fecha = parseISO(registro.fechagobernada + ' 00:00:00');
+            const fecha = parseISO(registro.fechaparomotor + ' 00:00:00');
             const startOfCurrentWeek = startOfWeek(fecha, { weekStartsOn: 1 });
             const weekNumber = differenceInCalendarWeeks(startOfCurrentWeek, new Date(year, 0, 1), { weekStartsOn: 1 });
             
@@ -892,11 +892,6 @@ module.exports = app => {
             Grafica: groupedByType
         })
     }
-
-
-
-
-
 
 
 
@@ -1005,27 +1000,6 @@ module.exports = app => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.obtenerTiempoDeRespuesta = (req, res) => {
         alerta.findAll({
             attributes: [
@@ -1065,14 +1039,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
 
     return app;
 }
