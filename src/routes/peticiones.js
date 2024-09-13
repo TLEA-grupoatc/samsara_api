@@ -36,7 +36,7 @@ module.exports = app => {
 
 
 
-    app.get('/obtenerAlertas/:fechainicio/:fechafin', Peticion.obtenerAlertas);
+    app.get('/obtenerAlertas/:division/:fechainicio/:fechafin', Peticion.obtenerAlertas);
 
     app.get('/obtenerCatalagoEventos', Peticion.obtenerCatalagoEventos);
 
@@ -67,7 +67,7 @@ module.exports = app => {
     
     app.get('/obtenerReporteGeneral/:fechainicio/:fechafin', Peticion.obtenerReporteGeneral);
 
-    app.get('/obtenerReporteAlertas/:fechainicio/:fechafin', Peticion.obtenerReporteAlertas);
+    app.get('/obtenerReporteAlertas/:division/:fechainicio/:fechafin', Peticion.obtenerReporteAlertas);
 
     app.get('/obtenerCumplientoAlertas/:fechainicio/:fechafin', Peticion.obtenerCumplientoAlertas);
 

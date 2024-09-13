@@ -513,53 +513,92 @@ module.exports = app => {
         });
     }
 
-    app.obtenerAlertas = (req, res) => {
-        var paralagrafica = [];
-        alerta.findAll({
-            attributes: ['event', [Sequelize.fn('COUNT', Sequelize.col('event')), 'total']],
-            where: {
-                eventTime: {
-                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
-                }
-            },
-            group: ['event'],
-        }).then(result => {
-            paralagrafica = result;
-            // res.json({
-            //     OK: true,
-            //     Alertas: result
-            // })
-        })
-        .catch(error => {
-            console.log(error);
-            
-            // res.status(412).json({
-            //     msg: error.message
-            // });
-        });
+    app.obtenerAlertas = async (req, res) => {
+        if(req.params.division == 'Todas') {
+            var paralagrafica = [];
 
-
-        alerta.findAll({
-            where: {
-                eventTime: {
-                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
-                }
-            },
-            order: [
-                ['eventTime', 'DESC']
-            ],
-        }).then(result => {
-            res.json({
-                OK: true,
-                Alertas: result,
-                Grafica: paralagrafica
+            alerta.findAll({
+                attributes: ['event', [Sequelize.fn('COUNT', Sequelize.col('event')), 'total']],
+                where: {
+                    eventTime: {
+                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    }
+                },
+                group: ['event'],
+            }).then(result => {
+                paralagrafica = result;
             })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
+            .catch(error => {
+                console.log(error);
             });
-        });
+
+            alerta.findAll({
+                where: {
+                    eventTime: {
+                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    }
+                },
+                order: [
+                    ['eventTime', 'DESC']
+                ],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Alertas: result,
+                    Grafica: paralagrafica
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            });
+        }
+        else {
+            var divi = await getUnidadesDivision(req.params.division);
+
+            var paralagrafica = [];
+
+            alerta.findAll({
+                attributes: ['event', [Sequelize.fn('COUNT', Sequelize.col('event')), 'total']],
+                where: {
+                    id_unidad: {
+                        [Op.in]: divi
+                    },
+                    eventTime: {
+                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    }
+                },
+                group: ['event'],
+            }).then(result => {
+                paralagrafica = result;
+            })
+            .catch(error => {
+                console.log(error);
+            });
+
+            alerta.findAll({
+                where: {
+                    eventTime: {
+                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    }
+                },
+                order: [
+                    ['eventTime', 'DESC']
+                ],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Alertas: result,
+                    Grafica: paralagrafica
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            });
+        }
     }
     
     app.obtenerCatalagoEventos = (req, res) => {
@@ -935,35 +974,71 @@ module.exports = app => {
         });
     }
 
-    app.obtenerReporteAlertas = (req, res) => {
-        alerta.findAll({
-            attributes: [
-                'event',
-                [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'A' THEN '' END")), 'activo'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'P' THEN '' END")), 'proceso'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'T' THEN '' END")), 'terminado']
-            ],
-            where: {
-                eventTime: {
-                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
-                }
-            },
-            group: ['event'],
-            order: [
-                ['event', 'ASC']
-            ],
-        }).then(result => {
-            res.json({
-                OK: true,
-                ReporteAlertas: result
+    app.obtenerReporteAlertas = async (req, res) => {
+        if(req.params.division == 'Todas') {
+            alerta.findAll({
+                attributes: [
+                    'event',
+                    [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total'],
+                    [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'A' THEN '' END")), 'activo'],
+                    [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'P' THEN '' END")), 'proceso'],
+                    [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'T' THEN '' END")), 'terminado']
+                ],
+                where: {
+                    eventTime: {
+                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    }
+                },
+                group: ['event'],
+                order: [
+                    ['event', 'ASC']
+                ],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    ReporteAlertas: result
+                })
             })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
             });
-        });
+        }
+        else {
+            var divi = await getUnidadesDivision(req.params.division);
+            alerta.findAll({
+                attributes: [
+                    'event',
+                    [reporte.sequelize.fn('COUNT', reporte.sequelize.col('estado')), 'total'],
+                    [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'A' THEN '' END")), 'activo'],
+                    [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'P' THEN '' END")), 'proceso'],
+                    [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.estado = 'T' THEN '' END")), 'terminado']
+                ],
+                where: {
+                    id_unidad: {
+                        [Op.in]: divi
+                    },
+                    eventTime: {
+                        [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    }
+                },
+                group: ['event'],
+                order: [
+                    ['event', 'ASC']
+                ],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    ReporteAlertas: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            });
+        }
     }
 
 
@@ -1038,6 +1113,45 @@ module.exports = app => {
                 msg: error.message
             });
         });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    async function getUnidadesDivision(uni) {
+        try {
+            const result = await unidad.findAll({
+                where: {
+                    tag: uni
+                }
+            });
+
+            var idsunidad = [];
+
+            for (let index = 0; index < result.length; index++) {
+                idsunidad.push(result[index].id_unidad);
+            }
+            
+             return idsunidad;
+            
+        }
+        catch(error) {
+            console.log(error.message);
+            return 0;
+        }
     }
 
     return app;
