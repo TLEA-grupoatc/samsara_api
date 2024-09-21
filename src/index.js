@@ -44,92 +44,6 @@ setInterval(() => {
   app.obtenerSnapshot(req, res);
 }, 60000); 
 
-// app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-//   const payload = req.body;
-
-//   console.log(payload);
-
-//   if(payload.eventType == 'Alert') {
-//     var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
-//     var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
-
-//     const timestamp = payload.eventMs;
-//     const date = new Date(timestamp);
-//     const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
-
-//     let nuevaAlerta = new alerta({
-//       eventId: payload.eventId,
-//       eventType: payload.eventType,
-//       event: eventoformat2,
-//       eventDescription: payload.event.details,
-//       eventTime: formato,
-//       eventMs: null,
-//       alertEventURL: payload.event.alertEventUrl,
-//       incidentUrl: null,
-//       id_unidad: payload.event.device.id,
-//       unidad: payload.event.device.name
-//     });
-
-//     await alerta.create(nuevaAlerta.dataValues, {
-//         fields: [
-//           'eventId', 
-//           'eventType', 
-//           'event', 
-//           'eventDescription', 
-//           'eventTime', 
-//           'eventMs', 
-//           'alertEventURL', 
-//           'incidentUrl', 
-//           'id_unidad', 
-//           'unidad'
-//         ]
-//     })
-//     .then(result => {})
-//     .catch(error => { console.log(error.message); });
-//   }
-//   else  {
-//     console.log(payload.data.conditions[0]);
-
-
-//     var data = payload.data.conditions[0];
-//     var validar = data['description'];
-//     const date = payload.eventTime;
-//     const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
-
-//     let nuevaAlerta = new alerta({
-//       eventId: payload.eventId,
-//       eventType: payload.eventType,
-//       event: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
-//       eventDescription: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
-//       eventTime: formato,
-//       eventMs: null,
-//       alertEventURL: payload.data.incidentUrl,
-//       incidentUrl: null,
-//       id_unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['id'] : data['details']['insideGeofence']['vehicle']['id'],
-//       unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['name'] : data['details']['insideGeofence']['vehicle']['name']
-//     });
-
-//     await alerta.create(nuevaAlerta.dataValues, {
-//       fields: [
-//         'eventId', 
-//         'eventType', 
-//         'event', 
-//         'eventDescription', 
-//         'eventTime', 
-//         'eventMs', 
-//         'alertEventURL', 
-//         'incidentUrl', 
-//         'id_unidad', 
-//         'unidad'
-//       ]
-//   })
-//   .then(result => {})
-//   .catch(error => { console.log(error.message); });
-//   }
-
-//   res.status(200).send('Ok');
-// });
-
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
@@ -347,6 +261,91 @@ app.post('/slack/events',  async (req, res) => {
 
 
 
+// app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+//   const payload = req.body;
+
+//   console.log(payload);
+
+//   if(payload.eventType == 'Alert') {
+//     var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
+//     var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
+
+//     const timestamp = payload.eventMs;
+//     const date = new Date(timestamp);
+//     const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
+
+//     let nuevaAlerta = new alerta({
+//       eventId: payload.eventId,
+//       eventType: payload.eventType,
+//       event: eventoformat2,
+//       eventDescription: payload.event.details,
+//       eventTime: formato,
+//       eventMs: null,
+//       alertEventURL: payload.event.alertEventUrl,
+//       incidentUrl: null,
+//       id_unidad: payload.event.device.id,
+//       unidad: payload.event.device.name
+//     });
+
+//     await alerta.create(nuevaAlerta.dataValues, {
+//         fields: [
+//           'eventId', 
+//           'eventType', 
+//           'event', 
+//           'eventDescription', 
+//           'eventTime', 
+//           'eventMs', 
+//           'alertEventURL', 
+//           'incidentUrl', 
+//           'id_unidad', 
+//           'unidad'
+//         ]
+//     })
+//     .then(result => {})
+//     .catch(error => { console.log(error.message); });
+//   }
+//   else  {
+//     console.log(payload.data.conditions[0]);
+
+
+//     var data = payload.data.conditions[0];
+//     var validar = data['description'];
+//     const date = payload.eventTime;
+//     const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
+
+//     let nuevaAlerta = new alerta({
+//       eventId: payload.eventId,
+//       eventType: payload.eventType,
+//       event: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
+//       eventDescription: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
+//       eventTime: formato,
+//       eventMs: null,
+//       alertEventURL: payload.data.incidentUrl,
+//       incidentUrl: null,
+//       id_unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['id'] : data['details']['insideGeofence']['vehicle']['id'],
+//       unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['name'] : data['details']['insideGeofence']['vehicle']['name']
+//     });
+
+//     await alerta.create(nuevaAlerta.dataValues, {
+//       fields: [
+//         'eventId', 
+//         'eventType', 
+//         'event', 
+//         'eventDescription', 
+//         'eventTime', 
+//         'eventMs', 
+//         'alertEventURL', 
+//         'incidentUrl', 
+//         'id_unidad', 
+//         'unidad'
+//       ]
+//   })
+//   .then(result => {})
+//   .catch(error => { console.log(error.message); });
+//   }
+
+//   res.status(200).send('Ok');
+// });
 
 
 

@@ -1161,18 +1161,6 @@ module.exports = app => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     async function getUnidadesDivision(uni) {
         try {
             const result = await unidad.findAll({
@@ -1183,12 +1171,11 @@ module.exports = app => {
 
             var idsunidad = [];
 
-            for (let index = 0; index < result.length; index++) {
+            for(let index = 0; index < result.length; index++) {
                 idsunidad.push(result[index].id_unidad);
             }
             
-             return idsunidad;
-            
+            return idsunidad;
         }
         catch(error) {
             console.log(error.message);
