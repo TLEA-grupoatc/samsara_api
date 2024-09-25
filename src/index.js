@@ -33,15 +33,12 @@ consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('midd
 const alerta = app.database.models.Alertas;
 
 setInterval(() => {
-  const req = {};
-  const res = {
-      json: (data) => console.log(data),
-      status: (statusCode) => ({
-        json: (data) => console.log(statusCode, data)
-      })
-  };
-
-  app.obtenerSnapshot(req, res);
+  app.obtenerSnapshot({}, {
+    json: (data) => console.log(data),
+    status: (statusCode) => ({
+      json: (data) => console.log(statusCode, data)
+    })
+  });
 }, 60000); 
 
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
@@ -57,6 +54,8 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
   var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
   var eventoformat2 = eventoformat2.split(' event was')[0];
 
+  var operador = '';
+  var numero_operador = '';
 
   if(payload.event.alertConditionId == 'DeviceLocationInsideGeofence') {
     validacionEvento = 'Parada no Autorizada';
@@ -111,6 +110,16 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
     default: 'Otros Eventos'; break;
   }
 
+  await app.connectToDatabase({unidad: payload.event.device.name}, {
+    json: (data) => {
+      numero_operador =  data.Operador.OPERADOR_CLAVE;
+      operador =  data.Operador.OPERADOR_NOMBRE;
+    },
+    status: (statusCode) => ({
+      json: (data) => console.log(statusCode, data)
+    })
+  });
+
   let nuevaAlerta = new alerta({
     eventId: payload.eventId,
     eventType: payload.eventType,
@@ -122,6 +131,8 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
     alertEventURL: payload.event.alertEventUrl,
     id_unidad: payload.event.device.id,
     unidad: payload.event.device.name,
+    numero_empleado: numero_operador,
+    operador: operador,
     fecha_cierre: null,
     primer_interaccion: ''
   });
@@ -138,6 +149,8 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
       'alertEventURL', 
       'id_unidad', 
       'unidad',
+      'numero_empleado', 
+      'operador',
       'fecha_cierre',
       'primer_interaccion'
     ]
@@ -169,6 +182,8 @@ app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), asy
     alertEventURL: payload.data.incidentUrl,
     id_unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['id'],
     unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['name'],
+    numero_empleado: null,
+    operador: null,
     fecha_cierre: null,
     primer_interaccion: ''
   });

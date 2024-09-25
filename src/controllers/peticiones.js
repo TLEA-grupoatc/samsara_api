@@ -934,6 +934,44 @@ module.exports = app => {
 
 
 
+    app.obtenerGraficaOperadorAlertas = async (req, res) => {
+        var resultado  = [];
+
+        await alerta.findAll({
+            attributes: [
+                'eventTime',
+                // 'event',
+                'numero_empleado',
+                'operador',
+                [alerta.sequelize.fn('COUNT', alerta.sequelize.col('operador')), 'alertas'],
+            ],
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                },
+                operador: {
+                    [Op.not]: null
+                }
+            },
+            // group: ['operador', 'event'],
+            group: ['operador'],
+            // order: [
+            //     ['operador', 'ASC']
+            // ],
+        }).then(result => {resultado = result})
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+
+        res.json({
+            OK: true,
+            Grafica: resultado
+        })
+    }
+
+
 
 
     app.obtenerReporteGeneral = (req, res) => {

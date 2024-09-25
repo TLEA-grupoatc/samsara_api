@@ -44,6 +44,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        numero_empleado:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        operador:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         estado:{
             type: DataType.STRING,
             allowNull: true
