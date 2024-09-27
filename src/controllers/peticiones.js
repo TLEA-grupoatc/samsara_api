@@ -940,7 +940,6 @@ module.exports = app => {
         await alerta.findAll({
             attributes: [
                 'eventTime',
-                // 'event',
                 'numero_empleado',
                 'operador',
                 [alerta.sequelize.fn('COUNT', alerta.sequelize.col('operador')), 'alertas'],
@@ -953,11 +952,7 @@ module.exports = app => {
                     [Op.not]: null
                 }
             },
-            // group: ['operador', 'event'],
-            group: ['operador'],
-            // order: [
-            //     ['operador', 'ASC']
-            // ],
+            group: ['operador']
         }).then(result => {resultado = result})
         .catch(error => {
             res.status(412).json({
