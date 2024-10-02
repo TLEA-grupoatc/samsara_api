@@ -162,15 +162,10 @@ module.exports = app => {
 
 
     app.obtenerCobros = (req, res) => {
-        var today = new Date();
-        const hoy = moment(today).format('yyyy-MM-DD');
-
-        console.log(hoy);
-        
         cobro.findAll({
             where: {
                 registro: {
-                    [Op.between]: [hoy + ' 00:00:00', hoy + ' 23:59:59']
+                    [Op.between]: [req.params.fechaInicio + ' 00:00:00', req.params.fechaFin + ' 23:59:59']
                 }
             },
             order: [

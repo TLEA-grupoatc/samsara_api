@@ -15,7 +15,7 @@ module.exports = app => {
 
     app.post('/crearCobro', Fo.crearCobro);
     
-    app.get('/obtenerCobros', Fo.obtenerCobros);
+    app.get('/obtenerCobros/:fechaInicio/:fechaFin', Fo.obtenerCobros);
     
     app.delete('/cobroRealizado/:id_cobro/:cobrado_por', Fo.cobroRealizado);
 
