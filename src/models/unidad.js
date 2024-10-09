@@ -128,6 +128,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        division:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        idcliente:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         estado:{
             type: DataType.STRING,
             allowNull: true
