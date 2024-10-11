@@ -1,13 +1,62 @@
+const cron = require('node-cron');
 const moment = require('moment');
 const _ = require('lodash');
 
-module.exports = app => {    
+module.exports = app => {
+    const Samsara = require("@api/samsara-dev-rel");
+    Samsara.auth(process.env.KEYSAM);
+
     const controlubicaciones = app.database.models.ControlUbicaciones;
+    const cliente = app.database.models.Clientes;
+    const destino = app.database.models.Destinos;
+    const origen = app.database.models.Origenes;
     const unidad = app.database.models.Unidades;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
+
+    app.obtenerClientes = (req, res) => {
+        cliente.findAll().then(result => {
+            res.json({
+                OK: true,
+                Clientes: result,
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerOrigenes = (req, res) => {  
+        origen.findAll().then(result => {
+            res.json({
+                OK: true,
+                Origenes: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerDestinos = (req, res) => {  
+        destino.findAll().then(result => {
+            res.json({
+                OK: true,
+                Destinos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
     
     app.obtenerPlanes = async (req, res) => {
         var fecha = moment(new Date()).format('YYYY-MM-DD');
@@ -83,6 +132,8 @@ module.exports = app => {
         });
     }
 
+
+
     app.crearPlan = (req, res) => {
         let body = req.body;
 
@@ -148,6 +199,50 @@ module.exports = app => {
         .catch(error => {
             res.status(412).json({
                 OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    cron.schedule('00 08 * * *', () => { miMetodo('ubicacion1'); });
+    cron.schedule('00 09 * * *', () => { miMetodo('ubicacion2'); });
+    cron.schedule('00 10 * * *', () => { miMetodo('ubicacion3'); });
+    cron.schedule('00 11 * * *', () => { miMetodo('ubicacion4'); });
+    cron.schedule('00 12 * * *', () => { miMetodo('ubicacion5'); });
+    cron.schedule('00 13 * * *', () => { miMetodo('ubicacion6'); });
+    cron.schedule('00 14 * * *', () => { miMetodo('ubicacion7'); });
+    cron.schedule('00 15 * * *', () => { miMetodo('ubicacion8'); });
+    cron.schedule('00 16 * * *', () => { miMetodo('ubicacion9'); });
+    cron.schedule('00 17 * * *', () => { miMetodo('ubicacion10'); });
+    cron.schedule('00 18 * * *', () => { miMetodo('ubicacion11'); });
+    cron.schedule('00 19 * * *', () => { miMetodo('ubicacion12'); });
+
+    async function miMetodo(hora) {
+        var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
+        var paraValidadfecha = moment(new Date()).format('YYYY-MM-DD');
+        var fechahora = fecha + 'Z';
+
+        Samsara.getVehicleStats({
+            time: fechahora,
+            tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
+            types: 'gps'
+        }).then(result => {
+            result['data']['data'].forEach(async (element) => {
+                var fechagps = element['gps'].time.split('T')[0];
+                if(paraValidadfecha == fechagps) {
+                    await controlubicaciones.update(
+                        { [hora]: element['gps'].reverseGeo.formattedLocation },
+                        {
+                          where: {
+                            unidad: element.name,
+                          }
+                        }
+                    );
+                }
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
                 msg: error.message
             });
         });

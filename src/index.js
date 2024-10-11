@@ -39,7 +39,16 @@ setInterval(() => {
       json: (data) => console.log(statusCode, data)
     })
   });
-}, 60000); 
+}, 600000);
+
+    // setInterval(() => {
+    //     app.obtenerUbicacion({}, {
+    //       json: (data) => console.log(data),
+    //       status: (statusCode) => ({
+    //         json: (data) => console.log(statusCode, data)
+    //       })
+    //     });
+    // }, 30000);
 
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
