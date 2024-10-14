@@ -39,16 +39,7 @@ setInterval(() => {
       json: (data) => console.log(statusCode, data)
     })
   });
-}, 600000);
-
-    // setInterval(() => {
-    //     app.obtenerUbicacion({}, {
-    //       json: (data) => console.log(data),
-    //       status: (statusCode) => ({
-    //         json: (data) => console.log(statusCode, data)
-    //       })
-    //     });
-    // }, 30000);
+}, 60000);
 
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
@@ -119,15 +110,15 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
     default: 'Otros Eventos'; break;
   }
 
-  await app.connectToDatabase({unidad: payload.event.device.name}, {
-    json: (data) => {
-      numero_operador =  data.Operador.OPERADOR_CLAVE;
-      operador =  data.Operador.OPERADOR_NOMBRE;
-    },
-    status: (statusCode) => ({
-      json: (data) => console.log(statusCode, data)
-    })
-  });
+  // await app.connectToDatabase({unidad: payload.event.device.name}, {
+  //   json: (data) => {
+  //     numero_operador =  data.Operador.OPERADOR_CLAVE;
+  //     operador =  data.Operador.OPERADOR_NOMBRE;
+  //   },
+  //   status: (statusCode) => ({
+  //     json: (data) => console.log(statusCode, data)
+  //   })
+  // });
 
   let nuevaAlerta = new alerta({
     eventId: payload.eventId,
@@ -140,10 +131,10 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
     alertEventURL: payload.event.alertEventUrl,
     id_unidad: payload.event.device.id,
     unidad: payload.event.device.name,
-    numero_empleado: numero_operador,
-    operador: operador,
-    // numero_empleado: null,
-    // operador: null,
+    // numero_empleado: numero_operador,
+    // operador: operador,
+    numero_empleado: null,
+    operador: null,
     fecha_cierre: null,
     primer_interaccion: ''
   });
@@ -281,6 +272,41 @@ app.post('/slack/events',  async (req, res) => {
   res.status(200).send('OK');
 });
 
+http.listen(app.get('port'), () => {
+  console.log(`Server on port ${app.get('port')}`.random);
+});
+
+// http.listen(app.get('port'), async () => {
+//   try {
+//     await ngrok.authtoken(process.env.TOKENNGROK);
+//     const url = await ngrok.forward(app.get('port'));
+
+//     console.log(`Server on port ${app.get('port')}`.random);
+//     console.log(url.url());
+//   }
+//   catch (error) {
+//     console.error('Error al iniciar el túnel Ngrok:', error);
+//   }
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -372,29 +398,3 @@ app.post('/slack/events',  async (req, res) => {
 
 //   res.status(200).send('Ok');
 // });
-
-
-
-
-
-
-
-
-
-
-// http.listen(app.get('port'), () => {
-//   console.log(`Server on port ${app.get('port')}`.random);
-// });
-
-http.listen(app.get('port'), async () => {
-  try {
-    await ngrok.authtoken(process.env.TOKENNGROK);
-    const url = await ngrok.forward(app.get('port'));
-
-    console.log(`Server on port ${app.get('port')}`.random);
-    console.log(url.url());
-  }
-  catch (error) {
-    console.error('Error al iniciar el túnel Ngrok:', error);
-  }
-});
