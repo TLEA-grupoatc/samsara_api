@@ -32,6 +32,9 @@ module.exports = app => {
 
             sql.close();
             
+
+            console.log(result['recordset'][0]);
+            
             res.json({
                 OK: true,
                 Operador: result['recordset'][0],

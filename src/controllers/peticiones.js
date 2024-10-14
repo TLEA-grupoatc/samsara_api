@@ -142,7 +142,9 @@ module.exports = app => {
             vehicleRegulationMode: body.vehicleRegulationMode,
             createdAtTime: body.createdAtTime,
             updatedAtTime: body.updatedAtTime,
-            esn: body.esn
+            esn: body.esn,
+            division: body.division,
+            idcliente: body.idcliente
         });
 
         unidad.update(editarRegistro.dataValues, {
@@ -179,8 +181,10 @@ module.exports = app => {
                 'year', 
                 'vehicleRegulationMode', 
                 'createdAtTime', 
-                'updatedAtTime', 
-                'esn'
+                'updatedAtTime',
+                'esn',
+                'division',
+                'idcliente'
             ]
         })
         .then(result => {
