@@ -138,10 +138,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
     app.obtenerOperadores = (req, res) => {
         operador.findAll({
             where: {
@@ -160,6 +156,35 @@ module.exports = app => {
         });
     }
 
+    app.crearOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new origen({
+            numero_empleado: body.numero_empleado,
+            nombre: body.nombre,
+            estado: body.estado
+        });
+
+        origen.create(nuevoRegistro.dataValues, {
+            fields: [
+                'numero_empleado',
+                'nombre',
+                'estado'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Operador: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
 
     app.obtenerCobros = (req, res) => {
         cobro.findAll({

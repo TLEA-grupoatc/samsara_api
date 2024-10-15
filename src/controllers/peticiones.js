@@ -819,9 +819,6 @@ module.exports = app => {
         });
     }
 
-
-
-
     app.obtenerReporteParoMotor = (req, res) => {
         unidad.findAll({
             attributes: [
@@ -847,7 +844,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.obtenerGraficaGobernadas = async (req, res) => {
         var today = new Date();
@@ -892,7 +888,6 @@ module.exports = app => {
         })
     }
 
-
     app.obtenerGraficaUnidadesParoMotor = async (req, res) => {
         var today = new Date();
         var year = today.getFullYear();
@@ -935,8 +930,6 @@ module.exports = app => {
             Grafica: groupedByType
         })
     }
-
-
 
     app.obtenerGraficaOperadorAlertas = async (req, res) => {
         var resultado  = [];
@@ -1193,10 +1186,6 @@ module.exports = app => {
             });
         }
     }
-
-
-
-
 
     async function getUnidadesDivision(uni) {
         try {

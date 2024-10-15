@@ -12,6 +12,8 @@ module.exports = app => {
 
     app.get('/obtenerOperadores', Fo.obtenerOperadores);
 
+    app.post('/crearOperador', Fo.crearOperador);
+
 
     app.post('/crearCobro', Fo.crearCobro);
     

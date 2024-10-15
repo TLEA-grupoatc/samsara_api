@@ -30,6 +30,60 @@ module.exports = app => {
         });
     }
 
+    app.crearCliente = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new cliente({
+            cliente: body.cliente
+        });
+
+        cliente.create(nuevoRegistro.dataValues, {
+            fields: [
+                'cliente'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Cliente: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.actualizarCliente = (req, res) => {
+        let body = req.body;
+
+        let actualizarRegistro = new cliente({
+            cliente: body.cliente,
+        });
+
+        cliente.update(actualizarRegistro.dataValues, {
+            where: {
+                id_cliente: req.params.id_cliente
+            },
+            fields: [
+                'cliente'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
     app.obtenerOrigenes = (req, res) => {  
         origen.findAll().then(result => {
             res.json({
@@ -40,6 +94,63 @@ module.exports = app => {
         .catch(error => {
             res.status(412).json({
                 msg: error.message
+            });
+        });
+    }
+
+    app.crearOrigen = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new origen({
+            id_cliente: body.id_cliente,
+            origen: body.origen
+        });
+
+        origen.create(nuevoRegistro.dataValues, {
+            fields: [
+                'id_cliente',
+                'origen'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Origen: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.actualizarOrigen = (req, res) => {
+        let body = req.body;
+
+        let actualizarRegistro = new origen({
+            id_cliente: body.id_cliente,
+            origen: body.origen
+        });
+
+        origen.update(actualizarRegistro.dataValues, {
+            where: {
+                id_origen: req.params.id_origen
+            },
+            fields: [
+                'id_cliente',
+                'origen'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
             });
         });
     }
@@ -57,6 +168,64 @@ module.exports = app => {
             });
         });
     }
+
+    app.crearDestino = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new destino({
+            id_cliente: body.id_cliente,
+            destino: body.destino
+        });
+
+        destino.create(nuevoRegistro.dataValues, {
+            fields: [
+                'id_cliente',
+                'destino'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Destino: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.actualizarDestino = (req, res) => {
+        let body = req.body;
+
+        let actualizarRegistro = new destino({
+            id_cliente: body.id_cliente,
+            destino: body.destino
+        });
+
+        destino.update(actualizarRegistro.dataValues, {
+            where: {
+                id_cliente: req.params.id_cliente
+            },
+            fields: [
+                'id_cliente',
+                'destino'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
     
     app.obtenerPlanes = async (req, res) => {
         var fecha = moment(new Date()).format('YYYY-MM-DD');
@@ -100,7 +269,7 @@ module.exports = app => {
                     division: tracto.division,
                     unidad: tracto.name,
                     operador: plan != undefined ? plan.operador : '',
-                    cliente: plan != undefined ? plan.cliente : '',
+                    cliente: plan != undefined ? plan.cliente : tracto.idcliente,
                     origen: plan != undefined ? plan.origen : '',
                     destino: plan != undefined ? plan.destino : '',
                     estatus: plan != undefined ? plan.estatus : '',
