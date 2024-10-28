@@ -46,15 +46,16 @@ module.exports = app => {
         try {
             let pool = await sql.connect(config);
 
-            let result = await pool.request().query("SELECT BT.status_bitacora, FORMAT(BT.FECHA_BITACORA,'yyyy-MM-dd') as FECHA_BITACORA, BT.CLAVE_BITACORA, BT.FOLIO_BITACORA, BT.RANGO_BITACORA, BT.TERMINAL_BITACORA, BT.USR_CREA, BT.TRACTO_CLAVE, BT.TRACTO_NUM_ECO, BT.FCH_CREA, BT.FCH_MOD, BT.USR_MOD, BT.FECHA_SALIDA, BT.MONTO_ANTICIPO_SALIDA, BT.USR_CIERR, BT.FCH_CIERR, BT.OBSERVACIONES_OPERADOR, BT.INSTRUCCIONES_ESPECIALES, BT.LIQUIDACION_CLAVE, BT.NOTA_SISTEMA, BT.DIAS_SERVICIO, BT.kilometraje_inicial, BT.kilometraje_final, BT.terminal_cierre, BT.LITROS_DBL_OPERADOR, BT.MONTO_DIESEL_DBL_OPERADOR, BT.LIQ_DBL_OPR, BT.STATUS_VIAJE, BT.LECT_LITROS_COMP, BT.LECT_REND_COMP, BT.negocio_clave_bit, BT.LITROS_EXCESO, BT.LITROS_CIERRE, BT.difCombustible, OP.NEGOCIO_CLAVE, OP.OPERADOR_CLAVE, OP.OPERADOR_NOMBRE, KO.kilometros_carga1, KO.kilometros_vacio1, KO.total_kilometros1 FROM BITACORAS AS BT\
+            let result = await pool.request().query("SELECT BT.status_bitacora, FORMAT(BT.FECHA_BITACORA,'yyyy-MM-dd') as FECHA_BITACORA, BT.CLAVE_BITACORA, BT.PREFIJO, BT.FOLIO_BITACORA, BT.RANGO_BITACORA, BT.TERMINAL_BITACORA, BT.USR_CREA, BT.TRACTO_CLAVE, BT.TRACTO_NUM_ECO, BT.FCH_CREA, BT.FCH_MOD, BT.USR_MOD, FORMAT(BT.FECHA_SALIDA,'yyyy-MM-dd HH:mm:ss') as FECHA_SALIDA, BT.MONTO_ANTICIPO_SALIDA, BT.USR_CIERR, BT.FCH_CIERR, BT.OBSERVACIONES_OPERADOR, BT.INSTRUCCIONES_ESPECIALES, BT.LIQUIDACION_CLAVE, BT.NOTA_SISTEMA, BT.DIAS_SERVICIO, BT.kilometraje_inicial, BT.kilometraje_final, BT.terminal_cierre, BT.LITROS_DBL_OPERADOR, BT.MONTO_DIESEL_DBL_OPERADOR, BT.LIQ_DBL_OPR, BT.STATUS_VIAJE, BT.LECT_LITROS_COMP, BT.LECT_REND_COMP, BT.negocio_clave_bit, BT.LITROS_EXCESO, BT.LITROS_CIERRE, BT.difCombustible, OP.NEGOCIO_CLAVE, OP.OPERADOR_CLAVE, OP.OPERADOR_NOMBRE, KO.kilometros_carga1, KO.kilometros_vacio1, KO.total_kilometros1, RUT.ruta_min as ruta FROM BITACORAS AS BT\
+                INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA\
                 INNER JOIN OPERADOR AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE\
                 INNER JOIN vKilometrosOperador00 AS KO ON KO.FOLIO_BITACORA = BT.FOLIO_BITACORA\
                 WHERE BT.FECHA_BITACORA BETWEEN '" + req.params.fechaInicio + "' AND '" + req.params.fechaFin + "'\
-                AND BT.TRACTO_NUM_ECO = '" + req.params.tracto + "'\
                 AND OP.OPERADOR_NOMBRE = '" + req.params.operador + "'\
                 AND KO.OPERADOR_NOMBRE = '" + req.params.operador + "'\
                 AND BT.STATUS_BITACORA = 1\
-                ORDER BY BT.FECHA_BITACORA DESC");
+                ORDER BY BT.FECHA_BITACORA ASC");
+                // AND BT.TRACTO_NUM_ECO = '" + req.params.tracto + "'\
             sql.close();
             
             res.json({
@@ -128,8 +129,12 @@ module.exports = app => {
     app.obtenerCombustible = async (req, res) => {
         try {
             let pool = await sql.connect(config);
-            let result = await pool.request().query("SELECT CLAVE_BITACORA, VALE_FOLIO, LITROS, VALE_FECHA, IMPORTE, GASOLINERA_CLAVE, PRECIO FROM ORDEN_VALES WHERE CLAVE_BITACORA IN (" + req.params.claves + ") ORDER BY VALE_FECHA DESC");
-
+            let result = await pool.request().query("SELECT CLAVE_BITACORA, VALE_FOLIO, LITROS, FORMAT(VALE_FECHA,'yyyy-MM-dd') as VALE_FECHA, FORMAT(FCH_CREA,'yyyy-MM-dd HH:mm:ss') as FCH_CREA, IMPORTE, GASOLINERA_CLAVE, VALE_TERMINAL, PRECIO FROM ORDEN_VALES \
+                WHERE CLAVE_BITACORA IN (" + req.params.claves + ") \
+                AND LITROS > 0 \
+                ORDER BY VALE_FECHA ASC");
+                
+                // AND FCH_CREA BETWEEN '" + req.params.fechaInicio + "' AND '" + req.params.fechaFin + "'\
             sql.close();
             
             res.json({
@@ -146,7 +151,7 @@ module.exports = app => {
     app.obtenerCasetas = async (req, res) => {
         try {
             let pool = await sql.connect(config);
-            let result = await pool.request().query("SELECT * FROM orden_casetas WHERE CLAVE_BITACORA IN (" + req.params.claves + ") ORDER BY CASETA_FECHA ASC");
+            let result = await pool.request().query("SELECT RUTA_CLAVE, CLAVE_BITACORA, CASETA_CLAVE, NUM_ORDEN, FORMAT(CASETA_FECHA,'yyyy-MM-dd') as CASETA_FECHA, CARGO_EMPRESA, VALE_FOLIO, CARGO_OPERADOR, VALE_RANGO, REFERENCIA, BAN_CONVENIO, cruzo_rastreo, fch_cruzo_rastreo, FOLIO_VALE, CalculoRuta, tra_nodo_a, tra_nodo_b, tra_orden_paso, orden_ruta FROM orden_casetas WHERE CLAVE_BITACORA IN (" + req.params.claves + ") ORDER BY CASETA_FECHA ASC");
 
             sql.close();
             
@@ -161,18 +166,42 @@ module.exports = app => {
         }
     }
 
+    app.obtenerGastos = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+            let result = await pool.request().query("SELECT OC.CLAVE_BITACORA, OC.IMPORTE, OC.REFERENCIA, CON.CONCEPTO_DESCRIP, OC.VALE_TERMINAL, OC.VALE_FOLIO, FORMAT(OC.VALE_FECHA,'yyyy-MM-dd') as VALE_FECHA, FORMAT(OC.FCH_CREA,'yyyy-MM-dd HH:mm:ss') as FCH_CREA, OC.PREFIJO FROM ORDEN_CONCEPTO AS OC \
+                INNER JOIN CONCEPTO AS CON ON CON.CONCEPTO_CLAVE = OC.CONCEPTO_CLAVE\
+                WHERE CLAVE_BITACORA IN (" + req.params.claves + ") ORDER BY FCH_CREA ASC");
+
+            sql.close();
+            
+            res.json({
+                OK: true,
+                Gastos: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
 
 
     app.pruebas = async (req, res) => {
         try {
             let pool = await sql.connect(config);
 
-            // let result = await pool.request().query("SELECT * FROM ORDEN_VALES WHERE CLAVE_BITACORA in (168375,168826,167987)");
-            // let result = await pool.request().query("SELECT CLAVE_BITACORA, VALE_FOLIO, LITROS, VALE_FECHA FROM ORDEN_VALES WHERE CLAVE_BITACORA IN (168375,168826,167987)");
+            // let result = await pool.request().query("SELECT * FROM vruta_completa WHERE CLAVE_BITACORA IN (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
+            // let result = await pool.request().query("SELECT * FROM ORDEN_CONCEPTO WHERE CLAVE_BITACORA in (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
             // let result = await pool.request().query("SELECT * FROM vKilometrosOperador00 WHERE FOLIO_BITACORA = 6243");
-            // let result = await pool.request().query("SELECT * FROM BITACORAS WHERE CLAVE_BITACORA IN (168375,168826,167987,168140)");
+            // let result = await pool.request().query("SELECT * FROM LIQUIDACION_GASTOS WHERE CLAVE_BITACORA IN (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
+            // let result = await pool.request().query("SELECT * FROM orden_casetas WHERE CLAVE_BITACORA IN (168375,168826,167987,168140)");
+            let result = await pool.request().query("SELECT * FROM concepto where concepto_clave = 29;");
+            // let result = await pool.request().query("SELECT CLAVE_BITACORA, VALE_FOLIO, LITROS, VALE_FECHA FROM ORDEN_VALES WHERE CLAVE_BITACORA IN (168375,168826,167987)");
+            // let result = await pool.request().query("SELECT CLAVE_BITACORA, IMPORTE, REFERENCIA FROM ORDEN_VALES WHERE CLAVE_BITACORA IN (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
+            // let result = await pool.request().query("SELECT CLAVE_BITACORA, IMPORTE, REFERENCIA FROM ORDEN_VALES WHERE CLAVE_BITACORA IN (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
             // let result = await pool.request().query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'");
-            let result = await pool.request().query("SELECT * FROM orden_casetas WHERE CLAVE_BITACORA IN (168375,168826,167987,168140)");
             
             // Checar
             // let result = await pool.request().query("SELECT * FROM bitacora_recorridos WHERE CLAVE_BITACORA IN (168375,168826,167987,168140)");
@@ -189,7 +218,7 @@ module.exports = app => {
             
             res.json({
                 OK: true,
-                Bitacoras: result['recordsets'][0]
+                Registros: result['recordsets'][0]
             });
         }
         catch (err) {

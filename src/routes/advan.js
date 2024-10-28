@@ -9,9 +9,11 @@ module.exports = app => {
     app.get('/obtenerGPS/:id_unidad/:fechaInicio/:fechaFin', ca.obtenerGPS);
     
 
-    app.get('/obtenerCombustible/:claves', ca.obtenerCombustible);
+    app.get('/obtenerCombustible/:claves/:fechaInicio/:fechaFin', ca.obtenerCombustible);
     
     app.get('/obtenerCasetas/:claves', ca.obtenerCasetas);
+
+    app.get('/obtenerGastos/:claves', ca.obtenerGastos);
 
 
     app.get('/pruebas', ca.pruebas);
