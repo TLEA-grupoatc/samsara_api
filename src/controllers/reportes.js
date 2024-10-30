@@ -77,10 +77,10 @@ module.exports = app => {
                 startTime: day + 'T00:00:00Z',
                 endTime: day + 'T23:59:59Z',
                 vehicleIds: idtracto,
-                types: 'engineLoadPercent'
+                types: 'fuelPercents'
             })         
             
-            percent = result['data']['data'][0]['engineLoadPercent'].length > 0 ? result['data']['data'][0]['engineLoadPercent'][result['data']['data'][0]['engineLoadPercent'].length -1]['value'] : 0;
+            percent = result['data']['data'][0]['fuelPercents'].length > 0 ? result['data']['data'][0]['fuelPercents'][result['data']['data'][0]['fuelPercents'].length -1]['value'] : 0;
 
             return percent;
         } 
