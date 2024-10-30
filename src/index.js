@@ -39,7 +39,7 @@ setInterval(() => {
       json: (data) => console.log(statusCode, data)
     })
   });
-}, 60000000);
+}, 60000);
 
 // setInterval(() => {
 //   app.connectToDatabase({unidad: 'TLEA-146'}, {
