@@ -393,7 +393,8 @@ module.exports = app => {
             time: fechahora,
             tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
             types: 'gps'
-        }).then(result => {
+        })
+        .then(result => {
             result['data']['data'].forEach(async (element) => {
                 var fechagps = element['gps'].time.split('T')[0];
                 if(paraValidadfecha == fechagps) {

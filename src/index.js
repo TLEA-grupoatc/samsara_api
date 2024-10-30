@@ -39,7 +39,7 @@ setInterval(() => {
       json: (data) => console.log(statusCode, data)
     })
   });
-}, 600000);
+}, 60000000);
 
 // setInterval(() => {
 //   app.connectToDatabase({unidad: 'TLEA-146'}, {
@@ -292,22 +292,22 @@ app.post('/slack/events',  async (req, res) => {
   res.status(200).send('OK');
 });
 
-// http.listen(app.get('port'), () => {
-//   console.log(`Server on port ${app.get('port')}`.random);
-// });
-
-http.listen(app.get('port'), async () => {
-  try {
-    await ngrok.authtoken(process.env.TOKENNGROK);
-    const url = await ngrok.forward(app.get('port'));
-
-    console.log(`Server on port ${app.get('port')}`.random);
-    console.log(url.url());
-  }
-  catch (error) {
-    console.error('Error al iniciar el túnel Ngrok:', error);
-  }
+http.listen(app.get('port'), () => {
+  console.log(`Server on port ${app.get('port')}`.random);
 });
+
+// http.listen(app.get('port'), async () => {
+//   try {
+//     await ngrok.authtoken(process.env.TOKENNGROK);
+//     const url = await ngrok.forward(app.get('port'));
+
+//     console.log(`Server on port ${app.get('port')}`.random);
+//     console.log(url.url());
+//   }
+//   catch (error) {
+//     console.error('Error al iniciar el túnel Ngrok:', error);
+//   }
+// });
 
 
 
