@@ -32,14 +32,14 @@ consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('midd
 
 const alerta = app.database.models.Alertas;
 
-setInterval(() => {
-  app.obtenerSnapshot({}, {
-    json: (data) => console.log(data),
-    status: (statusCode) => ({
-      json: (data) => console.log(statusCode, data)
-    })
-  });
-}, 60000);
+// setInterval(() => {
+//   app.obtenerSnapshot({}, {
+//     json: (data) => console.log(data),
+//     status: (statusCode) => ({
+//       json: (data) => console.log(statusCode, data)
+//     })
+//   });
+// }, 60000);
 
 // setInterval(() => {
 //   app.connectToDatabase({unidad: 'TLEA-146'}, {
