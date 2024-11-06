@@ -7,6 +7,8 @@ module.exports = app => {
     const Samsara = require("@api/samsara-dev-rel");
     Samsara.auth(process.env.KEYSAM);
 
+    const unidad = app.database.models.Unidades;
+
     const config = {
         user: process.env.USERADVAN,
         password: process.env.PASSWORDADVAN,
@@ -46,7 +48,7 @@ module.exports = app => {
         try {
             let pool = await sql.connect(config);
 
-            let result = await pool.request().query("SELECT BT.status_bitacora, FORMAT(BT.FECHA_BITACORA,'yyyy-MM-dd') as FECHA_BITACORA, BT.CLAVE_BITACORA, BT.PREFIJO, BT.FOLIO_BITACORA, BT.RANGO_BITACORA, BT.TERMINAL_BITACORA, BT.USR_CREA, BT.TRACTO_CLAVE, BT.TRACTO_NUM_ECO, BT.FCH_CREA, BT.FCH_MOD, BT.USR_MOD, FORMAT(BT.FECHA_SALIDA,'yyyy-MM-dd HH:mm:ss') as FECHA_SALIDA, BT.MONTO_ANTICIPO_SALIDA, BT.USR_CIERR, BT.FCH_CIERR, BT.OBSERVACIONES_OPERADOR, BT.INSTRUCCIONES_ESPECIALES, BT.NOTA_SISTEMA, BT.DIAS_SERVICIO, BT.kilometraje_inicial, BT.kilometraje_final, BT.terminal_cierre, BT.LITROS_DBL_OPERADOR, BT.MONTO_DIESEL_DBL_OPERADOR, BT.LIQ_DBL_OPR, BT.STATUS_VIAJE, BT.LECT_LITROS_COMP, BT.LECT_REND_COMP, BT.negocio_clave_bit, BT.LITROS_EXCESO, BT.LITROS_CIERRE, BT.difCombustible, BT.BAN_LIQUIDACION, BT.LIQUIDACION_CLAVE, OP.NEGOCIO_CLAVE, OP.OPERADOR_CLAVE, OP.OPERADOR_NOMBRE, KO.kilometros_carga1, KO.kilometros_vacio1, KO.total_kilometros1, RUT.ruta_min as ruta FROM BITACORAS AS BT\
+            let result = await pool.request().query("SELECT BT.status_bitacora, FORMAT(BT.FECHA_BITACORA,'yyyy-MM-dd') as FECHA_BITACORA, BT.CLAVE_BITACORA, BT.PREFIJO, BT.FOLIO_BITACORA, BT.DOBLE_OPERADOR, BT.RANGO_BITACORA, BT.TERMINAL_BITACORA, BT.USR_CREA, BT.TRACTO_CLAVE, BT.TRACTO_NUM_ECO, BT.FCH_CREA, BT.FCH_MOD, BT.USR_MOD, FORMAT(BT.FECHA_SALIDA,'yyyy-MM-dd HH:mm:ss') as FECHA_SALIDA, BT.MONTO_ANTICIPO_SALIDA, BT.USR_CIERR, FORMAT(BT.FCH_CIERR,'yyyy-MM-dd HH:mm:ss') as FCH_CIERR, BT.OBSERVACIONES_OPERADOR, BT.INSTRUCCIONES_ESPECIALES, BT.NOTA_SISTEMA, BT.DIAS_SERVICIO, BT.kilometraje_inicial, BT.kilometraje_final, BT.terminal_cierre, BT.LITROS_DBL_OPERADOR, BT.MONTO_DIESEL_DBL_OPERADOR, BT.LIQ_DBL_OPR, BT.STATUS_VIAJE, BT.LECT_LITROS_COMP, BT.LECT_REND_COMP, BT.negocio_clave_bit, BT.LITROS_EXCESO, BT.LITROS_CIERRE, BT.difCombustible, BT.BAN_LIQUIDACION, BT.LIQUIDACION_CLAVE, OP.NEGOCIO_CLAVE, OP.OPERADOR_CLAVE, OP.OPERADOR_NOMBRE, KO.kilometros_carga1, KO.kilometros_vacio1, KO.total_kilometros1, RUT.ruta_min as ruta FROM BITACORAS AS BT\
                 INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
                 INNER JOIN OPERADOR AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
                 INNER JOIN vKilometrosOperador00 AS KO ON KO.FOLIO_BITACORA = BT.FOLIO_BITACORA \
@@ -192,13 +194,238 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.reporteTanquesDiesel = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            let tractos = await pool.request().query("SELECT TRACTO_NUM_ECO FROM BITACORAS WHERE FCH_CIERR >= '2024-11-01T00:00:00.000Z' GROUP BY TRACTO_NUM_ECO");  
+       
+            var lista = [];
+
+            for(let tracto of tractos['recordsets'][0]) {
+                if(tracto.TRACTO_NUM_ECO.split('-')[0] != 'PHES') {
+                    var fechaCierre = await getFechaCierre(tracto.TRACTO_NUM_ECO);
+                    var porcecierre = await getPorceDieselCierre(fechaCierre, tracto.TRACTO_NUM_ECO.replace('C', 'C-'))
+                    var litros = await getCombustible(tracto.TRACTO_NUM_ECO);
+
+                    console.log(porcecierre);
+                    
+
+                    var registro = ({
+                        eco_tracto: tracto.TRACTO_NUM_ECO.replace('C', 'C-'),
+                        fecha_cierre: fechaCierre,
+                        porce_cierre: porcecierre,
+                        porce_aldia: 0,
+                        litros: litros
+                    });
+    
+                    lista.push(registro);
+                }
+            }
+
+            sql.close();
+            
+            res.json({
+                OK: true,
+                Registros: lista
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+
+
+
+    async function getFechaCierre(tracto) {
+        try {
+            let pool = await sql.connect(config);
+            let bita = await pool.request().query("SELECT TOP(1) FORMAT(BT.FCH_CIERR,'yyyy-MM-dd HH:mm:ss') as FCH_CIERR FROM BITACORAS AS BT \
+                INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
+                WHERE BT.BAN_LIQUIDACION = 1 AND RUT.ruta_min != 'MOEY-MOEY' AND  RUT.ruta_min != 'SACA-SACA'\
+                AND TRACTO_NUM_ECO = '" + tracto + "'\
+                ORDER BY BT.FCH_CIERR DESC");
+
+            return bita['recordsets'][0][0]['FCH_CIERR'];
+        }
+        catch(error) {
+            console.log(error.message);
+            return 0;
+        }
+    }
+
+    async function getPorceDieselCierre(fecha, tracto) {
+        try {
+            var fe = fecha.split(' ')[0] + 'T' + fecha.split(' ')[1] + 'Z';
+            var fe2 = fecha.split(' ')[0] + 'T23:59:59Z';
+            // var today = new Date();
+            // const hoy = moment(today).format('YYYY-MM-DD');
+            var idunidad;
+
+            var porce = 0;
+
+            await unidad.findAll({
+                where: {
+                    name: tracto
+                },
+            }).then(result => {
+                idunidad = result[0]['id_unidad'];
+            })
+            .catch(error => {
+                console.log(error.message);
+            });
+
+            var result = await Samsara.getVehicleStatsHistory({
+                startTime: fe,
+                endTime: fe2,
+                vehicleIds: idunidad,
+                types: 'fuelPercents'
+            })
+            // .then(async result => {
+                var data = result['data']['data'][0]['fuelPercents'].length > 0 ? result['data']['data'][0]['fuelPercents'][result['data']['data'][0]['fuelPercents'].length -1]['value'] : 0;
+                porce = data;
+
+                return porce;
+            // })
+            // .catch(error => {
+            //     console.log(error.message);
+            // });
+            
+        }
+        catch(error) {
+            console.log(error.message);
+            return 0;
+        }
+    }
+
+
+    async function getCombustible(tracto) {
+        try {
+            let pool = await sql.connect(config);
+
+            let bita = await pool.request().query("SELECT BT.CLAVE_BITACORA FROM bitacoras AS BT \
+                INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
+                WHERE BT.BAN_LIQUIDACION = 0 AND RUT.ruta_min != 'MOEY-MOEY' AND  RUT.ruta_min != 'SACA-SACA'\
+                AND TRACTO_NUM_ECO = '" + tracto + "'\
+                AND FCH_CIERR >= '2024-11-01T00:00:00.000Z'\
+                ORDER BY BT.FCH_CIERR DESC");
+
+            var claves =[]
+            for(cl of bita['recordsets'][0]) {
+                claves.push(cl.CLAVE_BITACORA);
+            }
+
+            let result = await pool.request().query("SELECT OV.IMPORTE, OV.LITROS FROM ORDEN_VALES AS OV \
+                WHERE OV.CLAVE_BITACORA IN (" + claves.toString().replace('[', '').replace(']', '') + ") AND OV.LITROS > 0 \
+                ORDER BY OV.VALE_FECHA ASC");
+
+            var lista = [];
+            var litros = 0;
+
+            for(litro of result['recordsets'][0]) {
+                lista.push(litro.LITROS);
+            }
+
+            litros = lista.reduce((a, b) => a + b, 0);
+                
+            return litros
+        }
+        catch(error) {
+            console.log(error.message);
+            return 0;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.pruebas = async (req, res) => {
         try {
             let pool = await sql.connect(config);
 
             // let result = await pool.request().query("SELECT * FROM vruta_completa WHERE CLAVE_BITACORA IN (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
             // let result = await pool.request().query("SELECT * FROM ORDEN_CONCEPTO WHERE CLAVE_BITACORA in (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
-            // let result = await pool.request().query("SELECT * FROM vKilometrosOperador00 WHERE FOLIO_BITACORA = 6243");
+            // let result = await pool.request().query("SELECT TOP(OM bitacoras WHERE BAN_LIQUIDACION = 1 AND OPERADOR_CLAVE = 602 ORDER BY FECHA_BITACORA DESC1) * FROM bitacoras WHERE BAN_LIQUIDACION = 1 AND OPERADOR_CLAVE = 602 ORDER BY FECHA_BITACORA DESC");
+            // let result = await pool.request().query("SELECT * FROM TRACTO");
+
+            let result = await pool.request().query("SELECT TOP(2)* FROM ORDEN_VALES");
+
+
+            // let result = await pool.request().query("SELECT BT.CLAVE_BITACORA, BT.FOLIO_BITACORA, BT.TRACTO_NUM_ECO, BT.BAN_LIQUIDACION, BT.FCH_CIERR, RUT.ruta_min  FROM bitacoras AS BT \
+            //     INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
+            //     WHERE BT.BAN_LIQUIDACION = 0 AND RUT.ruta_min != 'MOEY-MOEY' AND  RUT.ruta_min != 'SACA-SACA'\
+            //     AND BT.FCH_CIERR >= '2024-01-01T00:00:00.000Z' ORDER BY BT.FCH_CIERR DESC");
+
+
             // let result = await pool.request().query("SELECT * FROM LIQUIDACION_GASTOS WHERE CLAVE_BITACORA IN (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
             // let result = await pool.request().query("SELECT * FROM orden_casetas WHERE CLAVE_BITACORA IN (168375,168826,167987,168140)");
             // let result = await pool.request().query("SELECT * FROM concepto where concepto_clave = 29;");
@@ -216,23 +443,22 @@ module.exports = app => {
 
 
             
-            let claves = await pool.request().query("Select TOP(10) CLAVE_BITACORA FROM BITACORAS WHERE BAN_LIQUIDACION = 1");
-
-            var clave = []
-
-            claves['recordsets'][0].forEach(element => {
-                clave.push(element.CLAVE_BITACORA);
-            });
-
-            console.log(clave);
-            
-
-            
+            // let claves = await pool.request().query("SELECT CLAVE_BITACORA FROM BITACORAS WHERE FCH_CREA BETWEEN '2024-01-01T00:00:00.000Z' AND '2024-11-03T23:59:59.000Z'");
+                
+            //     var clave = []
+                
+            //     claves['recordsets'][0].forEach(element => {
+            //         clave.push(element.CLAVE_BITACORA);
+            //     });
 
  
-            let result = await pool.request().query("SELECT OC.CLAVE_BITACORA, OC.IMPORTE, OC.REFERENCIA, CON.CONCEPTO_DESCRIP, OC.VALE_TERMINAL, OC.VALE_FOLIO, FORMAT(OC.VALE_FECHA,'yyyy-MM-dd') as VALE_FECHA, FORMAT(OC.FCH_CREA,'yyyy-MM-dd HH:mm:ss') as FCH_CREA, OC.PREFIJO FROM ORDEN_CONCEPTO AS OC \
-                INNER JOIN CONCEPTO AS CON ON CON.CONCEPTO_CLAVE = OC.CONCEPTO_CLAVE\
-                WHERE CLAVE_BITACORA IN (" + clave.toString().replace('[', '').replace(']', '') + ") ORDER BY FCH_CREA ASC");
+                
+                // let result = await pool.request().query("SELECT OC.CLAVE_BITACORA, BT.FOLIO_BITACORA, OC.IMPORTE, OC.REFERENCIA, CON.CONCEPTO_DESCRIP, OC.VALE_TERMINAL, OC.VALE_FOLIO, FORMAT(OC.VALE_FECHA,'yyyy-MM-dd') as VALE_FECHA, FORMAT(OC.FCH_CREA,'yyyy-MM-dd HH:mm:ss') as FCH_CREA, OP.OPERADOR_CLAVE, OP.OPERADOR_NOMBRE, OC.PREFIJO FROM ORDEN_CONCEPTO AS OC \
+                // let result = await pool.request().query("SELECT OC.CLAVE_BITACORA, OC.FOLIO_BITACORA, OP.OPERADOR_CLAVE, OP.OPERADOR_NOMBRE, OC.VALE_TERMINAL, OC.VALE_FOLIO, OC.VALE_FECHA, OC.CONCEPTO_DESCRIP, OC.IMPORTE  FROM liquidacion_anticipos AS OC \
+                // INNER JOIN OPERADOR AS OP ON OP.OPERADOR_CLAVE = OC.OPERADOR_CLAVE \
+                // WHERE OC.CLAVE_BITACORA IN (" + clave.toString().replace('[', '').replace(']', '') + ")");
+                // INNER JOIN CONCEPTO AS CON ON CON.CONCEPTO_CLAVE = OC.CONCEPTO_CLAVE \
+                // INNER JOIN BITACORAS AS BT ON BT.CLAVE_BITACORA = OC.CLAVE_BITACORA \
 
 
             

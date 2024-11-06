@@ -12,7 +12,8 @@ module.exports = app => {
 
     app.reporteDiesel = async (req, res) => {
         var reporteD = [];
-        const tags = ['4531263', '3907109', '4236332', '4399105', '4343814', '4244687'];
+        // const tags = ['4531263', '3907109', '4236332', '4399105', '4343814', '4244687'];
+        const tags = ['4531263'];
         const dateArray = getDatesArray(req.params.fechaInicio, req.params.fechaFin);
             
             for(let index = 0; index < dateArray.length; index++) {
@@ -27,8 +28,7 @@ module.exports = app => {
                         endDate: formato + 'T23:59:59.59-06:00',
                         tagIds: tags[index],
                         energyType: 'fuel'
-                    })
-                    .then(async result => {
+                    }).then(async result => {
                         var resu = result['data']['data']['vehicleReports'];
                         
                         for(let i = 0; i < resu.length; i++) {
@@ -78,9 +78,38 @@ module.exports = app => {
                 endTime: day + 'T23:59:59Z',
                 vehicleIds: idtracto,
                 types: 'fuelPercents'
-            })         
+            });
             
-            percent = result['data']['data'][0]['fuelPercents'].length > 0 ? result['data']['data'][0]['fuelPercents'][result['data']['data'][0]['fuelPercents'].length -1]['value'] : 0;
+            // console.log(result['data']['data'][0]['fuelPercents']);
+            var data = result['data']['data'][0]['fuelPercents'];
+              
+              const filterByInterval = (data, intervalInMinutes = 10) => {
+                const result = [];
+                let previousTime = new Date(data[0].time);
+              
+                result.push(data[0]);
+              
+                for(let i = 1; i < data.length; i++) {
+                  const currentTime = new Date(data[i].time);
+                  const difference = (currentTime - previousTime) / (1000 * 60);
+              
+                  if(difference >= intervalInMinutes) {
+                    result.push(data[i]);
+                    previousTime = currentTime;
+                  }
+                }
+              
+                return result;
+              };
+              
+              const filteredData = filterByInterval(data);
+
+              console.log(filteredData);
+              
+            
+            
+            // percent = result['data']['data'][0]['fuelPercents'].length > 0 ? result['data']['data'][0]['fuelPercents'][result['data']['data'][0]['fuelPercents'].length -1]['value'] : 0;
+            percent = filteredData['data']['data'][0]['fuelPercents'].length > 0 ? filteredData['data']['data'][0]['fuelPercents'][filteredData['data']['data'][0]['fuelPercents'].length -1]['value'] : 0;
 
             return percent;
         } 

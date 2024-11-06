@@ -16,5 +16,10 @@ module.exports = app => {
     app.get('/obtenerGastos/:claves', ca.obtenerGastos);
 
 
+    app.get('/reporteTanquesDiesel', ca.reporteTanquesDiesel);
+
+
+
+
     app.get('/pruebas', ca.pruebas);
 }
