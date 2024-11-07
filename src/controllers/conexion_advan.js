@@ -289,6 +289,9 @@ module.exports = app => {
         }
     }
 
+
+
+
     async function getPorceDieselCierre(fecha, tracto) {
         try {
             var fe = fecha.split(' ')[0] + 'T' + fecha.split(' ')[1] + 'Z';
@@ -384,6 +387,33 @@ module.exports = app => {
 
 
 
+    app.repopueba = async (req, res) => {
+        try {
+
+            var porce = 0;
+            var result = await Samsara.getVehicleStatsHistory({
+                startTime: '2024-11-06T00:00:00Z',
+                endTime: '2024-11-06T23:59:59Z',
+                tagIds: '4343814',
+                types: 'fuelPercents'
+            });
+
+
+            // var data = result['data']['data'][0]['fuelPercents'].length > 0 ? result['data']['data'][0]['fuelPercents'][result['data']['data'][0]['fuelPercents'].length -1]['value'] : 0;
+            // porce = data;
+
+            console.log(result['data']['data'][0]['fuelPercents']);
+            
+
+            return porce;
+
+            
+        }
+        catch (error){
+            console.log(error.message);
+            return 0;
+        }
+    }
 
 
 

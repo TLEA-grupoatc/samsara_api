@@ -21,5 +21,10 @@ module.exports = app => {
 
 
 
+    app.get('/repopueba', ca.repopueba);
+
+
+
+
     app.get('/pruebas', ca.pruebas);
 }
