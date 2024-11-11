@@ -57,6 +57,11 @@ module.exports = app => {
         });
     }
 
+
+
+
+
+
     function getDatesArray(startDate, endDate) {
         const dates = [];
         let currentDate = new Date(startDate);
@@ -118,6 +123,7 @@ module.exports = app => {
             return 0;
         }
     }
+
       
     return app;
 }

@@ -31,6 +31,9 @@ app.use(cors());
 consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('middlewares').then('controllers').then('routes').then('sockets').into(app); 
 
 const alerta = app.database.models.Alertas;
+const geogaso = app.database.models.GeoGaso;
+const Samsara = require("@api/samsara-dev-rel");
+Samsara.auth(process.env.KEYSAM);
 
 // setInterval(() => {
 //   app.obtenerSnapshot({}, {
@@ -193,7 +196,7 @@ app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), asy
   const date = payload.eventTime;
   const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
 
-  let nuevaAlerta = new alerta({
+  let nuevaAlerta = new geogaso({
     eventId: payload.eventId,
     eventType: payload.eventType,
     alertConditionId: 'gatewayUnplugged',
@@ -292,22 +295,141 @@ app.post('/slack/events',  async (req, res) => {
   res.status(200).send('OK');
 });
 
-http.listen(app.get('port'), () => {
-  console.log(`Server on port ${app.get('port')}`.random);
+
+
+
+
+app.post('/webhookGeoGaso', async (req, res) => {
+  const payload = req.body;
+
+  var today = new Date();
+  const hoy = moment(today).format('YYYY-MM-DD');
+  const timestamp = payload.eventMs;
+  const timestamp2 = payload['event']['startMs'];
+  const date = new Date(timestamp);
+  const date2 = new Date(timestamp2);
+  const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
+  const formato2 = moment(date2).format('YYYY-MM-DD HH:mm:ss');
+
+  var id = payload['event']['device']['id'];
+
+  var gaso = payload['event']['summary'];
+
+  const procentaje =  await Samsara.getVehicleStatsHistory({
+    startTime: formato.split(' ')[0] + 'T' + formato.split(' ')[1] + 'Z',
+    endTime: hoy + 'T23:59:59Z',
+    vehicleIds: id,
+    types: 'fuelPercents'
+  });
+
+  var porce = procentaje['data']['data'][0]['fuelPercents'][procentaje['data']['data'][0]['fuelPercents'].length -1]['value']
+
+  let nuevaAlerta = new geogaso({
+    tracto: payload['event']['device']['name'],
+    geo: gaso,
+    dia: hoy,
+    fecha_entrada: formato2,
+    tanque: porce,
+    fecha_salida: null,
+    tanque_salida: 0,
+    carga: 0
+  });
+
+  await geogaso.create(nuevaAlerta.dataValues, {
+    fields: [
+      'tracto', 
+      'geo', 
+      'dia', 
+      'fecha_entrada', 
+      'tanque',
+      'fecha_salida', 
+      'tanque_salida',
+      'carga'
+    ]
+  }).then(result => {}).catch(error => { console.log(error.message); });
+}); 
+
+
+
+
+
+
+
+app.post('/webhookSalidaGeoGaso', async (req, res) => {
+  const payload = req.body;
+  var today = new Date();
+  const hoy = moment(today).format('YYYY-MM-DD');
+
+  var id = payload.data.conditions[0]['details']['geofenceExit']['vehicle']['id'];
+
+  const timestamp2 = payload['event']['startMs'];
+  const date2 = new Date(timestamp2);
+  const formato2 = moment(date2).format('YYYY-MM-DD HH:mm:ss');
+
+  var encontro = await geogaso.findAll({
+    where: {
+      tracto: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['name'],
+      geo: payload.data.conditions[0]['details']['geofenceExit']['address']['name'],
+      dia: hoy
+    }
+  });
+
+  console.log(encontro);
+  console.log(encontro.dataValues.id_geo_gaso);
+
+  const procentaje =  await Samsara.getVehicleStatsHistory({
+    startTime: formato2.split(' ')[0] + 'T' + formato.split(' ')[1] + 'Z',
+    endTime: hoy + 'T23:59:59Z',
+    vehicleIds: id,
+    types: 'fuelPercents'
+  });
+
+  var porce = procentaje['data']['data'][0]['fuelPercents'][procentaje['data']['data'][0]['fuelPercents'].length -1]['value']
+
+  let nuevaAlerta = new geogaso({
+    fecha_salida: hoy,
+    tanque_salida: porce,
+    carga: 0
+  });
+
+
+  await geogaso.update(nuevaAlerta.dataValues, {
+    where: {
+      tracto: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['name']
+    },
+    fields: [
+      'fecha_salida', 
+      'tanque_salida',
+      'carga'
+    ]
+  }).then(result => {}).catch(error => { console.log(error.message); });
 });
 
-// http.listen(app.get('port'), async () => {
-//   try {
-//     await ngrok.authtoken(process.env.TOKENNGROK);
-//     const url = await ngrok.forward(app.get('port'));
 
-//     console.log(`Server on port ${app.get('port')}`.random);
-//     console.log(url.url());
-//   }
-//   catch (error) {
-//     console.error('Error al iniciar el túnel Ngrok:', error);
-//   }
+
+
+
+
+
+
+
+
+// http.listen(app.get('port'), () => {
+//   console.log(`Server on port ${app.get('port')}`.random);
 // });
+
+http.listen(app.get('port'), async () => {
+  try {
+    await ngrok.authtoken(process.env.TOKENNGROK);
+    const url = await ngrok.forward(app.get('port'));
+
+    console.log(`Server on port ${app.get('port')}`.random);
+    console.log(url.url());
+  }
+  catch (error) {
+    console.error('Error al iniciar el túnel Ngrok:', error);
+  }
+});
 
 
 

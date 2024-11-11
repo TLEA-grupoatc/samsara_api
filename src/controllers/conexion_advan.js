@@ -230,26 +230,34 @@ module.exports = app => {
     app.reporteTanquesDiesel = async (req, res) => {
         try {
             let pool = await sql.connect(config);
+            
+            // let tractos = await pool.request().query("SELECT TRACTO_NUM_ECO FROM BITACORAS WHERE FCH_CIERR >= '2024-11-01T00:00:00.000Z' GROUP BY TRACTO_NUM_ECO");  
 
-            let tractos = await pool.request().query("SELECT TRACTO_NUM_ECO FROM BITACORAS WHERE FCH_CIERR >= '2024-11-01T00:00:00.000Z' GROUP BY TRACTO_NUM_ECO");  
-       
+            let tractos = await pool.request().query("SELECT BT.TRACTO_NUM_ECO FROM vvalescomb AS BT \
+                WHERE VALE_FECHA >= '" + '2024-11-01T00:00:00.000Z' + "' \
+                AND liquidacion = 's/l' \
+                GROUP BY BT.TRACTO_NUM_ECO");
+
+            // var tractos = [{"TRACTO_NUM_ECO": 'TLEA-027'}, {"TRACTO_NUM_ECO": 'C44'}]
+            
             var lista = [];
 
             for(let tracto of tractos['recordsets'][0]) {
+            // for(let tracto of tractos) {
                 if(tracto.TRACTO_NUM_ECO.split('-')[0] != 'PHES') {
                     var fechaCierre = await getFechaCierre(tracto.TRACTO_NUM_ECO);
                     var porcecierre = await getPorceDieselCierre(fechaCierre, tracto.TRACTO_NUM_ECO.replace('C', 'C-'))
-                    var litros = await getCombustible(tracto.TRACTO_NUM_ECO);
-
-                    console.log(porcecierre);
-                    
+                    var porceHoy = await getPorceDieselHoy(fechaCierre, tracto.TRACTO_NUM_ECO.replace('C', 'C-'))
+                    var lit = await getCombustible(fechaCierre, tracto.TRACTO_NUM_ECO);
+                    var litrosSam = await getDieselSamsara(fechaCierre, tracto.TRACTO_NUM_ECO.replace('C', 'C-'))
 
                     var registro = ({
                         eco_tracto: tracto.TRACTO_NUM_ECO.replace('C', 'C-'),
                         fecha_cierre: fechaCierre,
                         porce_cierre: porcecierre,
-                        porce_aldia: 0,
-                        litros: litros
+                        porce_aldia: porceHoy,
+                        litros: lit,
+                        litrosSamsara: litrosSam,
                     });
     
                     lista.push(registro);
@@ -269,9 +277,6 @@ module.exports = app => {
         }
     }
 
-
-
-
     async function getFechaCierre(tracto) {
         try {
             let pool = await sql.connect(config);
@@ -289,15 +294,74 @@ module.exports = app => {
         }
     }
 
-
-
-
     async function getPorceDieselCierre(fecha, tracto) {
         try {
             var fe = fecha.split(' ')[0] + 'T' + fecha.split(' ')[1] + 'Z';
             var fe2 = fecha.split(' ')[0] + 'T23:59:59Z';
-            // var today = new Date();
-            // const hoy = moment(today).format('YYYY-MM-DD');
+            var idunidad;
+            var porce = 0;
+
+            await unidad.findAll({
+                where: {
+                    name: tracto
+                },
+            }).then(result => {
+                idunidad = result[0]['id_unidad'];
+            }).catch(error => {
+                console.log(error.message);
+            });
+
+            var result = await Samsara.getVehicleStatsHistory({
+                startTime: fe,
+                endTime: fe2,
+                vehicleIds: idunidad,
+                types: 'fuelPercents'
+            });
+
+            var data = result['data']['data'][0]['fuelPercents'].length > 0 ? result['data']['data'][0]['fuelPercents'][result['data']['data'][0]['fuelPercents'].length -1]['value'] : 0;
+            porce = data;
+
+            return porce;
+        }
+        catch(error) {
+            console.log(error.message);
+            return 0;
+        }
+    }
+
+    async function getCombustible(fecha, tracto) {
+        try {
+            let pool = await sql.connect(config);
+
+            let result = await pool.request().query("SELECT BT.TRACTO_NUM_ECO, BT.VALE_FECHA, BT.litros FROM vvalescomb AS BT \
+                WHERE TRACTO_NUM_ECO = '" + tracto + "' \
+                AND VALE_FECHA >= '" + fecha + "' \
+                AND liquidacion = 's/l' \
+                ORDER BY BT.VALE_FECHA DESC");
+
+            var lista = [];
+            var litros = 0;
+
+            for(litro of result['recordsets'][0]) {
+                lista.push(litro.litros);
+            }
+
+            litros = lista.reduce((a, b) => a + b, 0);
+                
+            return litros
+        }
+        catch(error) {
+            console.log(error.message);
+            return 0;
+        }
+    }
+
+    async function getPorceDieselHoy(fecha, tracto) {
+        try {
+            var today = new Date();
+            const hoy = moment(today).format('YYYY-MM-DD');
+            var fe = hoy.split(' ')[0] + 'T07:00:00Z';
+            var fe2 = hoy.split(' ')[0] + 'T23:59:59Z';
             var idunidad;
 
             var porce = 0;
@@ -336,37 +400,40 @@ module.exports = app => {
         }
     }
 
-
-    async function getCombustible(tracto) {
+    async function getDieselSamsara(fecha, tracto) {
         try {
-            let pool = await sql.connect(config);
-
-            let bita = await pool.request().query("SELECT BT.CLAVE_BITACORA FROM bitacoras AS BT \
-                INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
-                WHERE BT.BAN_LIQUIDACION = 0 AND RUT.ruta_min != 'MOEY-MOEY' AND  RUT.ruta_min != 'SACA-SACA'\
-                AND TRACTO_NUM_ECO = '" + tracto + "'\
-                AND FCH_CIERR >= '2024-11-01T00:00:00.000Z'\
-                ORDER BY BT.FCH_CIERR DESC");
-
-            var claves =[]
-            for(cl of bita['recordsets'][0]) {
-                claves.push(cl.CLAVE_BITACORA);
-            }
-
-            let result = await pool.request().query("SELECT OV.IMPORTE, OV.LITROS FROM ORDEN_VALES AS OV \
-                WHERE OV.CLAVE_BITACORA IN (" + claves.toString().replace('[', '').replace(']', '') + ") AND OV.LITROS > 0 \
-                ORDER BY OV.VALE_FECHA ASC");
-
-            var lista = [];
+            
+            var today = new Date();
+            const hoy = moment(today).format('YYYY-MM-DD');
+            var fe = fecha.toString().split(' ')[0] + 'T00:00:00-06:00';
+            var fe2 = hoy.split(' ')[0] + 'T23:59:59-06:00';
+            var idunidad;
+            
             var litros = 0;
+            
+            
+            console.log(fe);
+            console.log(fe2);
+            
+            var resu = await unidad.findAll({
+                where: {
+                    name: tracto
+                },
+            });
 
-            for(litro of result['recordsets'][0]) {
-                lista.push(litro.LITROS);
-            }
+            idunidad = resu[0]['id_unidad'];
+            
 
-            litros = lista.reduce((a, b) => a + b, 0);
-                
-            return litros
+            var result = await Samsara.getFuelEnergyVehicleReports({
+                startDate: fe,
+                endDate: fe2,
+                vehicleIds: idunidad,
+                energyType: 'fuel'
+            });
+
+            litros = result['data']['data']['vehicleReports'][0]['fuelConsumedMl'];
+
+            return litros;
         }
         catch(error) {
             console.log(error.message);
@@ -387,25 +454,29 @@ module.exports = app => {
 
 
 
+
+
+    
+
     app.repopueba = async (req, res) => {
         try {
 
-            var porce = 0;
+            var litros = 0;
             var result = await Samsara.getVehicleStatsHistory({
-                startTime: '2024-11-06T00:00:00Z',
-                endTime: '2024-11-06T23:59:59Z',
+                startTime: '2024-11-07T07:00:00Z',
+                endTime: '2024-11-07T23:59:59Z',
                 tagIds: '4343814',
                 types: 'fuelPercents'
             });
 
 
             // var data = result['data']['data'][0]['fuelPercents'].length > 0 ? result['data']['data'][0]['fuelPercents'][result['data']['data'][0]['fuelPercents'].length -1]['value'] : 0;
-            // porce = data;
+            // litros = data;
 
             console.log(result['data']['data'][0]['fuelPercents']);
             
 
-            return porce;
+            return litros;
 
             
         }
@@ -414,29 +485,6 @@ module.exports = app => {
             return 0;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     app.pruebas = async (req, res) => {
         try {
@@ -447,7 +495,16 @@ module.exports = app => {
             // let result = await pool.request().query("SELECT TOP(OM bitacoras WHERE BAN_LIQUIDACION = 1 AND OPERADOR_CLAVE = 602 ORDER BY FECHA_BITACORA DESC1) * FROM bitacoras WHERE BAN_LIQUIDACION = 1 AND OPERADOR_CLAVE = 602 ORDER BY FECHA_BITACORA DESC");
             // let result = await pool.request().query("SELECT * FROM TRACTO");
 
-            let result = await pool.request().query("SELECT TOP(2)* FROM ORDEN_VALES");
+            // let result = await pool.request().query("SELECT TOP(2)* FROM ORDEN_VALES");
+            // 
+            // let result = await pool.request().query("SELECT Top(100) BT.TRACTO_NUM_ECO, BT.VALE_FECHA, BT.litros FROM vvalescomb AS BT \
+            //     ORDER BY BT.VALE_FECHA DESC");
+
+
+            let result = await pool.request().query("SELECT BT.TRACTO_NUM_ECO FROM vvalescomb AS BT \
+                WHERE VALE_FECHA >= '" + '2024-11-01T00:00:00.000Z' + "' \
+                AND liquidacion = 's/l' \
+                GROUP BY BT.TRACTO_NUM_ECO");
 
 
             // let result = await pool.request().query("SELECT BT.CLAVE_BITACORA, BT.FOLIO_BITACORA, BT.TRACTO_NUM_ECO, BT.BAN_LIQUIDACION, BT.FCH_CIERR, RUT.ruta_min  FROM bitacoras AS BT \
