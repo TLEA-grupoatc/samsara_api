@@ -3,6 +3,8 @@ const moment = require('moment');
 const _ = require('lodash');
 
 module.exports = app => {
+    const geogaso = app.database.models.GeoGaso;
+
     const Samsara = require("@api/samsara-dev-rel");
     Samsara.auth(process.env.KEYSAM);
 
@@ -122,6 +124,25 @@ module.exports = app => {
             console.log(error.message);
             return 0;
         }
+    }
+
+
+    app.obtenerGeoGasolineras = (req, res) => {
+        geogaso.findAll({
+            order: [
+                ['fecha_entrada', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Reporte: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
     }
 
       

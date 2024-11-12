@@ -301,52 +301,69 @@ app.post('/slack/events',  async (req, res) => {
 
 app.post('/webhookGeoGaso', async (req, res) => {
   const payload = req.body;
-
+  
   var today = new Date();
   const hoy = moment(today).format('YYYY-MM-DD');
-  const timestamp = payload.eventMs;
   const timestamp2 = payload['event']['startMs'];
-  const date = new Date(timestamp);
   const date2 = new Date(timestamp2);
-  const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
   const formato2 = moment(date2).format('YYYY-MM-DD HH:mm:ss');
-
+  
   var id = payload['event']['device']['id'];
+  
+  var texto = payload['event']['summary'];
+  
+  const regex = /ha estado dentro de (.*?) por más de 10 minutos/;
+  const match = texto.match(regex);
 
-  var gaso = payload['event']['summary'];
-
-  const procentaje =  await Samsara.getVehicleStatsHistory({
-    startTime: formato.split(' ')[0] + 'T' + formato.split(' ')[1] + 'Z',
-    endTime: hoy + 'T23:59:59Z',
-    vehicleIds: id,
-    types: 'fuelPercents'
+  if(match) {
+    gaso = match[1];
+  } 
+  else {
+    console.log('No se encontró el texto deseado.');
+  }
+  
+  var encontro = await geogaso.findAll({
+    where: {
+      tracto: payload['event']['device']['name'],
+      geo: gaso,
+      fecha_entrada: formato2
+    }
   });
 
-  var porce = procentaje['data']['data'][0]['fuelPercents'][procentaje['data']['data'][0]['fuelPercents'].length -1]['value']
+  if(encontro.length <= 0) {
+    const procentaje =  await Samsara.getVehicleStatsHistory({
+      startTime: formato2.split(' ')[0] + 'T' + formato2.split(' ')[1] + 'Z',
+      endTime: hoy + 'T23:59:59Z',
+      vehicleIds: id,
+      types: 'fuelPercents'
+    });
 
-  let nuevaAlerta = new geogaso({
-    tracto: payload['event']['device']['name'],
-    geo: gaso,
-    dia: hoy,
-    fecha_entrada: formato2,
-    tanque: porce,
-    fecha_salida: null,
-    tanque_salida: 0,
-    carga: 0
-  });
+    var porce = procentaje['data']['data'][0]['fuelPercents'][procentaje['data']['data'][0]['fuelPercents'].length -1]['value']
 
-  await geogaso.create(nuevaAlerta.dataValues, {
-    fields: [
-      'tracto', 
-      'geo', 
-      'dia', 
-      'fecha_entrada', 
-      'tanque',
-      'fecha_salida', 
-      'tanque_salida',
-      'carga'
-    ]
-  }).then(result => {}).catch(error => { console.log(error.message); });
+    let nuevaAlerta = new geogaso({
+      tracto: payload['event']['device']['name'],
+      geo: gaso,
+      dia: hoy,
+      fecha_entrada: formato2,
+      tanque: porce,
+      fecha_salida: null,
+      tanque_salida: null,
+      carga: null
+    });
+
+    await geogaso.create(nuevaAlerta.dataValues, {
+      fields: [
+        'tracto', 
+        'geo', 
+        'dia', 
+        'fecha_entrada', 
+        'tanque',
+        'fecha_salida', 
+        'tanque_salida',
+        'carga'
+      ]
+    }).then(result => {}).catch(error => { console.log(error.message); });
+  }
 }); 
 
 
@@ -362,9 +379,8 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
 
   var id = payload.data.conditions[0]['details']['geofenceExit']['vehicle']['id'];
 
-  const timestamp2 = payload['event']['startMs'];
-  const date2 = new Date(timestamp2);
-  const formato2 = moment(date2).format('YYYY-MM-DD HH:mm:ss');
+  const date = payload.eventTime;
+  const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
 
   var encontro = await geogaso.findAll({
     where: {
@@ -374,35 +390,48 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
     }
   });
 
-  console.log(encontro);
-  console.log(encontro.dataValues.id_geo_gaso);
-
-  const procentaje =  await Samsara.getVehicleStatsHistory({
-    startTime: formato2.split(' ')[0] + 'T' + formato.split(' ')[1] + 'Z',
-    endTime: hoy + 'T23:59:59Z',
-    vehicleIds: id,
-    types: 'fuelPercents'
-  });
-
-  var porce = procentaje['data']['data'][0]['fuelPercents'][procentaje['data']['data'][0]['fuelPercents'].length -1]['value']
-
-  let nuevaAlerta = new geogaso({
-    fecha_salida: hoy,
-    tanque_salida: porce,
-    carga: 0
-  });
-
-
-  await geogaso.update(nuevaAlerta.dataValues, {
-    where: {
-      tracto: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['name']
-    },
-    fields: [
-      'fecha_salida', 
-      'tanque_salida',
-      'carga'
-    ]
-  }).then(result => {}).catch(error => { console.log(error.message); });
+  if(encontro.length > 0) {
+    var idgaso;
+    var tan;
+    console.log(encontro);
+    encontro.forEach((re) => {
+      console.log(re.id_geo_gaso);
+      console.log(re.tanque);
+      idgaso = re.id_geo_gaso;
+      tan = re.tanque;
+    });
+    
+    const procentaje =  await Samsara.getVehicleStatsHistory({
+      startTime: formato.split(' ')[0] + 'T' + formato.split(' ')[1] + 'Z',
+      endTime: hoy + 'T23:59:59Z',
+      vehicleIds: id,
+      types: 'fuelPercents'
+    });
+  
+    var porce = procentaje['data']['data'][0]['fuelPercents'][procentaje['data']['data'][0]['fuelPercents'].length -1]['value'];
+    // var taqueentrada = encontro.dataValues.tanque;
+  
+    let nuevaAlerta = new geogaso({
+      fecha_salida: formato,
+      tanque_salida: porce,
+      carga: porce > tan ? 1 : 0
+      // carga: 0
+    });
+  
+    await geogaso.update(nuevaAlerta.dataValues, {
+      where: {
+        id_geo_gaso: idgaso
+      },
+      fields: [
+        'fecha_salida', 
+        'tanque_salida',
+        'carga'
+      ]
+    }).then(result => {}).catch(error => { console.log(error.message); });
+  }
+  else {
+    console.log('no encontrado');
+  }
 });
 
 

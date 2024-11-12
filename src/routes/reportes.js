@@ -4,4 +4,6 @@ module.exports = app => {
 
 
     app.get('/reporteDiesel/:fechaInicio/:fechaFin', repo.reporteDiesel);
+
+    app.get('/obtenerGeoGasolineras', repo.obtenerGeoGasolineras);
 }

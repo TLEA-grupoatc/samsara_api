@@ -143,6 +143,7 @@ module.exports = app => {
             createdAtTime: body.createdAtTime,
             updatedAtTime: body.updatedAtTime,
             esn: body.esn,
+            tanque: body.tanque,
             division: body.division,
             idcliente: body.idcliente
         });
@@ -183,6 +184,7 @@ module.exports = app => {
                 'createdAtTime', 
                 'updatedAtTime',
                 'esn',
+                'tanque',
                 'division',
                 'idcliente'
             ]

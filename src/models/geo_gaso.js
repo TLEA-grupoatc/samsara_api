@@ -22,7 +22,7 @@ module.exports = (sequelize, DataType) => {
             allowNull: true
         },
         tanque:{
-            type: DataType.INTEGER  ,
+            type: DataType.INTEGER,
             allowNull: true
         },
         fecha_salida:{

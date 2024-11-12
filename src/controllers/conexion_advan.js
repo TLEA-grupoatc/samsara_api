@@ -501,10 +501,12 @@ module.exports = app => {
             //     ORDER BY BT.VALE_FECHA DESC");
 
 
-            let result = await pool.request().query("SELECT BT.TRACTO_NUM_ECO FROM vvalescomb AS BT \
-                WHERE VALE_FECHA >= '" + '2024-11-01T00:00:00.000Z' + "' \
-                AND liquidacion = 's/l' \
-                GROUP BY BT.TRACTO_NUM_ECO");
+            // let result = await pool.request().query("SELECT BT.TRACTO_NUM_ECO FROM vvalescomb AS BT \
+            //     WHERE VALE_FECHA >= '" + '2024-11-01T00:00:00.000Z' + "' \
+            //     AND liquidacion = 's/l' \
+            //     GROUP BY BT.TRACTO_NUM_ECO");
+
+            let result = await pool.request().query("SELECT CONCEPTO_CLAVE, CONCEPTO_DESCRIP FROM CONCEPTO GROUP BY CONCEPTO_CLAVE, CONCEPTO_DESCRIP");
 
 
             // let result = await pool.request().query("SELECT BT.CLAVE_BITACORA, BT.FOLIO_BITACORA, BT.TRACTO_NUM_ECO, BT.BAN_LIQUIDACION, BT.FCH_CIERR, RUT.ruta_min  FROM bitacoras AS BT \

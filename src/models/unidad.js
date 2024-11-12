@@ -128,6 +128,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        tanque:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         division:{
             type: DataType.INTEGER,
             allowNull: true
