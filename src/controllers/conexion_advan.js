@@ -8,6 +8,7 @@ module.exports = app => {
     Samsara.auth(process.env.KEYSAM);
 
     const unidad = app.database.models.Unidades;
+    const geogaso = app.database.models.GeoGaso;
 
     const config = {
         user: process.env.USERADVAN,
@@ -230,26 +231,22 @@ module.exports = app => {
     app.reporteTanquesDiesel = async (req, res) => {
         try {
             let pool = await sql.connect(config);
-            
-            // let tractos = await pool.request().query("SELECT TRACTO_NUM_ECO FROM BITACORAS WHERE FCH_CIERR >= '2024-11-01T00:00:00.000Z' GROUP BY TRACTO_NUM_ECO");  
 
             let tractos = await pool.request().query("SELECT BT.TRACTO_NUM_ECO FROM vvalescomb AS BT \
-                WHERE VALE_FECHA >= '" + '2024-11-01T00:00:00.000Z' + "' \
+                WHERE VALE_FECHA >= '2024-11-13T00:00:00.000Z' \
                 AND liquidacion = 's/l' \
                 GROUP BY BT.TRACTO_NUM_ECO");
-
-            // var tractos = [{"TRACTO_NUM_ECO": 'TLEA-027'}, {"TRACTO_NUM_ECO": 'C44'}]
             
             var lista = [];
 
             for(let tracto of tractos['recordsets'][0]) {
-            // for(let tracto of tractos) {
                 if(tracto.TRACTO_NUM_ECO.split('-')[0] != 'PHES') {
                     var fechaCierre = await getFechaCierre(tracto.TRACTO_NUM_ECO);
                     var porcecierre = await getPorceDieselCierre(fechaCierre, tracto.TRACTO_NUM_ECO.replace('C', 'C-'))
                     var porceHoy = await getPorceDieselHoy(fechaCierre, tracto.TRACTO_NUM_ECO.replace('C', 'C-'))
                     var lit = await getCombustible(fechaCierre, tracto.TRACTO_NUM_ECO);
                     var litrosSam = await getDieselSamsara(fechaCierre, tracto.TRACTO_NUM_ECO.replace('C', 'C-'))
+                    var cargassam = await getCargasSamsara(fechaCierre, tracto.TRACTO_NUM_ECO.replace('C', 'C-'))
 
                     var registro = ({
                         eco_tracto: tracto.TRACTO_NUM_ECO.replace('C', 'C-'),
@@ -258,6 +255,7 @@ module.exports = app => {
                         porce_aldia: porceHoy,
                         litros: lit,
                         litrosSamsara: litrosSam,
+                        cargasSamsara: cargassam
                     });
     
                     lista.push(registro);
@@ -333,22 +331,25 @@ module.exports = app => {
         try {
             let pool = await sql.connect(config);
 
-            let result = await pool.request().query("SELECT BT.TRACTO_NUM_ECO, BT.VALE_FECHA, BT.litros FROM vvalescomb AS BT \
+            let result = await pool.request().query("SELECT BT.TRACTO_NUM_ECO, BT.VALE_FOLIO, FORMAT(BT.VALE_FECHA,'yyyy-MM-dd') as VALE_FECHA, BT.litros, BT.status_vale FROM vvalescomb AS BT \
                 WHERE TRACTO_NUM_ECO = '" + tracto + "' \
                 AND VALE_FECHA >= '" + fecha + "' \
                 AND liquidacion = 's/l' \
+                AND status_vale = 0 \
                 ORDER BY BT.VALE_FECHA DESC");
 
             var lista = [];
+            var vale = [];
             var litros = 0;
 
-            for(litro of result['recordsets'][0]) {
+            for(let litro of result['recordsets'][0]) {
                 lista.push(litro.litros);
+                vale.push(litro);
             }
 
             litros = lista.reduce((a, b) => a + b, 0);
                 
-            return litros
+            return vale
         }
         catch(error) {
             console.log(error.message);
@@ -402,7 +403,6 @@ module.exports = app => {
 
     async function getDieselSamsara(fecha, tracto) {
         try {
-            
             var today = new Date();
             const hoy = moment(today).format('YYYY-MM-DD');
             var fe = fecha.toString().split(' ')[0] + 'T00:00:00-06:00';
@@ -410,10 +410,6 @@ module.exports = app => {
             var idunidad;
             
             var litros = 0;
-            
-            
-            console.log(fe);
-            console.log(fe2);
             
             var resu = await unidad.findAll({
                 where: {
@@ -423,7 +419,6 @@ module.exports = app => {
 
             idunidad = resu[0]['id_unidad'];
             
-
             var result = await Samsara.getFuelEnergyVehicleReports({
                 startDate: fe,
                 endDate: fe2,
@@ -440,6 +435,28 @@ module.exports = app => {
             return 0;
         }
     }
+
+    async function getCargasSamsara(fecha, tracto) {
+        console.log(fecha);
+        try {
+            var resultado = await geogaso.findAll({
+                where: {
+                    tracto: tracto,
+                    fecha_entrada: {
+                        [Op.gte]: fecha
+                    }
+                },
+                order: [
+                    ['fecha_entrada', 'DESC']
+                ]
+            });
+
+            console.log(resultado);
+        } 
+        catch (error) {
+            
+        }
+    } 
 
 
 
@@ -506,7 +523,7 @@ module.exports = app => {
             //     AND liquidacion = 's/l' \
             //     GROUP BY BT.TRACTO_NUM_ECO");
 
-            let result = await pool.request().query("SELECT CONCEPTO_CLAVE, CONCEPTO_DESCRIP FROM CONCEPTO GROUP BY CONCEPTO_CLAVE, CONCEPTO_DESCRIP");
+            let result = await pool.request().query("SELECT * FROM OPERADOR WHERE STATUS = 1");
 
 
             // let result = await pool.request().query("SELECT BT.CLAVE_BITACORA, BT.FOLIO_BITACORA, BT.TRACTO_NUM_ECO, BT.BAN_LIQUIDACION, BT.FCH_CIERR, RUT.ruta_min  FROM bitacoras AS BT \
@@ -566,6 +583,7 @@ module.exports = app => {
             
             res.json({
                 OK: true,
+                total: result['recordsets'][0].length,
                 Registros: result['recordsets'][0]
             });
         }

@@ -14,8 +14,8 @@ module.exports = app => {
 
     app.reporteDiesel = async (req, res) => {
         var reporteD = [];
-        // const tags = ['4531263', '3907109', '4236332', '4399105', '4343814', '4244687'];
-        const tags = ['4531263'];
+        const tags = ['4531263', '3907109', '4236332', '4399105', '4343814', '4244687'];
+        // const tags = ['4531263'];
         const dateArray = getDatesArray(req.params.fechaInicio, req.params.fechaFin);
             
             for(let index = 0; index < dateArray.length; index++) {
