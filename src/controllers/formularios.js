@@ -156,6 +156,68 @@ module.exports = app => {
         });
     }
 
+    app.obtenerOperadoresLista = (req, res) => {
+        operador.findAll({
+            order: [
+                ['nombre', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Operadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.actualizarOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new operador({
+            unidad: body.unidad,
+            numero_empleado: body.numero_empleado,
+            nombre: body.nombre,
+            estado: body.estado
+        });
+
+        operador.update(nuevoRegistro.dataValues, {
+            where: {
+                id_operador: req.params.id_operador
+            },
+            fields: [
+                'unidad',
+                'numero_empleado',
+                'nombre',
+                'estado'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Operador: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
     app.crearOperador = (req, res) => {
         let body = req.body;
 

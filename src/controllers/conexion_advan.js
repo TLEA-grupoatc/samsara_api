@@ -523,7 +523,7 @@ module.exports = app => {
             //     AND liquidacion = 's/l' \
             //     GROUP BY BT.TRACTO_NUM_ECO");
 
-            let result = await pool.request().query("SELECT * FROM OPERADOR WHERE STATUS = 1");
+            let result = await pool.request().query("SELECT operador_terminal, OPERADOR_CLAVE, OPERADOR_NOMBRE FROM OPERADOR WHERE STATUS = 1");
 
 
             // let result = await pool.request().query("SELECT BT.CLAVE_BITACORA, BT.FOLIO_BITACORA, BT.TRACTO_NUM_ECO, BT.BAN_LIQUIDACION, BT.FCH_CIERR, RUT.ruta_min  FROM bitacoras AS BT \

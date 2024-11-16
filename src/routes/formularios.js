@@ -12,6 +12,10 @@ module.exports = app => {
 
     app.get('/obtenerOperadores', Fo.obtenerOperadores);
 
+    app.get('/obtenerOperadoresLista', Fo.obtenerOperadoresLista);
+
+    app.put('/actualizarOperador/:id_operador', Fo.actualizarOperador);
+
     app.post('/crearOperador', Fo.crearOperador);
 
 

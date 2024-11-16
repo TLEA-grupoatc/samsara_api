@@ -5,6 +5,10 @@ module.exports = (sequelize, DataType) => {
             primaryKey: true,
             autoIncrement: true
         },
+        unidad:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         numero_empleado:{
             type: DataType.INTEGER,
             allowNull: true
