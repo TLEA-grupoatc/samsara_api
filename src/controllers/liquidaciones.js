@@ -28,22 +28,23 @@ module.exports = app => {
             const dateArray = getDatesArray(req.params.fechaInicio, req.params.fechaFin);
 
 
-            // var ops = await operador.findAll({
-            //     where: {
-            //         estado: 'A'
-            //     },
-            //     // limit: 10
-            // });
+            var ops = await operador.findAll({
+                where: {
+                    estado: 'LABORANDO'
+                },
+                // limit: 10
+            });
 
-            let ops = await pool.request().query("SELECT OPERADOR_NOMBRE FROM OPERADOR WHERE STATUS = 1");
+            // let ops = await pool.request().query("SELECT OPERADOR_NOMBRE FROM OPERADOR WHERE STATUS = 1");
 
+     
             var datos = [];
             var enorder = [];
             var los150 = [];
             
-            for(let index = 0; index < ops['recordsets'][0].length; index++) {
+            for(let index = 0; index < ops.length; index++) {
                 let result = await pool.request().query("SELECT TOP(1) VRPD.TERMINAL_CLAVE, FORMAT(VRPD.FCH_LIQUIDACION,'yyyy-MM-dd') as FCH_LIQUIDACION, DATEDIFF(DAY, VRPD.FCH_LIQUIDACION, '" + req.params.fechaInicio + "') AS DIAS, VRPD.OPERADOR_NOMBRE, VRPD.TRACTO_NUM_ECO, VRPD.MONTO FROM vRepDedPer_sueldo AS VRPD\
-                    WHERE VRPD.OPERADOR_NOMBRE = '" + ops['recordsets'][0][index].OPERADOR_NOMBRE + "' \
+                    WHERE VRPD.OPERADOR_NOMBRE = '" + ops[index].nombre + "' \
                     AND VRPD.TRACTO_NUM_ECO NOT LIKE 'PHES%' \
                     ORDER BY FCH_LIQUIDACION DESC");
                     // WHERE VRPD.OPERADOR_NOMBRE = '" + ops[index].nombre + "' \
@@ -65,7 +66,7 @@ module.exports = app => {
                     unidad = sinexpacio.replace('MTY', 'UNIDAD ');
                 }
 
-                if(datosorder[i].DIAS > 13 && datosorder[i].DIAS <= 60) {
+                if(datosorder[i].DIAS > 13 && datosorder[i].DIAS <= 50) {
                     let da = ({
                         TERMINAL_CLAVE: unidad,
                         FCH_LIQUIDACION: datosorder[i].FCH_LIQUIDACION,
@@ -180,22 +181,22 @@ module.exports = app => {
             
             const dateArray = getDatesArray(req.params.fechaInicio, req.params.fechaFin);
 
-            // var ops = await operador.findAll({
-            //     where: {
-            //         estado: 'A'
-            //     },
-            //     // limit: 10
-            // });
+            var ops = await operador.findAll({
+                where: {
+                    estado: 'LABORANDO'
+                },
+                // limit: 10
+            });
 
-            let ops = await pool.request().query("SELECT OPERADOR_NOMBRE FROM OPERADOR WHERE STATUS = 1");
+            // let ops = await pool.request().query("SELECT OPERADOR_NOMBRE FROM OPERADOR WHERE STATUS = 1");
 
             var datos = [];
             var enorder = [];
             var los150 = [];
             
-            for(let index = 0; index < ops['recordsets'][0].length; index++) {
+            for(let index = 0; index < ops.length; index++) {
                 let result = await pool.request().query("SELECT TOP(1) VRPD.TERMINAL_CLAVE, FORMAT(VRPD.FCH_LIQUIDACION,'yyyy-MM-dd') as FCH_LIQUIDACION, DATEDIFF(DAY, VRPD.FCH_LIQUIDACION, '" + req.params.fechaInicio + "') AS DIAS, VRPD.OPERADOR_NOMBRE, VRPD.TRACTO_NUM_ECO, VRPD.MONTO FROM vRepDedPer_sueldo AS VRPD\
-                    WHERE VRPD.OPERADOR_NOMBRE = '" + ops['recordsets'][0][index].OPERADOR_NOMBRE + "' \
+                    WHERE VRPD.OPERADOR_NOMBRE = '" + ops[index].nombre + "' \
                     AND VRPD.TRACTO_NUM_ECO NOT LIKE 'PHES%' \
                     ORDER BY FCH_LIQUIDACION DESC");
                     // WHERE VRPD.OPERADOR_NOMBRE = '" + ops[index].nombre + "' \
