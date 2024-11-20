@@ -1,23 +1,27 @@
 module.exports = (sequelize, DataType) => {
     const Operadores = sequelize.define('Operadores',{
-        id_operador:{
+        id_operador: {
             type: DataType.INTEGER,
             primaryKey: true,
             autoIncrement: true
         },
-        unidad:{
+        unidad: {
             type: DataType.STRING,
             allowNull: true
         },
-        numero_empleado:{
+        numero_empleado: {
             type: DataType.INTEGER,
             allowNull: true
         },
-        nombre:{
+        nombre: {
             type: DataType.STRING,
             allowNull: true
         },
-        estado:{
+        estado: {
+            type: DataType.STRING,
+            allowNull: true
+        },
+        estado_actividad: {
             type: DataType.STRING,
             allowNull: true
         }
