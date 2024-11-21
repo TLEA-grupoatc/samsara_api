@@ -512,8 +512,8 @@ module.exports = app => {
             // let result = await pool.request().query("SELECT TOP(OM bitacoras WHERE BAN_LIQUIDACION = 1 AND OPERADOR_CLAVE = 602 ORDER BY FECHA_BITACORA DESC1) * FROM bitacoras WHERE BAN_LIQUIDACION = 1 AND OPERADOR_CLAVE = 602 ORDER BY FECHA_BITACORA DESC");
             // let result = await pool.request().query("SELECT * FROM TRACTO");
 
-            // let result = await pool.request().query("SELECT TOP(2) * FROM vRepDedPer_sueldo");
-            let result = await pool.request().query("SELECT TOP(2) * FROM orden_BITACORAS");
+            // let result = await pool.request().query("SELECT TOP(5) * FROM vKilometrosOperador00");
+            let result = await pool.request().query("SELECT TOP(2) * FROM BITACORAS");
             // 
             // let result = await pool.request().query("SELECT Top(100) BT.TRACTO_NUM_ECO, BT.VALE_FECHA, BT.litros FROM vvalescomb AS BT \
             //     ORDER BY BT.VALE_FECHA DESC");
