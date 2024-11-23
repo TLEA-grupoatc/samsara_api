@@ -513,7 +513,7 @@ module.exports = app => {
             // let result = await pool.request().query("SELECT * FROM TRACTO");
 
             // let result = await pool.request().query("SELECT TOP(5) * FROM vKilometrosOperador00");
-            let result = await pool.request().query("SELECT TOP(2) * FROM BITACORAS");
+            let result = await pool.request().query("SELECT TOP(100) * FROM BITACORAS");
             // 
             // let result = await pool.request().query("SELECT Top(100) BT.TRACTO_NUM_ECO, BT.VALE_FECHA, BT.litros FROM vvalescomb AS BT \
             //     ORDER BY BT.VALE_FECHA DESC");

@@ -16,6 +16,8 @@ module.exports = app => {
 
     app.put('/actualizarOperador/:id_operador', Fo.actualizarOperador);
 
+    app.delete('/eliminarOperador/:id_operador', Fo.eliminarOperador);
+
     app.post('/crearOperador', Fo.crearOperador);
 
 

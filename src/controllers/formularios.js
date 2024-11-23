@@ -159,7 +159,7 @@ module.exports = app => {
     app.obtenerOperadoresLista = (req, res) => {
         operador.findAll({
             order: [
-                ['nombre', 'ASC']
+                ['estado', 'DESC']
             ],
         }).then(result => {
             res.json({
@@ -181,7 +181,8 @@ module.exports = app => {
             unidad: body.unidad,
             numero_empleado: body.numero_empleado,
             nombre: body.nombre,
-            estado: body.estado
+            estado: body.estado,
+            estado_actividad: body.estado_actividad
         });
 
         operador.update(nuevoRegistro.dataValues, {
@@ -192,7 +193,8 @@ module.exports = app => {
                 'unidad',
                 'numero_empleado',
                 'nombre',
-                'estado'
+                'estado',
+                'estado_actividad'
             ]
         })
         .then(async result => {
@@ -205,6 +207,29 @@ module.exports = app => {
             res.status(412).json({
                 OK: false,
                 msg: error.message
+            });
+        });
+    }
+
+    app.eliminarOperador = (req, res) => {
+        let data = new operador({
+            estado: 'INACTIVO',
+        });
+
+        operador.update(data.dataValues, {
+            where: {
+                id_operador: req.params.id_operador
+            },
+            fields: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
             });
         });
     }
