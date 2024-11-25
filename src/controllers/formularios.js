@@ -236,29 +236,26 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
     app.crearOperador = (req, res) => {
         let body = req.body;
 
-        let nuevoRegistro = new origen({
+        let nuevoRegistro = new operador({
+            unidad: body.unidad,
             numero_empleado: body.numero_empleado,
             nombre: body.nombre,
-            estado: body.estado
+            estado: body.estado,
+            estado_actividad: body.estado_actividad,
+            registrado_por: body.registrado_por
         });
 
-        origen.create(nuevoRegistro.dataValues, {
+        operador.create(nuevoRegistro.dataValues, {
             fields: [
+                'unidad',
                 'numero_empleado',
                 'nombre',
-                'estado'
+                'estado',
+                'estado_actividad',
+                'registrado_por'
             ]
         })
         .then(async result => {
