@@ -18,18 +18,19 @@ module.exports = app => {
     const { parseISO, format,  startOfWeek, differenceInCalendarWeeks, es } = require('date-fns');
 
     app.obtenerParaGuardarUnidades = (req, res) => {
+        var tractos = []
         Samsara.listVehicles({limit: '512'}).then(result => {
             result['data']['data'].forEach(async (element) => {
                 let nuevaUnidad = new unidad({
                     id_unidad: element.id,
-                    auxInputType1: element.auxInputType1,
-                    auxInputType2: element.auxInputType2,
-                    auxInputType3: element.auxInputType3,
-                    cameraSerial: element.cameraSerial,
-                    samsara_serial: element['externalIds']['samsara.serial'],
-                    samsara_vin:  element['externalIds']['samsara.vin'],
-                    gateway_serial: null,
-                    gateway_model: null,
+                    // auxInputType1: element.auxInputType1,
+                    // auxInputType2: element.auxInputType2,
+                    // auxInputType3: element.auxInputType3,
+                    // cameraSerial: element.cameraSerial,
+                    // samsara_serial: element['externalIds']['samsara.serial'],
+                    // samsara_vin:  element['externalIds']['samsara.vin'],
+                    // gateway_serial: null,
+                    // gateway_model: null,
                     harshAccelerationSettingType: element.harshAccelerationSettingType,
                     licensePlate: element.licensePlate,
                     make: element.make,
@@ -39,27 +40,28 @@ module.exports = app => {
                     serial: element.serial,
                     tagid: element['tags'][0]['id'],
                     tag: element['tags'][0]['name'],
-                    gobernada: 0,
-                    fechagobernada: null,
-                    paromotor: 0,
-                    fechaparomotor: null,
-                    instaladoen: '',
-                    fechacompromisopm: null,
-                    staticAssignedDriver_id: null,
-                    staticAssignedDriver_name: null,
-                    vin: element.vin,
-                    year: element.year,
-                    vehicleRegulationMode: element.vehicleRegulationMode,
-                    createdAtTime: element.createdAtTime,
-                    updatedAtTime: element.updatedAtTime,
-                    esn: element.esn,
-                    estado: 'A'
+                    // gobernada: 0,
+                    // fechagobernada: null,
+                    // paromotor: 0,
+                    // fechaparomotor: null,
+                    // instaladoen: '',
+                    // fechacompromisopm: null,
+                    // staticAssignedDriver_id: null,
+                    // staticAssignedDriver_name: null,
+                    // vin: element.vin,
+                    // year: element.year,
+                    // vehicleRegulationMode: element.vehicleRegulationMode,
+                    // createdAtTime: element.createdAtTime,
+                    // updatedAtTime: element.updatedAtTime,
+                    // esn: element.esn,
+                    // estado: 'A'
                 });
-                console.log(nuevaUnidad);
+                tractos.push(nuevaUnidad);
             });
 
             res.json({
                 OK: true,
+                Tractos: tractos
             })
         })
         .catch(error => {

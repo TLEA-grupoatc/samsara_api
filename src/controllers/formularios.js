@@ -182,7 +182,8 @@ module.exports = app => {
             numero_empleado: body.numero_empleado,
             nombre: body.nombre,
             estado: body.estado,
-            estado_actividad: body.estado_actividad
+            estado_actividad: body.estado_actividad,
+            registrado_por: body.registrado_por
         });
 
         operador.update(nuevoRegistro.dataValues, {
@@ -194,7 +195,8 @@ module.exports = app => {
                 'numero_empleado',
                 'nombre',
                 'estado',
-                'estado_actividad'
+                'estado_actividad',
+                'registrado_por'
             ]
         })
         .then(async result => {

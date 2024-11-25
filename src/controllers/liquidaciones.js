@@ -36,6 +36,7 @@ module.exports = app => {
             var los150 = [];
             
             for(let index = 0; index < ops.length; index++) {
+                var unidaoeprador = ops[index].unidad;
                 var elestado = ops[index].estado_actividad;
                 let result = await pool.request().query("SELECT TOP(1) VRPD.TERMINAL_CLAVE, FORMAT(VRPD.FCH_LIQUIDACION,'yyyy-MM-dd') as FCH_LIQUIDACION, DATEDIFF(DAY, VRPD.FCH_LIQUIDACION, '" + req.params.fechaInicio + "') AS DIAS, VRPD.OPERADOR_NOMBRE, VRPD.TRACTO_NUM_ECO, VRPD.MONTO FROM vRepDedPer_sueldo AS VRPD \
                     WHERE VRPD.OPERADOR_NOMBRE = '" + ops[index].nombre + "' \
@@ -50,7 +51,8 @@ module.exports = app => {
                         DIAS: result['recordsets'][0][0].DIAS,
                         OPERADOR_NOMBRE: result['recordsets'][0][0].OPERADOR_NOMBRE,
                         MONTO: result['recordsets'][0][0].MONTO,
-                        actividad: elestado
+                        actividad: elestado,
+                        unidadoperador: unidaoeprador
                     });
                     
                     datos.push(inf);
@@ -82,24 +84,27 @@ module.exports = app => {
         
                     
                     if(bitacoras != undefined) {
-                        if(bitacoras.diasbita > 13 && bitacoras.diasbita <= 50) {
-                            let da = ({
-                                TERMINAL_CLAVE: unidad,
-                                FCH_LIQUIDACION: datosorder[i].FCH_LIQUIDACION,
-                                DIAS: datosorder[i].DIAS,
-                                OPERADOR_NOMBRE: datosorder[i].OPERADOR_NOMBRE,
-                                MONTO: datosorder[i].MONTO,
-                                kilometraje: bitacoras != undefined ? bitacoras.kilometraje : 0,
-                                bitas: bitacoras != undefined ? bitacoras.bitas : 0,
-                                primera: bitacoras != undefined ? bitacoras.primera : '',
-                                ultima: bitacoras != undefined ? bitacoras.ultima : '',
-                                diasbita: bitacoras != undefined ? bitacoras.diasbita : 0,
-                                liquidadora: liq,
-                                actividad: datosorder[i].actividad,
-                                unidades: bitacoras != undefined ? bitacoras.tractos : 0
-                            });
+                        if(bitacoras.bitas >= 3) {
+                            if(datosorder[i].DIAS > 13 && datosorder[i].DIAS <= 50) {
+                                let da = ({
+                                    TERMINAL_CLAVE: datosorder[i].unidadoperador,
+                                    FCH_LIQUIDACION: datosorder[i].FCH_LIQUIDACION,
+                                    DIAS: datosorder[i].DIAS,
+                                    OPERADOR_NOMBRE: datosorder[i].OPERADOR_NOMBRE,
+                                    MONTO: datosorder[i].MONTO,
+                                    kilometraje: bitacoras != undefined ? bitacoras.kilometraje : 0,
+                                    bitas: bitacoras != undefined ? bitacoras.bitas : 0,
+                                    primera: bitacoras != undefined ? bitacoras.primera : '',
+                                    ultima: bitacoras != undefined ? bitacoras.ultima : '',
+                                    diasbita: bitacoras != undefined ? bitacoras.diasbita : 0,
+                                    liquidadora: liq,
+                                    actividad: datosorder[i].actividad,
+                                    unidades: bitacoras != undefined ? bitacoras.tractos : 0,
+                                    ultimoTractoCamion: bitacoras != undefined ? bitacoras.ultimotracto : '',
+                                });
 
-                            los150.push(da);
+                                los150.push(da);
+                            }
                         }
                     }
                 
@@ -357,7 +362,8 @@ module.exports = app => {
                 primera: result['recordsets'][0][0].FECHA_BITACORA,
                 ultima: result['recordsets'][0][result['recordsets'][0].length - 1].FECHA_BITACORA,
                 diasbita: dateArray.length,
-                tractos: countTypes
+                tractos: countTypes,
+                ultimotracto: result['recordsets'][0][result['recordsets'][0].length - 1].TRACTO_NUM_ECO
             });
 
             return datos

@@ -24,7 +24,11 @@ module.exports = (sequelize, DataType) => {
         estado_actividad: {
             type: DataType.STRING,
             allowNull: true
-        }
+        },
+        registrado_por: {
+            type: DataType.STRING,
+            allowNull: true
+        },
     },
     {
         tableName: 'operador',        
