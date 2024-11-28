@@ -14,6 +14,10 @@ module.exports = app => {
 
     app.get('/obtenerOperadoresLista', Fo.obtenerOperadoresLista);
 
+    app.get('/obtenerListaParaSeguimeinto', Fo.obtenerListaParaSeguimeinto);
+
+    app.get('/obtenerHistoricoActividadOpe', Fo.obtenerHistoricoActividadOpe);
+
     app.put('/actualizarOperador/:id_operador', Fo.actualizarOperador);
 
     app.delete('/eliminarOperador/:id_operador', Fo.eliminarOperador);

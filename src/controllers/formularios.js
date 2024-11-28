@@ -5,7 +5,9 @@ module.exports = app => {
     const evento = app.database.models.Eventos;
     const parosdemotor = app.database.models.ParosDeMotor;
     const cobro = app.database.models.Cobros;
+
     const operador = app.database.models.Operadores;
+    const historico = app.database.models.HistoricoOperadores;
     
     
     const alerta = app.database.models.Alertas;
@@ -174,6 +176,63 @@ module.exports = app => {
         });
     }
 
+
+    app.obtenerListaParaSeguimeinto = async (req, res)  => {
+        var lista = [];
+        var opes = await operador.findAll({
+            order: [
+                ['estado', 'DESC']
+            ],
+        });
+
+        for(let i = 0; i < opes.length; i++) {
+            let da = ({
+                unidad: opes[i].unidad,
+                numero_empleado: opes[i].numero_empleado,
+                nombre: opes[i].nombre,
+                estado: opes[i].estado,
+                estado_actividad: opes[i].estado_actividad,
+                registrado_por: opes[i].registrado_por
+            });
+
+            lista.push(da);
+        }
+
+        res.json({
+            OK: true,
+            Total: lista.length,
+            Datos: lista
+        });
+    }
+
+
+    app.obtenerHistoricoActividadOpe = (req, res) => {
+        historico.findAll({
+        }).then(result => {
+            res.json({
+                OK: true,
+                Historico: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.actualizarOperador = (req, res) => {
         let body = req.body;
 
@@ -183,7 +242,8 @@ module.exports = app => {
             nombre: body.nombre,
             estado: body.estado,
             estado_actividad: body.estado_actividad,
-            registrado_por: body.registrado_por
+            registrado_por: body.registrado_por,
+            fecha_actividad: body.fecha_actividad
         });
 
         operador.update(nuevoRegistro.dataValues, {
@@ -196,7 +256,8 @@ module.exports = app => {
                 'nombre',
                 'estado',
                 'estado_actividad',
-                'registrado_por'
+                'registrado_por',
+                'fecha_actividad'
             ]
         })
         .then(async result => {
@@ -245,7 +306,8 @@ module.exports = app => {
             nombre: body.nombre,
             estado: body.estado,
             estado_actividad: body.estado_actividad,
-            registrado_por: body.registrado_por
+            registrado_por: body.registrado_por,
+            fecha_actividad: body.fecha_actividad
         });
 
         operador.create(nuevoRegistro.dataValues, {
@@ -255,7 +317,8 @@ module.exports = app => {
                 'nombre',
                 'estado',
                 'estado_actividad',
-                'registrado_por'
+                'registrado_por',
+                'fecha_actividad'
             ]
         })
         .then(async result => {

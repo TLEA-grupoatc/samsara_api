@@ -101,6 +101,33 @@ module.exports = app => {
                                     actividad: datosorder[i].actividad,
                                     unidades: bitacoras != undefined ? bitacoras.tractos : 0,
                                     ultimoTractoCamion: bitacoras != undefined ? bitacoras.ultimotracto : '',
+                                    aplicaaliq: 'Aplica'
+                                });
+
+                                los150.push(da);
+                            }
+                        }
+                        else {
+                            if(datosorder[i].DIAS > 13 && datosorder[i].DIAS <= 50) {
+    
+                            }
+                            else {
+                                let da = ({
+                                    TERMINAL_CLAVE: datosorder[i].unidadoperador,
+                                    FCH_LIQUIDACION: datosorder[i].FCH_LIQUIDACION,
+                                    DIAS: datosorder[i].DIAS,
+                                    OPERADOR_NOMBRE: datosorder[i].OPERADOR_NOMBRE,
+                                    MONTO: datosorder[i].MONTO,
+                                    kilometraje: bitacoras != undefined ? bitacoras.kilometraje : 0,
+                                    bitas: bitacoras != undefined ? bitacoras.bitas : 0,
+                                    primera: bitacoras != undefined ? bitacoras.primera : '',
+                                    ultima: bitacoras != undefined ? bitacoras.ultima : '',
+                                    diasbita: bitacoras != undefined ? bitacoras.diasbita : 0,
+                                    liquidadora: liq,
+                                    actividad: datosorder[i].actividad,
+                                    unidades: bitacoras != undefined ? bitacoras.tractos : 0,
+                                    ultimoTractoCamion: bitacoras != undefined ? bitacoras.ultimotracto : '',
+                                    aplicaaliq: 'No Aplica'
                                 });
 
                                 los150.push(da);
