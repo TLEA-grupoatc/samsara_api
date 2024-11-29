@@ -20,7 +20,7 @@ const socketIO = require('socket.io')(http, {
 app.use(express.static('./public'));
 app.set('port', 3010);
 app.use(express.urlencoded({extended: false}));         
-app.use('/images', express.static('images'));
+app.use('/documentos', express.static('documentos'));
 app.use(express.json({ limit: "100mb" }));
 app.use(bodyParser.json());
 app.use(express.json());

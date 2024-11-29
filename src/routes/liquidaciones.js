@@ -3,6 +3,10 @@ module.exports = app => {
     const Liq = app.controllers.liquidaciones;
 
     app.get('/obtenerPlan/:fechaInicio/:fechaFin', Liq.obtenerPlan);
-
+    
     app.get('/obtenerPlanPorUnidad/:fechaInicio/:fechaFin/:unidad', Liq.obtenerPlanPorUnidad);
+
+
+    
+    app.get('/obtenerPrenomina', Liq.obtenerPrenomina);
 }

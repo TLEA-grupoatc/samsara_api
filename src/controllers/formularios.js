@@ -9,9 +9,7 @@ module.exports = app => {
     const operador = app.database.models.Operadores;
     const historico = app.database.models.HistoricoOperadores;
     
-    
     const alerta = app.database.models.Alertas;
-
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -160,7 +158,11 @@ module.exports = app => {
 
     app.obtenerOperadoresLista = (req, res) => {
         operador.findAll({
+            where: {
+                estado: 'LABORANDO'
+            },
             order: [
+                ['nombre', 'ASC'],
                 ['estado', 'DESC']
             ],
         }).then(result => {
@@ -175,7 +177,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.obtenerListaParaSeguimeinto = async (req, res)  => {
         var lista = [];
@@ -204,7 +205,6 @@ module.exports = app => {
             Datos: lista
         });
     }
-
 
     app.obtenerHistoricoActividadOpe = (req, res) => {
         historico.findAll({

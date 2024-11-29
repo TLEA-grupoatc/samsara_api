@@ -1,11 +1,14 @@
 const dotenv = require('dotenv').config();
 const { result, forEach } = require('lodash');
 const moment = require('moment');
+const fs = require("fs");
+const path = require("path");
 const sql = require('mssql');
 
 module.exports = app => {
-
     const operador = app.database.models.Operadores;
+    const prenomina = app.database.models.Prenominas;
+    const prenominadocs = app.database.models.PrenominasDocumentos;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -171,69 +174,6 @@ module.exports = app => {
         }
     }
 
-    function getDatesArray(startDate, endDate) {
-        const dates = [];
-        let currentDate = new Date(startDate);
-      
-        while(currentDate <= new Date(endDate)) {
-          dates.push(new Date(currentDate));
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-      
-        return dates;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.obtenerPlanPorUnidad = async (req, res) => {
         try {
             let pool = await sql.connect(config);
@@ -353,7 +293,179 @@ module.exports = app => {
         }
     }
 
-    async function obtenerBitacoras(operador, fecha, uni) {
+    app.obtenerPrenomina = (req, res) => {
+        var today = new Date();
+        var year = today.getFullYear();
+        var weekNumber = getWeekNumber(today);
+        var weekStartAndEnd1 = getWeekStartAndEnd(year, weekNumber);
+
+        prenomina.findAll({
+            where: {
+                fecha: {
+                    [Op.between]: [weekStartAndEnd1.start.toISOString().split('T')[0], weekStartAndEnd1.end.toISOString().split('T')[0]]
+                }
+            },
+            order: [
+                ['fecha', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Fechas: weekStartAndEnd1.start.toISOString().split('T')[0] + '   ' + weekStartAndEnd1.end.toISOString().split('T')[0],
+                Prenominas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.registrarPrenomina = (req, res) => {
+        let body = req.body;
+        var docs = body.docs;
+
+        let nuevaPre = new prenomina({
+            operador: body.operador,
+            tracto: body.tracto,
+            localidad: body.localidad,
+            terminal: body.terminal,
+            checklist: body.checklist,
+            firma: body.firma,
+            pago: body.pago,
+            fecha: body.fecha
+        });
+
+        prenomina.create(nuevaPre.dataValues, {
+            fields: [
+                'operador',
+                'tracto',
+                'localidad',
+                'terminal',
+                'checklist',
+                'firma',
+                'pago',
+                'fecha'
+            ]
+        })
+        .then(result => {
+            var directorio = 'documentos/';
+
+            if(!fs.existsSync(directorio)) {
+                fs.mkdirSync(directorio, {recursive: true});
+            }
+
+            for(let index = 0; index < docs.length; index++) {
+                var doc = dosc[index].archivo
+
+                const base64Content = doc;
+                var big1 = Buffer.from(base64Content, 'base64');
+                fs.writeFileSync(directorio + docs[index].nombre + '_' +  docs[index].descripcion + docs[index].tipo, big1);
+                
+                doc = directorio + docs[index].nombre + '_' +  docs[index].descripcion + docs[index].tipo;
+
+                let nuevaPre = new prenominadocs({
+                    id_prenomina: 1,
+                    nombre: docs[index].nombre,
+                    descripcion: docs[index].descripcion,
+                    tipo: docs[index].tipo,
+                    archivo: doc,
+                    fecha_creacion: docs[index].fecha_creacion,
+                    usuario: docs[index].usuario
+                });
+        
+                prenominadocs.create(nuevaPre.dataValues, {
+                    fields: [
+                        'id_prenomina',
+                        'nombre',
+                        'descripcion',
+                        'tipo',
+                        'archivo',
+                        'fecha_creacion',
+                        'usuario'
+                    ]
+                })
+                .then(result => {
+                    console.log('insertado');
+                    
+                    // res.json({
+                    //     OK: true,
+                    //     Prenomina: result
+                    // })
+                })
+                .catch(error => {
+                    console.log(error);
+                    
+                    // res.status(412).json({
+                    //     OK: false,
+                    //     msg: error.message
+                    // });
+                });
+            }
+            
+            res.json({
+                OK: true,
+                Prenomina: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+
+        return weekNo;
+    }
+
+    function getWeekStartAndEnd(year, week) {
+        var simple = new Date(year, 0, 1 + (week - 1) * 7);
+        var dow = simple.getDay();
+        var ISOweekStart = simple;
+
+        if(dow <= 4) {   
+            ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+        }
+        else {
+            ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+        }
+        
+        var ISOweekEnd = new Date(ISOweekStart);
+        ISOweekEnd.setDate(ISOweekStart.getDate() + 6);
+    
+        return {
+            start: ISOweekStart,
+            end: ISOweekEnd
+        };
+    }
+
+    function getDatesArray(startDate, endDate) {
+        const dates = [];
+        let currentDate = new Date(startDate);
+      
+        while(currentDate <= new Date(endDate)) {
+          dates.push(new Date(currentDate));
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      
+        return dates;
+    }
+
+    async function obtenerBitacoras(operador, fecha) {
         try {
             let pool = await sql.connect(config);
 
