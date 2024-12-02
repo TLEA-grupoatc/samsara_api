@@ -2,28 +2,28 @@ module.exports = app => {
     const { verificarToken } = app.middlewares.auth;
     const cu = app.controllers.control_ubicacion;
 
-    app.get('/obtenerClientes', cu.obtenerClientes);
+    app.get('/obtenerClientes', verificarToken, cu.obtenerClientes);
 
-    app.post('/crearCliente', cu.crearCliente);
+    app.post('/crearCliente', verificarToken, cu.crearCliente);
     
-    app.put('/actualizarCliente', cu.actualizarCliente);
-    
-    
-    app.get('/obtenerOrigenes', cu.obtenerOrigenes);
-    
-    app.post('/crearOrigen', cu.crearOrigen);
-    
-    app.put('/actualizarOrigen', cu.actualizarOrigen);
+    app.put('/actualizarCliente', verificarToken, cu.actualizarCliente);
     
     
-    app.get('/obtenerDestinos', cu.obtenerDestinos);
+    app.get('/obtenerOrigenes', verificarToken, cu.obtenerOrigenes);
     
-    app.post('/crearDestino', cu.crearDestino);
+    app.post('/crearOrigen', verificarToken, cu.crearOrigen);
     
-    app.put('/obtenerDestinos', cu.obtenerDestinos);
+    app.put('/actualizarOrigen', verificarToken, cu.actualizarOrigen);
+    
+    
+    app.get('/obtenerDestinos', verificarToken, cu.obtenerDestinos);
+    
+    app.post('/crearDestino', verificarToken, cu.crearDestino);
+    
+    app.put('/obtenerDestinos', verificarToken, cu.obtenerDestinos);
 
     
-    app.get('/obtenerPlanes/:division', cu.obtenerPlanes);
+    app.get('/obtenerPlanes/:division', verificarToken, cu.obtenerPlanes);
     
-    app.post('/crearPlan', cu.crearPlan);
+    app.post('/crearPlan', verificarToken, cu.crearPlan);
 }

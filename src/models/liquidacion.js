@@ -1,19 +1,11 @@
 module.exports = (sequelize, DataType) => {
-    const Prenominas = sequelize.define('Prenominas',{
-        id_prenomina:{
+    const Liquidaciones = sequelize.define('Liquidaciones',{
+        id_liquidacion:{
             type: DataType.INTEGER,
             autoIncrement: true,
             primaryKey: true
         },
         operador:{
-            type: DataType.STRING,
-            allowNull: false
-        },
-        tracto:{
-            type: DataType.STRING,
-            allowNull: false
-        },
-        localidad:{
             type: DataType.STRING,
             allowNull: false
         },
@@ -23,6 +15,11 @@ module.exports = (sequelize, DataType) => {
         },
         folio:{
             type: DataType.STRING,
+            unique: true,
+            allowNull: false
+        },
+        monto:{
+            type: DataType.FLOAT,
             allowNull: false
         },
         checklist:{
@@ -43,9 +40,9 @@ module.exports = (sequelize, DataType) => {
         }
     },
     {
-        tableName: 'prenomina',        
+        tableName: 'liquidacion',        
         timestamps: false
     });
 
-    return Prenominas;
+    return Liquidaciones;
 }

@@ -7,7 +7,11 @@ module.exports = (sequelize, DataType) => {
         },
         id_prenomina:{
             type: DataType.INTEGER,
-            allowNull: false
+            allowNull: true
+        },
+        id_liquidacion:{
+            type: DataType.INTEGER,
+            allowNull: true
         },
         nombre:{
             type: DataType.STRING,
@@ -32,6 +36,14 @@ module.exports = (sequelize, DataType) => {
         usuario:{
             type: DataType.STRING,
             allowNull: false
+        },
+        verificado:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        verificado_por:{
+            type: DataType.STRING,
+            allowNull: true
         }
     },
     {

@@ -3,7 +3,7 @@ module.exports = app => {
     const repo = app.controllers.reportes;
 
 
-    app.get('/reporteDiesel/:fechaInicio/:fechaFin', repo.reporteDiesel);
+    app.get('/reporteDiesel/:fechaInicio/:fechaFin', verificarToken, repo.reporteDiesel);
 
-    app.get('/obtenerGeoGasolineras', repo.obtenerGeoGasolineras);
+    app.get('/obtenerGeoGasolineras', verificarToken, repo.obtenerGeoGasolineras);
 }

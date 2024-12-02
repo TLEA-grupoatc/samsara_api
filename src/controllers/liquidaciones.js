@@ -8,6 +8,7 @@ const sql = require('mssql');
 module.exports = app => {
     const operador = app.database.models.Operadores;
     const prenomina = app.database.models.Prenominas;
+    const liquidacion = app.database.models.Liquidaciones;
     const prenominadocs = app.database.models.PrenominasDocumentos;
 
     const Sequelize = require('sequelize');
@@ -322,16 +323,103 @@ module.exports = app => {
         });
     }
 
-    app.obtenerPrenominaDocumentos = (req, res) => {
-        prenominadocs.findAll({
+    app.obtenerLiquidacion = (req, res) => {
+        var today = new Date();
+        var year = today.getFullYear();
+        var weekNumber = getWeekNumber(today);
+        var weekStartAndEnd1 = getWeekStartAndEnd(year, weekNumber);
+
+        liquidacion.findAll({
             where: {
-                id_prenomina: req.params.id_prenomina
-            }
+                fecha: {
+                    [Op.between]: [weekStartAndEnd1.start.toISOString().split('T')[0], weekStartAndEnd1.end.toISOString().split('T')[0]]
+                }
+            },
+            order: [
+                ['fecha', 'DESC']
+            ],
         }).then(result => {
             res.json({
                 OK: true,
-                PrenominasDocs: result
+                Fechas: weekStartAndEnd1.start.toISOString().split('T')[0] + '   ' + weekStartAndEnd1.end.toISOString().split('T')[0],
+                Liquidaciones: result
             })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerPrenominaDocumentos = (req, res) => {
+        var camp = req.params.campo;
+
+        prenominadocs.findAll({
+            where: {
+                [camp]: req.params.id
+            }
+        }).then(result => {
+            var listadeitems = [];
+            var lista;
+
+            const pres = ['ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO'];
+            const liquis = ['RESUMEN DE LA LIQUIDACION', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DETAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS'];
+
+            if(camp === 'id_liquidacion') {
+                lista = liquis;
+            }
+            else {
+                lista = pres;
+            }
+
+            for(let index = 0; index < lista.length; index++) {
+                const docu = result.find(aud => aud.nombre === lista[index]);
+
+                let rd = ({
+                    id_pd: docu != undefined ? docu.id_pd : 0,
+                    id_prenomina: docu != undefined ? docu.id_prenomina : null,
+                    id_liquidacion: docu != undefined ? docu.id_liquidacion : null,
+                    nombre: lista[index],
+                    descripcion: docu != undefined ? docu.descripcion : 'Sin Archivo',
+                    tipo: docu != undefined ? docu.tipo : '',
+                    archivo: docu != undefined ? docu.archivo : null,
+                    fecha_creacion: docu != undefined ? docu.fecha_creacion : 'Sin Archivo',
+                    usuario: docu != undefined ? docu.usuario : '',
+                    verificado: docu != undefined ? docu.verificado : null,
+                    verificado_por: docu != undefined ? docu.verificado_por : null
+                });
+
+                listadeitems.push(rd);
+            }
+
+
+
+            // for(let resu of result) {
+            //     const docu = lista.find(aud => aud === resu.nombre);
+            //     console.log(docu);
+                
+            //     let rd = ({
+            //         id_pd: resu.id_pd,
+            //         id_prenomina: resu.id_prenomina,
+            //         id_liquidacion: resu.id_liquidacion,
+            //         nombre: docu != undefined ? docu : 'Sin Archivo',
+            //         descripcion: resu.descripcion,
+            //         tipo: resu.tipo,
+            //         archivo: resu.archivo,
+            //         fecha_creacion: resu.fecha_creacion,
+            //         usuario: resu.usuario,
+            //         verificado: resu.verificado,
+            //         verificado_por: resu.verificado_por
+            //     });
+
+            //     listadeitems.push(rd);
+            // }
+
+            res.json({
+                OK: true,
+                PrenominasDocs: listadeitems
+            });
         })
         .catch(error => {
             res.status(412).json({
@@ -349,6 +437,7 @@ module.exports = app => {
             tracto: body.tracto,
             localidad: body.localidad,
             terminal: body.terminal,
+            folio: body.folio,
             checklist: body.checklist,
             firma: body.firma,
             pago: body.pago,
@@ -361,6 +450,7 @@ module.exports = app => {
                 'tracto',
                 'localidad',
                 'terminal',
+                'folio',
                 'checklist',
                 'firma',
                 'pago',
@@ -379,8 +469,6 @@ module.exports = app => {
                 var big1 = Buffer.from(base64Content, 'base64');
 
                 var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
-                console.log(fechacorta);
-                
 
                 fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
                 
@@ -388,23 +476,29 @@ module.exports = app => {
 
                 let nuevaPre = new prenominadocs({
                     id_prenomina: result.dataValues.id_prenomina,
+                    id_liquidacion: null,
                     nombre: documentos[index].nombre,
                     descripcion: documentos[index].descripcion,
                     tipo: documentos[index].tipo,
                     archivo: doc,
                     fecha_creacion: documentos[index].fecha_creacion,
-                    usuario: documentos[index].usuario
+                    usuario: documentos[index].usuario,
+                    verificado: null,
+                    verificado_por: null
                 });
         
                 prenominadocs.create(nuevaPre.dataValues, {
                     fields: [
                         'id_prenomina',
+                        'id_liquidacion',
                         'nombre',
                         'descripcion',
                         'tipo',
                         'archivo',
                         'fecha_creacion',
-                        'usuario'
+                        'usuario',
+                        'verificado',
+                        'verificado_por'
                     ]
                 })
                 .then(result => {
@@ -428,8 +522,97 @@ module.exports = app => {
         });
     }
 
+    app.registrarLiquidacion = (req, res) => {
+        let body = req.body;
+        var documentos = body.docs;
 
+        let nuevaLiq = new liquidacion({
+            operador: body.operador,
+            terminal: body.terminal,
+            folio: body.folio,
+            monto: body.monto,
+            checklist: body.checklist,
+            firma: body.firma,
+            pago: body.pago,
+            fecha: body.fecha
+        });
 
+        liquidacion.create(nuevaLiq.dataValues, {
+            fields: [
+                'operador',
+                'terminal',
+                'folio',
+                'monto',
+                'checklist',
+                'firma',
+                'pago',
+                'fecha'
+            ]
+        })
+        .then(result => {
+            var directorio = 'documentos/';
+
+            if(!fs.existsSync(directorio)) {
+                fs.mkdirSync(directorio, {recursive: true});
+            }
+
+            for(let index = 0; index < documentos.length; index++) {
+                const [, base64Content] = documentos[index].archivo.split(',');
+                var big1 = Buffer.from(base64Content, 'base64');
+
+                var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+                fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
+                
+                doc = directorio + documentos[index].usuario + '_' + fechacorta + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
+
+                let nuevaPre = new prenominadocs({
+                    id_prenomina: null,
+                    id_liquidacion: result.dataValues.id_liquidacion,
+                    nombre: documentos[index].nombre,
+                    descripcion: documentos[index].descripcion,
+                    tipo: documentos[index].tipo,
+                    archivo: doc,
+                    fecha_creacion: documentos[index].fecha_creacion,
+                    usuario: documentos[index].usuario,
+                    verificado: null,
+                    verificado_por: null
+                });
+        
+                prenominadocs.create(nuevaPre.dataValues, {
+                    fields: [
+                        'id_prenomina',
+                        'id_liquidacion',
+                        'nombre',
+                        'descripcion',
+                        'tipo',
+                        'archivo',
+                        'fecha_creacion',
+                        'usuario',
+                        'verificado',
+                        'verificado_por'
+                    ]
+                })
+                .then(result => {
+                    console.log('insertado');
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+            }
+
+            res.json({
+                OK: true,
+                Liquidacion: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
 
 
 

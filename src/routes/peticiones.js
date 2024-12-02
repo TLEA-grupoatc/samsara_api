@@ -2,80 +2,80 @@ module.exports = app => {
     const { verificarToken } = app.middlewares.auth;
     const Peticion = app.controllers.peticiones;
     
-    app.get('/obtenerParaGuardarUnidades', Peticion.obtenerParaGuardarUnidades);
+    app.get('/obtenerParaGuardarUnidades', verificarToken, Peticion.obtenerParaGuardarUnidades);
 
-    app.get('/totalUnidades', Peticion.totalUnidades);
+    app.get('/totalUnidades', verificarToken, Peticion.totalUnidades);
 
-    app.get('/totalUnidadesGobernadas', Peticion.totalUnidadesGobernadas);
+    app.get('/totalUnidadesGobernadas', verificarToken, Peticion.totalUnidadesGobernadas);
 
-    app.get('/totalUnidadesGobernadasCapana', Peticion.totalUnidadesGobernadasCapana);
+    app.get('/totalUnidadesGobernadasCapana', verificarToken, Peticion.totalUnidadesGobernadasCapana);
 
-    app.get('/totalUnidadesConParoMotor', Peticion.totalUnidadesConParoMotor);
+    app.get('/totalUnidadesConParoMotor', verificarToken, Peticion.totalUnidadesConParoMotor);
 
-    app.get('/obtenerVehiculos', Peticion.obtenerVehiculos);
+    app.get('/obtenerVehiculos', verificarToken, Peticion.obtenerVehiculos);
 
-    app.get('/obtenerVehiculosxTag/:tag', Peticion.obtenerVehiculosxTag);
+    app.get('/obtenerVehiculosxTag/:tag', verificarToken, Peticion.obtenerVehiculosxTag);
 
-    app.put('/actualizarUnidad/:id_unidad', Peticion.actualizarUnidad);
+    app.put('/actualizarUnidad/:id_unidad', verificarToken, Peticion.actualizarUnidad);
 
-    app.get('/obtenerSnapshot', Peticion.obtenerSnapshot);
+    app.get('/obtenerSnapshot', verificarToken, Peticion.obtenerSnapshot);
 
-    app.get('/obtenerEventos', Peticion.obtenerEventos);
-
-
-    app.get('/obtenerReporte/:fechainicio/:fechafin', Peticion.obtenerReporte);
-
-    app.get('/obtenerDetalleReporte/:unidad/:fechainicio/:fechafin', Peticion.obtenerDetalleReporte);
+    app.get('/obtenerEventos', verificarToken, Peticion.obtenerEventos);
 
 
-    app.get('/obtenerDivisionesVehiculo', Peticion.obtenerDivisionesVehiculo);
+    app.get('/obtenerReporte/:fechainicio/:fechafin', verificarToken, Peticion.obtenerReporte);
 
-    app.get('/obtenerMarcasVehiculo', Peticion.obtenerMarcasVehiculo);
-
-    app.get('/obtenerModelosVehiculo', Peticion.obtenerModelosVehiculo);
+    app.get('/obtenerDetalleReporte/:unidad/:fechainicio/:fechafin', verificarToken, Peticion.obtenerDetalleReporte);
 
 
+    app.get('/obtenerDivisionesVehiculo', verificarToken, Peticion.obtenerDivisionesVehiculo);
 
-    app.get('/obtenerAlertas/:division/:fechainicio/:fechafin', Peticion.obtenerAlertas);
+    app.get('/obtenerMarcasVehiculo', verificarToken, Peticion.obtenerMarcasVehiculo);
 
-    app.get('/obtenerCatalagoEventos', Peticion.obtenerCatalagoEventos);
+    app.get('/obtenerModelosVehiculo', verificarToken, Peticion.obtenerModelosVehiculo);
 
 
 
-    app.put('/primeraInteraccion/:id_alerta', Peticion.primeraInteraccion);
+    app.get('/obtenerAlertas/:division/:fechainicio/:fechafin', verificarToken, Peticion.obtenerAlertas);
 
-    app.put('/cierreDeAlertas/:id_alerta', Peticion.cierreDeAlertas);
-
-    app.post('/crearSeguimiento', Peticion.crearSeguimiento);
+    app.get('/obtenerCatalagoEventos', verificarToken, Peticion.obtenerCatalagoEventos);
 
 
-    app.get('/obtenerSeguimientoUsuario/:fechainicio/:fechafin/:usuario', Peticion.obtenerSeguimientoUsuario);
 
-    app.put('/primeraInteraccionSeguimiento/:id_seguimiento', Peticion.primeraInteraccionSeguimiento);
+    app.put('/primeraInteraccion/:id_alerta', verificarToken, Peticion.primeraInteraccion);
 
+    app.put('/cierreDeAlertas/:id_alerta', verificarToken, Peticion.cierreDeAlertas);
 
-    app.get('/obtenerGeocercas', Peticion.obtenerGeocercas);
-
-    app.get('/obtenerReporteParoMotor', Peticion.obtenerReporteParoMotor);
-
-    app.get('/obtenerGraficaGobernadas', Peticion.obtenerGraficaGobernadas);
-
-    app.get('/obtenerGraficaUnidadesParoMotor', Peticion.obtenerGraficaUnidadesParoMotor);
+    app.post('/crearSeguimiento', verificarToken, Peticion.crearSeguimiento);
 
 
-    app.get('/obtenerGraficaOperadorAlertas/:fechainicio/:fechafin', Peticion.obtenerGraficaOperadorAlertas);
+    app.get('/obtenerSeguimientoUsuario/:fechainicio/:fechafin/:usuario', verificarToken, Peticion.obtenerSeguimientoUsuario);
+
+    app.put('/primeraInteraccionSeguimiento/:id_seguimiento', verificarToken, Peticion.primeraInteraccionSeguimiento);
+
+
+    app.get('/obtenerGeocercas', verificarToken, Peticion.obtenerGeocercas);
+
+    app.get('/obtenerReporteParoMotor', verificarToken, Peticion.obtenerReporteParoMotor);
+
+    app.get('/obtenerGraficaGobernadas', verificarToken, Peticion.obtenerGraficaGobernadas);
+
+    app.get('/obtenerGraficaUnidadesParoMotor', verificarToken, Peticion.obtenerGraficaUnidadesParoMotor);
+
+
+    app.get('/obtenerGraficaOperadorAlertas/:fechainicio/:fechafin', verificarToken, Peticion.obtenerGraficaOperadorAlertas);
 
 
 
     
-    app.get('/obtenerReporteGeneral/:fechainicio/:fechafin', Peticion.obtenerReporteGeneral);
+    app.get('/obtenerReporteGeneral/:fechainicio/:fechafin', verificarToken, Peticion.obtenerReporteGeneral);
 
-    app.get('/obtenerReporteAlertas/:division/:fechainicio/:fechafin', Peticion.obtenerReporteAlertas);
+    app.get('/obtenerReporteAlertas/:division/:fechainicio/:fechafin', verificarToken, Peticion.obtenerReporteAlertas);
 
-    app.get('/obtenerCumplientoAlertas/:fechainicio/:fechafin', Peticion.obtenerCumplientoAlertas);
-
-
+    app.get('/obtenerCumplientoAlertas/:fechainicio/:fechafin', verificarToken, Peticion.obtenerCumplientoAlertas);
 
 
-    app.get('/obtenerTiempoDeRespuesta/:division/:fechainicio/:fechafin', Peticion.obtenerTiempoDeRespuesta);
+
+
+    app.get('/obtenerTiempoDeRespuesta/:division/:fechainicio/:fechafin', verificarToken, Peticion.obtenerTiempoDeRespuesta);
 }
