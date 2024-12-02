@@ -322,9 +322,27 @@ module.exports = app => {
         });
     }
 
+    app.obtenerPrenominaDocumentos = (req, res) => {
+        prenominadocs.findAll({
+            where: {
+                id_prenomina: req.params.id_prenomina
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                PrenominasDocs: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.registrarPrenomina = (req, res) => {
         let body = req.body;
-        var docs = body.docs;
+        var documentos = body.docs;
 
         let nuevaPre = new prenomina({
             operador: body.operador,
@@ -356,23 +374,26 @@ module.exports = app => {
                 fs.mkdirSync(directorio, {recursive: true});
             }
 
-            for(let index = 0; index < docs.length; index++) {
-                var doc = dosc[index].archivo
-
-                const base64Content = doc;
+            for(let index = 0; index < documentos.length; index++) {
+                const [, base64Content] = documentos[index].archivo.split(',');
                 var big1 = Buffer.from(base64Content, 'base64');
-                fs.writeFileSync(directorio + docs[index].nombre + '_' +  docs[index].descripcion + docs[index].tipo, big1);
+
+                var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+                console.log(fechacorta);
                 
-                doc = directorio + docs[index].nombre + '_' +  docs[index].descripcion + docs[index].tipo;
+
+                fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
+                
+                doc = directorio + documentos[index].usuario + '_' + fechacorta + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
 
                 let nuevaPre = new prenominadocs({
-                    id_prenomina: 1,
-                    nombre: docs[index].nombre,
-                    descripcion: docs[index].descripcion,
-                    tipo: docs[index].tipo,
+                    id_prenomina: result.dataValues.id_prenomina,
+                    nombre: documentos[index].nombre,
+                    descripcion: documentos[index].descripcion,
+                    tipo: documentos[index].tipo,
                     archivo: doc,
-                    fecha_creacion: docs[index].fecha_creacion,
-                    usuario: docs[index].usuario
+                    fecha_creacion: documentos[index].fecha_creacion,
+                    usuario: documentos[index].usuario
                 });
         
                 prenominadocs.create(nuevaPre.dataValues, {
@@ -388,22 +409,12 @@ module.exports = app => {
                 })
                 .then(result => {
                     console.log('insertado');
-                    
-                    // res.json({
-                    //     OK: true,
-                    //     Prenomina: result
-                    // })
                 })
                 .catch(error => {
                     console.log(error);
-                    
-                    // res.status(412).json({
-                    //     OK: false,
-                    //     msg: error.message
-                    // });
                 });
             }
-            
+
             res.json({
                 OK: true,
                 Prenomina: result

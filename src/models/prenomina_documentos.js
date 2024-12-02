@@ -5,6 +5,10 @@ module.exports = (sequelize, DataType) => {
             autoIncrement: true,
             primaryKey: true
         },
+        id_prenomina:{
+            type: DataType.INTEGER,
+            allowNull: false
+        },
         nombre:{
             type: DataType.STRING,
             allowNull: false
