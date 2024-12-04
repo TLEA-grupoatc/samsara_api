@@ -37,6 +37,18 @@ module.exports = (sequelize, DataType) => {
         fecha:{
             type: DataType.STRING,
             allowNull: false
+        },
+        usuario:{
+            type: DataType.STRING,
+            allowNull: false
+        },
+        verificado_por:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        estado:{
+            type: DataType.STRING,
+            allowNull: true
         }
     },
     {
