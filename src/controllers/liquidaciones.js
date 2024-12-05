@@ -421,7 +421,7 @@ module.exports = app => {
             var lista;
 
             const pres = ['TICKETS DE DIESEL', 'TICKETS DE CASETAS', 'RESETEO','VALE DE RELLENO FINAL', 'TALACHAS', 'PENSIONES', 'PREMISOS DE CARGA'];
-            const liquis = ['ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO', 'RESUMEN DE LA LIQUIDACION', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DETAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS'];
+            const liquis = ['RESUMEN DE LA LIQUIDACION', 'ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DE TAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS'];
 
             if(camp === 'id_liquidacion') {
                 lista = liquis;
@@ -701,6 +701,7 @@ module.exports = app => {
             where: {
                 [camp]: req.params.id
             },
+            individualHooks: true,
             fields: ['checklist', 'verificado_por']
         }).then(result => {
             res.json({
@@ -727,6 +728,7 @@ module.exports = app => {
             where: {
                 [camp]: req.params.id
             },
+            individualHooks: true,
             fields: ['checklist', 'verificado_por']
         }).then(result => {
             res.json({
@@ -795,6 +797,7 @@ module.exports = app => {
                     where: {
                         id_liquidacion: body.idd
                     },
+                    individualHooks: true,
                     fields: ['firma']
                 }).then(result => {
                 }).catch(err => {
@@ -803,13 +806,15 @@ module.exports = app => {
             else {
                 let data = new liquidacion({
                     pago: 1,
+                    estado: 'COMPLETO',
                 });
         
                 liquidacion.update(data.dataValues, {
                     where: {
                         id_liquidacion: body.idd
                     },
-                    fields: ['pago']
+                    individualHooks: true,
+                    fields: ['pago', 'estado']
                 }).then(result => {
                 }).catch(err => {
                 });
@@ -837,6 +842,7 @@ module.exports = app => {
             where: {
                 id_liquidacion: req.params.id_liquidacion
             },
+            individualHooks: true, 
             fields: ['estado']
         }).then(result => {
             res.json({
@@ -860,6 +866,7 @@ module.exports = app => {
             where: {
                 id_prenomina: req.params.id_prenomina
             },
+            individualHooks: true, 
             fields: ['estado']
         }).then(result => {
             res.json({

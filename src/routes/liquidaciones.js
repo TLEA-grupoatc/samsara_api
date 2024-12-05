@@ -15,13 +15,13 @@ module.exports = app => {
 
     app.delete('/verificarDocumento/:id/:comentario/:usuario', verificarToken, Liq.verificarDocumento);
 
-    app.delete('/verificarPrenomina/:id/:campo/:usuario', verificarToken, Liq.verificarPrenomina);
+    app.put('/verificarPrenomina/:id/:campo/:usuario', verificarToken, Liq.verificarPrenomina);
 
-    app.delete('/verificarLiquidacion/:id/:campo/:usuario', verificarToken, Liq.verificarLiquidacion);
+    app.put('/verificarLiquidacion/:id/:campo/:usuario', verificarToken, Liq.verificarLiquidacion);
 
-    app.delete('/cancelacionPrenomina/:id_prenomina', verificarToken, Liq.cancelacionPrenomina);
+    app.put('/cancelacionPrenomina/:id_prenomina', verificarToken, Liq.cancelacionPrenomina);
 
-    app.delete('/cancelacionLiquidacion/:id_liquidacion', verificarToken, Liq.cancelacionLiquidacion);
+    app.put('/cancelacionLiquidacion/:id_liquidacion', verificarToken, Liq.cancelacionLiquidacion);
 
     app.post('/verificarFP', verificarToken, Liq.verificarFP);
     
