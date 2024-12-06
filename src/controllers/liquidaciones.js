@@ -510,9 +510,9 @@ module.exports = app => {
 
                 var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
 
-                fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
+                fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_prenomina + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
                 
-                doc = directorio + documentos[index].usuario + '_' + fechacorta + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
+                doc = directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_prenomina + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
 
                 let nuevaPre = new prenominadocs({
                     id_prenomina: result.dataValues.id_prenomina,
@@ -610,9 +610,9 @@ module.exports = app => {
 
                 var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
 
-                fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
+                fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_liquidacion + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
                 
-                doc = directorio + documentos[index].usuario + '_' + fechacorta + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
+                doc = directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_liquidacion + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
 
                 let nuevaPre = new prenominadocs({
                     id_prenomina: null,
