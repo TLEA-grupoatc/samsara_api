@@ -296,12 +296,11 @@ module.exports = app => {
 
     app.obtenerPrenomina = (req, res) => {
         var fechas = req.params.fechas;
-        var ope = req.params.operador;
 
-        if(ope != 'null') {
+        if(req.params.tipo === 'operador') {
             prenomina.findAll({
                 where: {
-                    operador: ope
+                    operador: req.params.operador
                 },
                 order: [
                     ['fecha', 'DESC']
@@ -318,12 +317,32 @@ module.exports = app => {
                 });
             });
         }
-        else{
+        else if(req.params.tipo == 'fechas'){
             prenomina.findAll({
                 where: {
                     fecha: {
                         [Op.between]: [fechas.split(' ')[0] + ' 00:00:00', fechas.split(' ')[1] + ' 23:59:59']
                     }
+                },
+                order: [
+                    ['fecha', 'DESC']
+                ],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Prenominas: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            });
+        }
+        else {
+            prenomina.findAll({
+                where: {
+                    tracto: req.params.tracto
                 },
                 order: [
                     ['fecha', 'DESC']
@@ -444,7 +463,7 @@ module.exports = app => {
                     comentario: docu != undefined ? docu.comentario : null,
                     fecha_creacion: docu != undefined ? docu.fecha_creacion : null,
                     usuario: docu != undefined ? docu.usuario : null,
-                    verificado: docu != undefined ? docu.verificado : null,
+                    verificado: docu != undefined ? docu.verificado : 0,
                     verificado_por: docu != undefined ? docu.verificado_por : null
                 });
 
@@ -975,38 +994,6 @@ module.exports = app => {
 
 
 
-
-
-    function getWeekNumber(d) {
-        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-
-        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-
-        return weekNo;
-    }
-
-    function getWeekStartAndEnd(year, week) {
-        var simple = new Date(year, 0, 1 + (week - 1) * 7);
-        var dow = simple.getDay();
-        var ISOweekStart = simple;
-
-        if(dow <= 4) {   
-            ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-        }
-        else {
-            ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
-        }
-        
-        var ISOweekEnd = new Date(ISOweekStart);
-        ISOweekEnd.setDate(ISOweekStart.getDate() + 6);
-    
-        return {
-            start: ISOweekStart,
-            end: ISOweekEnd
-        };
-    }
 
     function getDatesArray(startDate, endDate) {
         const dates = [];

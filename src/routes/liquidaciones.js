@@ -7,7 +7,7 @@ module.exports = app => {
     
     app.get('/obtenerPlanPorUnidad/:fechaInicio/:fechaFin/:unidad', verificarToken, Liq.obtenerPlanPorUnidad);
     
-    app.get('/obtenerPrenomina/:fechas/:operador', verificarToken, Liq.obtenerPrenomina);
+    app.get('/obtenerPrenomina/:fechas/:operador/:tracto/:tipo', verificarToken, Liq.obtenerPrenomina);
 
     app.get('/obtenerLiquidacion/:fechas/:operador/:folio/:tipo', verificarToken, Liq.obtenerLiquidacion);
 
