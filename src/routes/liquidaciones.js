@@ -24,6 +24,8 @@ module.exports = app => {
     app.put('/cancelacionLiquidacion/:id_liquidacion', verificarToken, Liq.cancelacionLiquidacion);
 
     app.post('/verificarFP', verificarToken, Liq.verificarFP);
+
+    app.post('/verificarFA', verificarToken, Liq.verificarFA);
     
     app.post('/registrarPrenomina', verificarToken, Liq.registrarPrenomina);
     

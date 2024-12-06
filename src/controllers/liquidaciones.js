@@ -439,7 +439,7 @@ module.exports = app => {
             var listadeitems = [];
             var lista;
 
-            const pres = ['TICKETS DE DIESEL', 'TICKETS DE CASETAS', 'RESETEO','VALE DE RELLENO FINAL', 'TALACHAS', 'PENSIONES', 'PREMISOS DE CARGA'];
+            const pres = ['TICKETS DE DIESEL', 'TICKETS DE CASETAS', 'RESETEO', 'OTROS DOCUMENTOS', 'TALACHAS', 'PENSIONES', 'PERMISOS DE CARGA', 'PRENOMINA'];
             const liquis = ['RESUMEN DE LA LIQUIDACION', 'ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DE TAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS'];
 
             if(camp === 'id_liquidacion') {
@@ -760,6 +760,83 @@ module.exports = app => {
                 msg: err
             });
         });
+    }
+
+    app.verificarFA = (req, res) => {
+        var body = req.body;
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+        var datos = body.docs;
+    
+        for(let index = 0; index < datos.length; index++) {
+            const [, base64Content] = datos[index].archivo.split(',');
+            var big1 = Buffer.from(base64Content, 'base64');
+    
+            var fechacorta = datos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+            fs.writeFileSync(directorio + datos[index].usuario + '_' + fechacorta + datos[index].idd + '_' + datos[index].nombre + '_' +  datos[index].descripcion, big1);
+            doc = directorio + datos[index].usuario + '_' + fechacorta + datos[index].idd + '_' + datos[index].nombre + '_' +  datos[index].descripcion;
+    
+            let nuevaPre = new prenominadocs({
+                id_prenomina: null,
+                id_liquidacion: datos[index].idd,
+                nombre: datos[index].nombre,
+                descripcion: datos[index].descripcion,
+                tipo: datos[index].tipo,
+                archivo: doc,
+                comentario: datos[index].comentario,
+                fecha_creacion: datos[index].fecha_creacion,
+                usuario: datos[index].usuario,
+                verificado: 0,
+                verificado_por: null
+            });
+    
+            prenominadocs.create(nuevaPre.dataValues, {
+                fields: [
+                    'id_prenomina',
+                    'id_liquidacion',
+                    'nombre',
+                    'descripcion',
+                    'tipo',
+                    'archivo',
+                    'comentario',
+                    'fecha_creacion',
+                    'usuario',
+                    'verificado',
+                    'verificado_por'
+                ]
+            })
+            .then(result => {
+            })
+            .catch(error => {
+                res.status(412).json({
+                    OK: false,
+                    msg: error.message
+                });
+            });
+        }
+
+
+        let data = new liquidacion({
+            firma: 1,
+        });
+
+        liquidacion.update(data.dataValues, {
+            where: {
+                id_liquidacion: body.idd
+            },
+            individualHooks: true,
+            fields: ['firma']
+        }).then(result => {
+        }).catch(err => {
+        });
+        
+        res.json({
+            OK: true,
+            Documentos: result
+        })
     }
 
     app.verificarFP = (req, res) => {
