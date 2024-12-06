@@ -352,7 +352,7 @@ module.exports = app => {
             liquidacion.findAll({
                 where: {
                     fecha: {
-                        [Op.between]: [fechas + ' 00:00:00', fechas + ' 23:59:59']
+                        [Op.between]: [fechas.split(' ')[0] + ' 00:00:00', fechas.split(' ')[1] + ' 23:59:59']
                     }
                 },
                 order: [
