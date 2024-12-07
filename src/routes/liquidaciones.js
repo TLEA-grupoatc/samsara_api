@@ -19,6 +19,11 @@ module.exports = app => {
 
     app.put('/verificarLiquidacion/:id/:campo/:usuario', verificarToken, Liq.verificarLiquidacion);
 
+
+    app.put('/enviarAVerificarPrenomina/:id/:estado', verificarToken, Liq.enviarAVerificarPrenomina);
+
+    app.put('/enviarAVerificarLiquidacion/:id/:estado', verificarToken, Liq.enviarAVerificarLiquidacion);
+
     app.put('/cancelacionPrenomina/:id_prenomina', verificarToken, Liq.cancelacionPrenomina);
 
     app.put('/cancelacionLiquidacion/:id_liquidacion', verificarToken, Liq.cancelacionLiquidacion);

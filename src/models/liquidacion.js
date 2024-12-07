@@ -46,6 +46,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        cargo_firma:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        cargo_pago:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         estado:{
             type: DataType.STRING,
             allowNull: true

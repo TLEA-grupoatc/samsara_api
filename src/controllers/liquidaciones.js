@@ -463,7 +463,7 @@ module.exports = app => {
                     comentario: docu != undefined ? docu.comentario : null,
                     fecha_creacion: docu != undefined ? docu.fecha_creacion : null,
                     usuario: docu != undefined ? docu.usuario : null,
-                    verificado: docu != undefined ? docu.verificado : 0,
+                    verificado: docu != undefined ? docu.verificado : null,
                     verificado_por: docu != undefined ? docu.verificado_por : null
                 });
 
@@ -598,6 +598,8 @@ module.exports = app => {
             fecha: body.fecha,
             usuario: body.usuario,
             verificado_por: body.verificado_por,
+            cargo_firma: body.cargo_firma,
+            cargo_pago: body.cargo_pago,
             estado: body.estado
         });
 
@@ -613,6 +615,8 @@ module.exports = app => {
                 'fecha',
                 'usuario',
                 'verificado_por',
+                'cargo_firma',
+                'cargo_pago',
                 'estado'
             ]
         })
@@ -713,6 +717,7 @@ module.exports = app => {
 
         let deleteunidad = new prenomina({
            checklist : 1,
+           estado : 'COMPLETO',
            verificado_por : req.params.usuario
         });
 
@@ -721,7 +726,7 @@ module.exports = app => {
                 [camp]: req.params.id
             },
             individualHooks: true,
-            fields: ['checklist', 'verificado_por']
+            fields: ['checklist', 'estado', 'verificado_por']
         }).then(result => {
             res.json({
                 OK: true,
@@ -821,6 +826,7 @@ module.exports = app => {
 
         let data = new liquidacion({
             firma: 1,
+            cargo_firma: body.usuario,
         });
 
         liquidacion.update(data.dataValues, {
@@ -828,7 +834,7 @@ module.exports = app => {
                 id_liquidacion: body.idd
             },
             individualHooks: true,
-            fields: ['firma']
+            fields: ['firma', 'cargo_firma']
         }).then(result => {
         }).catch(err => {
         });
@@ -902,6 +908,7 @@ module.exports = app => {
             else {
                 let data = new liquidacion({
                     pago: 1,
+                    cargo_pago: body.usuario,
                     estado: 'COMPLETO',
                 });
         
@@ -910,7 +917,7 @@ module.exports = app => {
                         id_liquidacion: body.idd
                     },
                     individualHooks: true,
-                    fields: ['pago', 'estado']
+                    fields: ['pago', 'cargo_pago', 'estado']
                 }).then(result => {
                 }).catch(err => {
                 });
@@ -1065,6 +1072,54 @@ module.exports = app => {
 
     }
 
+
+    app.enviarAVerificarPrenomina = (req, res) => {
+        let data = new prenomina({
+            estado: req.params.estado,
+        });
+
+        prenomina.update(data.dataValues, {
+            where: {
+                id_prenomina: req.params.id
+            },
+            individualHooks: true,
+            fields: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }   
+
+    app.enviarAVerificarLiquidacion = (req, res) => {
+        let data = new liquidacion({
+            estado: req.params.estado,
+        });
+
+        liquidacion.update(data.dataValues, {
+            where: {
+                id_liquidacion: req.params.id
+            },
+            individualHooks: true,
+            fields: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }   
 
 
 
