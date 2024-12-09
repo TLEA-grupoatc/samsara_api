@@ -46,11 +46,27 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        fecha_verificado:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         cargo_firma:{
             type: DataType.STRING,
             allowNull: true
         },
+        fecha_firma:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         cargo_pago:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        fecha_pago:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        fecha_enviado_rev:{
             type: DataType.STRING,
             allowNull: true
         },

@@ -9,11 +9,13 @@ module.exports = app => {
     
     app.get('/obtenerPrenomina/:fechas/:operador/:tracto/:tipo', verificarToken, Liq.obtenerPrenomina);
 
-    app.get('/obtenerLiquidacion/:fechas/:operador/:folio/:tipo', verificarToken, Liq.obtenerLiquidacion);
+    app.get('/obtenerLiquidacion/:fechas/:operador/:folio/:negocio/:tipo', verificarToken, Liq.obtenerLiquidacion);
 
     app.get('/obtenerPrenominaDocumentos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentos);
 
     app.delete('/verificarDocumento/:id/:comentario/:usuario', verificarToken, Liq.verificarDocumento);
+
+    app.delete('/rechazarDocumento/:id/:comentario/:usuario', verificarToken, Liq.rechazarDocumento);
 
     app.put('/verificarPrenomina/:id/:campo/:usuario', verificarToken, Liq.verificarPrenomina);
 

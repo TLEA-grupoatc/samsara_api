@@ -365,6 +365,7 @@ module.exports = app => {
         var fechas = req.params.fechas;
         var ope = req.params.operador;
         var foli = req.params.folio;
+        var ter = req.params.negocio;
         var tip = req.params.tipo;
 
         if(tip === 'fechas') {
@@ -393,6 +394,26 @@ module.exports = app => {
             liquidacion.findAll({
                 where: {
                     operador: ope
+                },
+                order: [
+                    ['fecha', 'DESC']
+                ],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Liquidaciones: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            });
+        }
+        else if(tip === 'negocio') {
+            liquidacion.findAll({
+                where: {
+                    terminal: ter
                 },
                 order: [
                     ['fecha', 'DESC']
@@ -440,7 +461,7 @@ module.exports = app => {
             var lista;
 
             const pres = ['TICKETS DE DIESEL', 'TICKETS DE CASETAS', 'RESETEO', 'OTROS DOCUMENTOS', 'TALACHAS', 'PENSIONES', 'PERMISOS DE CARGA', 'PRENOMINA'];
-            const liquis = ['RESUMEN DE LA LIQUIDACION', 'ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DE TAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS'];
+            const liquis = ['RESUMEN DE LA LIQUIDACION', 'ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DE TAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS', 'CONFIRMACION DE DEPOSITO', 'CARATULA DE LIQUIDACION FIRMADA'];
 
             if(camp === 'id_liquidacion') {
                 lista = liquis;
@@ -497,6 +518,7 @@ module.exports = app => {
             fecha: body.fecha,
             usuario: body.usuario,
             verificado_por: body.verificado_por,
+            fecha_enviado_rev: body.fecha_enviado_rev,
             estado: body.estado
         });
 
@@ -513,6 +535,7 @@ module.exports = app => {
                 'fecha',
                 'usuario',
                 'verificado_por',
+                'fecha_enviado_rev',
                 'estado'
             ]
         })
@@ -598,8 +621,12 @@ module.exports = app => {
             fecha: body.fecha,
             usuario: body.usuario,
             verificado_por: body.verificado_por,
+            fecha_verificado: body.fecha_verificado,
             cargo_firma: body.cargo_firma,
+            fecha_firma: body.fecha_firma,
             cargo_pago: body.cargo_pago,
+            fecha_pago: body.fecha_pago,
+            fecha_enviado_rev: body.fecha_enviado_rev,
             estado: body.estado
         });
 
@@ -615,8 +642,12 @@ module.exports = app => {
                 'fecha',
                 'usuario',
                 'verificado_por',
+                'fecha_verificado',
                 'cargo_firma',
+                'fecha_firma',
                 'cargo_pago',
+                'fecha_pago',
+                'fecha_enviado_rev',
                 'estado'
             ]
         })
@@ -712,6 +743,31 @@ module.exports = app => {
         });
     }
 
+    app.rechazarDocumento = (req, res) => {
+        let deleteunidad = new prenominadocs({
+            comentario : req.params.comentario == 'undefined' ? null : req.params.comentario,
+            verificado : 2,
+            verificado_por : req.params.usuario
+        });
+
+        prenominadocs.update(deleteunidad.dataValues, {
+            where: {
+                id_pd: req.params.id
+            },
+            fields: ['comentario', 'verificado', 'verificado_por']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
     app.verificarPrenomina = (req, res) => {
         var camp = req.params.campo;
 
@@ -743,9 +799,12 @@ module.exports = app => {
     app.verificarLiquidacion = (req, res) => {
         var camp = req.params.campo;
 
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
         let deleteunidad = new liquidacion({
-           checklist : 1,
-           verificado_por : req.params.usuario
+           checklist: 1,
+           verificado_por: req.params.usuario,
+           fecha_verificado: hoy
         });
 
         liquidacion.update(deleteunidad.dataValues, {
@@ -753,7 +812,7 @@ module.exports = app => {
                 [camp]: req.params.id
             },
             individualHooks: true,
-            fields: ['checklist', 'verificado_por']
+            fields: ['checklist', 'verificado_por', 'fecha_verificado']
         }).then(result => {
             res.json({
                 OK: true,
@@ -824,9 +883,12 @@ module.exports = app => {
         }
 
 
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
         let data = new liquidacion({
             firma: 1,
             cargo_firma: body.usuario,
+            fecha_firma: hoy
         });
 
         liquidacion.update(data.dataValues, {
@@ -834,7 +896,7 @@ module.exports = app => {
                 id_liquidacion: body.idd
             },
             individualHooks: true,
-            fields: ['firma', 'cargo_firma']
+            fields: ['firma', 'cargo_firma', 'fecha_firma']
         }).then(result => {
         }).catch(err => {
         });
@@ -906,10 +968,14 @@ module.exports = app => {
                 });
             }
             else {
+
+                var today = new Date();
+                const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
                 let data = new liquidacion({
                     pago: 1,
                     cargo_pago: body.usuario,
-                    estado: 'COMPLETO',
+                    fecha_pago: hoy,
+                    estado: 'COMPLETO'
                 });
         
                 liquidacion.update(data.dataValues, {
@@ -917,7 +983,7 @@ module.exports = app => {
                         id_liquidacion: body.idd
                     },
                     individualHooks: true,
-                    fields: ['pago', 'cargo_pago', 'estado']
+                    fields: ['pago', 'cargo_pago', 'fecha_pago', 'estado']
                 }).then(result => {
                 }).catch(err => {
                 });
@@ -1074,8 +1140,11 @@ module.exports = app => {
 
 
     app.enviarAVerificarPrenomina = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
         let data = new prenomina({
-            estado: req.params.estado,
+            fecha_enviado_rev: hoy,
+            estado: req.params.estado
         });
 
         prenomina.update(data.dataValues, {
@@ -1083,7 +1152,7 @@ module.exports = app => {
                 id_prenomina: req.params.id
             },
             individualHooks: true,
-            fields: ['estado']
+            fields: ['fecha_enviado_rev', 'estado']
         }).then(result => {
             res.json({
                 OK: true,
@@ -1098,8 +1167,12 @@ module.exports = app => {
     }   
 
     app.enviarAVerificarLiquidacion = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
+
         let data = new liquidacion({
-            estado: req.params.estado,
+            fecha_enviado_rev: hoy,
+            estado: req.params.estado
         });
 
         liquidacion.update(data.dataValues, {
@@ -1107,7 +1180,7 @@ module.exports = app => {
                 id_liquidacion: req.params.id
             },
             individualHooks: true,
-            fields: ['estado']
+            fields: ['fecha_enviado_rev', 'estado']
         }).then(result => {
             res.json({
                 OK: true,
@@ -1120,6 +1193,8 @@ module.exports = app => {
             });
         });
     }   
+
+
 
 
 

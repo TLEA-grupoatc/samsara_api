@@ -49,6 +49,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        fecha_enviado_rev:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         estado:{
             type: DataType.STRING,
             allowNull: true
