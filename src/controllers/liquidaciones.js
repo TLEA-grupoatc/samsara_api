@@ -460,8 +460,8 @@ module.exports = app => {
             var listadeitems = [];
             var lista;
 
-            const pres = ['TICKETS DE DIESEL', 'TICKETS DE CASETAS', 'RESETEO', 'OTROS DOCUMENTOS', 'TALACHAS', 'PENSIONES', 'PERMISOS DE CARGA', 'PRENOMINA'];
-            const liquis = ['RESUMEN DE LA LIQUIDACION', 'ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DE TAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS', 'CONFIRMACION DE DEPOSITO', 'CARATULA DE LIQUIDACION FIRMADA'];
+            const pres = ['OTROS DOCUMENTOS', 'TICKETS DE DIESEL', 'TICKETS DE CASETAS', 'RESETEO', 'OTROS DOCUMENTOS', 'TALACHAS', 'PENSIONES', 'PERMISOS DE CARGA', 'PRENOMINA'];
+            const liquis = ['OTROS DOCUMENTOS', 'RESUMEN DE LA LIQUIDACION', 'ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DE TAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS', 'CONFIRMACION DE DEPOSITO', 'CARATULA DE LIQUIDACION FIRMADA'];
 
             if(camp === 'id_liquidacion') {
                 lista = liquis;
@@ -1085,10 +1085,12 @@ module.exports = app => {
             tipo: body.tipo,
             archivo: doc,
             comentario: body.comentario,
+            comentario_rechazo: body.comentario_rechazo,
             fecha_creacion: body.fecha_creacion,
             usuario: body.usuario,
             verificado: 0,
-            verificado_por: null
+            verificado_por: null,
+            rechazado_por: null
         });
 
         prenominadocs.create(nuevaPre.dataValues, {
@@ -1100,10 +1102,12 @@ module.exports = app => {
                 'tipo',
                 'archivo',
                 'comentario',
+                'comentario_rechazo',
                 'fecha_creacion',
                 'usuario',
                 'verificado',
-                'verificado_por'
+                'verificado_por',
+                'rechazado_por'
             ]
         })
         .then(result => {
