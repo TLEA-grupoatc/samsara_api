@@ -804,7 +804,8 @@ module.exports = app => {
         let deleteunidad = new liquidacion({
            checklist: 1,
            verificado_por: req.params.usuario,
-           fecha_verificado: hoy
+           fecha_verificado: hoy,
+           estado: 'EN PROCESO'
         });
 
         liquidacion.update(deleteunidad.dataValues, {
@@ -812,7 +813,7 @@ module.exports = app => {
                 [camp]: req.params.id
             },
             individualHooks: true,
-            fields: ['checklist', 'verificado_por', 'fecha_verificado']
+            fields: ['checklist', 'verificado_por', 'fecha_verificado', 'estado']
         }).then(result => {
             res.json({
                 OK: true,
