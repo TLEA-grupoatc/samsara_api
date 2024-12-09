@@ -70,6 +70,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        comentarios:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         estado:{
             type: DataType.STRING,
             allowNull: true

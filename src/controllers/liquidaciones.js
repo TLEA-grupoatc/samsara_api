@@ -627,6 +627,7 @@ module.exports = app => {
             cargo_pago: body.cargo_pago,
             fecha_pago: body.fecha_pago,
             fecha_enviado_rev: body.fecha_enviado_rev,
+            comentarios: body.comentarios,
             estado: body.estado
         });
 
@@ -648,6 +649,7 @@ module.exports = app => {
                 'cargo_pago',
                 'fecha_pago',
                 'fecha_enviado_rev',
+                'comentarios',
                 'estado'
             ]
         })
