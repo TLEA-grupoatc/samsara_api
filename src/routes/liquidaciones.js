@@ -35,6 +35,8 @@ module.exports = app => {
     app.post('/verificarFA', verificarToken, Liq.verificarFA);
     
     app.post('/registrarPrenomina', verificarToken, Liq.registrarPrenomina);
+
+    app.post('/cargaDeExtras', verificarToken, Liq.cargaDeExtras);
     
     app.post('/registrarLiquidacion', [verificarToken, UniqueLiquidacionInsert], Liq.registrarLiquidacion);
     

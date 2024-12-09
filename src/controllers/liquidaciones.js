@@ -482,6 +482,7 @@ module.exports = app => {
                     tipo: docu != undefined ? docu.tipo : '',
                     archivo: docu != undefined ? docu.archivo : null,
                     comentario: docu != undefined ? docu.comentario : null,
+                    comentario_rechazo: docu != undefined ? docu.comentario_rechazo : null,
                     fecha_creacion: docu != undefined ? docu.fecha_creacion : null,
                     usuario: docu != undefined ? docu.usuario : null,
                     verificado: docu != undefined ? docu.verificado : null,
@@ -564,10 +565,12 @@ module.exports = app => {
                     tipo: documentos[index].tipo,
                     archivo: doc,
                     comentario: documentos[index].comentario,
+                    comentario_rechazo: documentos[index].comentario_rechazo,
                     fecha_creacion: documentos[index].fecha_creacion,
                     usuario: documentos[index].usuario,
                     verificado: 0,
-                    verificado_por: null
+                    verificado_por: null,
+                    rechazado_por: null
                 });
         
                 prenominadocs.create(nuevaPre.dataValues, {
@@ -579,10 +582,12 @@ module.exports = app => {
                         'tipo',
                         'archivo',
                         'comentario',
+                        'comentario_rechazo',
                         'fecha_creacion',
                         'usuario',
                         'verificado',
-                        'verificado_por'
+                        'verificado_por',
+                        'rechazado_por'
                     ]
                 })
                 .then(result => {
@@ -678,10 +683,12 @@ module.exports = app => {
                     tipo: documentos[index].tipo,
                     archivo: doc,
                     comentario: documentos[index].comentario,
+                    comentario_rechazo: documentos[index].comentario_rechazo,
                     fecha_creacion: documentos[index].fecha_creacion,
                     usuario: documentos[index].usuario,
                     verificado: 0,
-                    verificado_por: null
+                    verificado_por: null,
+                    rechazado_por: null
                 });
         
                 prenominadocs.create(nuevaPre.dataValues, {
@@ -693,10 +700,12 @@ module.exports = app => {
                         'tipo',
                         'archivo',
                         'comentario',
+                        'comentario_rechazo',
                         'fecha_creacion',
                         'usuario',
                         'verificado',
-                        'verificado_por'
+                        'verificado_por',
+                        'rechazado_por'
                     ]
                 })
                 .then(result => {
@@ -747,16 +756,16 @@ module.exports = app => {
 
     app.rechazarDocumento = (req, res) => {
         let deleteunidad = new prenominadocs({
-            comentario : req.params.comentario == 'undefined' ? null : req.params.comentario,
+            comentario_rechazo : req.params.comentario == 'undefined' ? null : req.params.comentario,
             verificado : 2,
-            verificado_por : req.params.usuario
+            rechazado_por : req.params.usuario
         });
 
         prenominadocs.update(deleteunidad.dataValues, {
             where: {
                 id_pd: req.params.id
             },
-            fields: ['comentario', 'verificado', 'verificado_por']
+            fields: ['comentario_rechazo', 'verificado', 'rechazado_por']
         }).then(result => {
             res.json({
                 OK: true,
@@ -1098,34 +1107,6 @@ module.exports = app => {
             ]
         })
         .then(result => {
-            if(body.quees === 'firma') {
-                let data = new liquidacion({
-                    firma: 1,
-                });
-        
-                liquidacion.update(data.dataValues, {
-                    where: {
-                        id_liquidacion: body.idd
-                    },
-                    fields: ['firma']
-                }).then(result => {
-                }).catch(err => {
-                });
-            }
-            else {
-                let data = new liquidacion({
-                    pago: 1,
-                });
-        
-                liquidacion.update(data.dataValues, {
-                    where: {
-                        id_liquidacion: body.idd
-                    },
-                    fields: ['pago']
-                }).then(result => {
-                }).catch(err => {
-                });
-            }
 
             res.json({
                 OK: true,

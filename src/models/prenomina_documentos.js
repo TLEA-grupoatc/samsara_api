@@ -33,6 +33,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        comentario_rechazo:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         fecha_creacion:{
             type: DataType.STRING,
             allowNull: false
@@ -46,6 +50,10 @@ module.exports = (sequelize, DataType) => {
             allowNull: true
         },
         verificado_por:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        rechazado_por:{
             type: DataType.STRING,
             allowNull: true
         }
