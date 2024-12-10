@@ -295,199 +295,90 @@ module.exports = app => {
     }
 
     app.obtenerPrenomina = (req, res) => {
-        var fechas = req.params.fechas;
+        const where = {};
 
-        if(req.params.tipo === 'operador') {
-            prenomina.findAll({
-                where: {
-                    operador: req.params.operador
-                },
-                order: [
-                    ['fecha', 'DESC']
-                ],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Prenominas: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+        if(req.params.fechas != 'undefined') {
+            const [startDate, endDate] = req.params.fechas.split(' ');
+            where.fecha = {
+                [Op.between]: [`${startDate} 00:00:00`, `${endDate} 23:59:59`],
+            };
         }
-        else if(req.params.tipo == 'fechas'){
-            prenomina.findAll({
-                where: {
-                    fecha: {
-                        [Op.between]: [fechas.split(' ')[0] + ' 00:00:00', fechas.split(' ')[1] + ' 23:59:59']
-                    }
-                },
-                order: [
-                    ['fecha', 'DESC']
-                ],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Prenominas: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+
+        if(req.params.operador != 'undefined') {
+            where.operador = req.params.operador;
         }
-        else if(req.params.tipo == 'status'){
-            prenomina.findAll({
-                where: {
-                    estado: req.params.status
-                },
-                order: [
-                    ['fecha', 'DESC']
-                ],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Prenominas: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+
+        if(req.params.status != 'undefined') {
+            where.estado = req.params.status;
         }
-        else {
-            prenomina.findAll({
-                where: {
-                    tracto: req.params.tracto
-                },
-                order: [
-                    ['fecha', 'DESC']
-                ],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Prenominas: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+
+        if(req.params.tracto != 'undefined') {
+            where.tracto = req.params.tracto;
         }
+
+        if(req.params.local != 'undefined') {
+            where.localidad = req.params.local;
+        }
+
+        prenomina.findAll({
+            where,
+            order: [['fecha', 'DESC']],
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Prenominas: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message,
+            });
+        });
     }
 
     app.obtenerLiquidacion = (req, res) => {
-        var fechas = req.params.fechas;
-        var ope = req.params.operador;
-        var foli = req.params.folio;
-        var ter = req.params.negocio;
-        var sta = req.params.status;
-        var tip = req.params.tipo;
+        const where = {};
+        console.log(req.params.fechas);
+        
 
-        if(tip === 'fechas') {
-            liquidacion.findAll({
-                where: {
-                    fecha: {
-                        [Op.between]: [fechas.split(' ')[0] + ' 00:00:00', fechas.split(' ')[1] + ' 23:59:59']
-                    }
-                },
-                order: [
-                    ['fecha', 'DESC']
-                ],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Liquidaciones: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+        if(req.params.fechas != 'undefined') {
+            const [startDate, endDate] = req.params.fechas.split(' ');
+            where.fecha = {
+                [Op.between]: [`${startDate} 00:00:00`, `${endDate} 23:59:59`],
+            };
         }
-        else if(tip === 'operador') {
-            liquidacion.findAll({
-                where: {
-                    operador: ope
-                },
-                order: [
-                    ['fecha', 'DESC']
-                ],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Liquidaciones: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+
+        if(req.params.operador != 'undefined') {
+            where.operador = req.params.operador;
         }
-        else if(tip === 'negocio') {
-            liquidacion.findAll({
-                where: {
-                    terminal: ter
-                },
-                order: [
-                    ['fecha', 'DESC']
-                ],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Liquidaciones: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+
+        if(req.params.folio != 'null') {
+            where.folio = req.params.folio;
         }
-        else if(tip === 'status') {
-            liquidacion.findAll({
-                where: {
-                    estado: sta
-                },
-                order: [
-                    ['fecha', 'DESC']
-                ],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Liquidaciones: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+
+        if(req.params.negocio != 'undefined') {
+            where.terminal = req.params.negocio;
         }
-        else {
-            liquidacion.findAll({
-                where: {
-                    folio: foli
-                }
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Liquidaciones: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+
+        if(req.params.status != 'undefined') {
+            where.estado = req.params.status;
         }
+
+        liquidacion.findAll({
+            where,
+            order: [['fecha', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Liquidaciones: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
     }
 
     app.obtenerPrenominaDocumentos = (req, res) => {
@@ -561,6 +452,7 @@ module.exports = app => {
             usuario: body.usuario,
             verificado_por: body.verificado_por,
             fecha_enviado_rev: body.fecha_enviado_rev,
+            comentarios: body.comentarios,
             estado: body.estado
         });
 
@@ -578,6 +470,7 @@ module.exports = app => {
                 'usuario',
                 'verificado_por',
                 'fecha_enviado_rev',
+                'comentarios',
                 'estado'
             ]
         })
