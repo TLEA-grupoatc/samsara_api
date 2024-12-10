@@ -12,6 +12,8 @@ module.exports = app => {
 
     app.get('/obtenerOperadores', verificarToken, Fo.obtenerOperadores);
 
+    app.get('/obtenerTodosLosOperadores', verificarToken, Fo.obtenerTodosLosOperadores);
+
     app.get('/obtenerOperadoresLista', verificarToken, Fo.obtenerOperadoresLista);
 
     app.get('/obtenerListaParaSeguimeinto', verificarToken, Fo.obtenerListaParaSeguimeinto);

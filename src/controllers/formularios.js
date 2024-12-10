@@ -178,6 +178,26 @@ module.exports = app => {
         });
     }
 
+
+    app.obtenerTodosLosOperadores = (req, res) => {
+        operador.findAll({
+            order: [
+                ['nombre', 'ASC'],
+                ['estado', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Operadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.obtenerListaParaSeguimeinto = async (req, res)  => {
         var lista = [];
         var opes = await operador.findAll({
