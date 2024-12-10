@@ -9,7 +9,7 @@ module.exports = app => {
     
     app.get('/obtenerPrenomina/:fechas/:operador/:tracto/:status/:local/:tipo', verificarToken, Liq.obtenerPrenomina);
 
-    app.get('/obtenerLiquidacion/:fechas/:operador/:folio/:negocio/:status/:tipo', verificarToken, Liq.obtenerLiquidacion);
+    app.get('/obtenerLiquidacion/:fechas/:operador/:folio/:negocio/:status/:pendiente/:tipo', verificarToken, Liq.obtenerLiquidacion);
 
     app.get('/obtenerPrenominaDocumentos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentos);
 

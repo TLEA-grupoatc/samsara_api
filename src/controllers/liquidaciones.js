@@ -339,46 +339,83 @@ module.exports = app => {
 
     app.obtenerLiquidacion = (req, res) => {
         const where = {};
-        console.log(req.params.fechas);
-        
-
-        if(req.params.fechas != 'undefined') {
-            const [startDate, endDate] = req.params.fechas.split(' ');
-            where.fecha = {
-                [Op.between]: [`${startDate} 00:00:00`, `${endDate} 23:59:59`],
-            };
-        }
-
-        if(req.params.operador != 'undefined') {
-            where.operador = req.params.operador;
-        }
-
-        if(req.params.folio != 'null') {
-            where.folio = req.params.folio;
-        }
-
-        if(req.params.negocio != 'undefined') {
-            where.terminal = req.params.negocio;
-        }
-
-        if(req.params.status != 'undefined') {
-            where.estado = req.params.status;
-        }
-
-        liquidacion.findAll({
-            where,
-            order: [['fecha', 'DESC']],
-        }).then(result => {
-            res.json({
-                OK: true,
-                Liquidaciones: result
+        if(req.params.pendiente === 'PENDIENTE FIRMA') {
+            liquidacion.findAll({
+                where: {
+                    checklist: 1,
+                    estado: 'EN PROCESO'
+                },
+                order: [['fecha', 'DESC']],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Liquidaciones: result
+                })
             })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
             });
-        });
+        }
+        else if(req.params.pendiente === 'PENDIENTE PAGO') {
+            liquidacion.findAll({
+                where: {
+                    firma: 1,
+                      estado: 'EN PROCESO'
+                },
+                order: [['fecha', 'DESC']],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Liquidaciones: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            });
+        }
+        else {
+            if(req.params.fechas != 'undefined') {
+                const [startDate, endDate] = req.params.fechas.split(' ');
+                where.fecha = {
+                    [Op.between]: [`${startDate} 00:00:00`, `${endDate} 23:59:59`],
+                };
+            }
+    
+            if(req.params.operador != 'undefined') {
+                where.operador = req.params.operador;
+            }
+    
+            if(req.params.folio != 'null') {
+                where.folio = req.params.folio;
+            }
+    
+            if(req.params.negocio != 'undefined') {
+                where.terminal = req.params.negocio;
+            }
+    
+            if(req.params.status != 'undefined') {
+                where.estado = req.params.status;
+            }
+    
+            liquidacion.findAll({
+                where,
+                order: [['fecha', 'DESC']],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Liquidaciones: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            });
+        }
     }
 
     app.obtenerPrenominaDocumentos = (req, res) => {
@@ -1245,7 +1282,6 @@ module.exports = app => {
 
     }
 
-
     app.enviarAVerificarPrenomina = (req, res) => {
         var today = new Date();
         const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
@@ -1300,12 +1336,6 @@ module.exports = app => {
             });
         });
     }   
-
-
-
-
-
-
 
 
 
