@@ -339,6 +339,26 @@ module.exports = app => {
                 });
             });
         }
+        else if(req.params.tipo == 'status'){
+            prenomina.findAll({
+                where: {
+                    estado: req.params.status
+                },
+                order: [
+                    ['fecha', 'DESC']
+                ],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Prenominas: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            });
+        }
         else {
             prenomina.findAll({
                 where: {
@@ -366,6 +386,7 @@ module.exports = app => {
         var ope = req.params.operador;
         var foli = req.params.folio;
         var ter = req.params.negocio;
+        var sta = req.params.status;
         var tip = req.params.tipo;
 
         if(tip === 'fechas') {
@@ -414,6 +435,26 @@ module.exports = app => {
             liquidacion.findAll({
                 where: {
                     terminal: ter
+                },
+                order: [
+                    ['fecha', 'DESC']
+                ],
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Liquidaciones: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            });
+        }
+        else if(tip === 'status') {
+            liquidacion.findAll({
+                where: {
+                    estado: sta
                 },
                 order: [
                     ['fecha', 'DESC']
@@ -1069,60 +1110,245 @@ module.exports = app => {
         if(!fs.existsSync(directorio)) {
             fs.mkdirSync(directorio, {recursive: true});
         }
-
-        const [, base64Content] = body.archivo.split(',');
-        var big1 = Buffer.from(base64Content, 'base64');
-
-        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
-        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' +  body.descripcion, big1);
-        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' +  body.descripcion;
-
-        let nuevaPre = new prenominadocs({
-            id_prenomina: null,
-            id_liquidacion: body.idd,
-            nombre: body.nombre,
-            descripcion: body.descripcion,
-            tipo: body.tipo,
-            archivo: doc,
-            comentario: body.comentario,
-            comentario_rechazo: body.comentario_rechazo,
-            fecha_creacion: body.fecha_creacion,
-            usuario: body.usuario,
-            verificado: 0,
-            verificado_por: null,
-            rechazado_por: null
-        });
-
-        prenominadocs.create(nuevaPre.dataValues, {
-            fields: [
-                'id_prenomina',
-                'id_liquidacion',
-                'nombre',
-                'descripcion',
-                'tipo',
-                'archivo',
-                'comentario',
-                'comentario_rechazo',
-                'fecha_creacion',
-                'usuario',
-                'verificado',
-                'verificado_por',
-                'rechazado_por'
-            ]
-        })
-        .then(result => {
-
-            res.json({
-                OK: true,
-                Documentos: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                OK: false,
-                msg: error.message
-            });
-        });
+        
+        if(body.quees === 'liquidacion') {
+            if(body.tipo === 'agregar') {
+                for(let bd of body.docs) { 
+                    const [, base64Content] = bd.archivo.split(',');
+                    var big1 = Buffer.from(base64Content, 'base64');
+            
+                    var fechacorta = bd.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+                    fs.writeFileSync(directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion, big1);
+                    doc = directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion;
+            
+                    let nuevaPre = new prenominadocs({
+                        id_prenomina: null,
+                        id_liquidacion: bd.idd,
+                        nombre: bd.nombre,
+                        descripcion: bd.descripcion,
+                        tipo: bd.tipo,
+                        archivo: doc,
+                        comentario: bd.comentario,
+                        comentario_rechazo: bd.comentario_rechazo,
+                        fecha_creacion: bd.fecha_creacion,
+                        usuario: bd.usuario,
+                        verificado: 0,
+                        verificado_por: null,
+                        rechazado_por: null
+                    });
+            
+                    prenominadocs.create(nuevaPre.dataValues, {
+                        fields: [
+                            'id_prenomina',
+                            'id_liquidacion',
+                            'nombre',
+                            'descripcion',
+                            'tipo',
+                            'archivo',
+                            'comentario',
+                            'comentario_rechazo',
+                            'fecha_creacion',
+                            'usuario',
+                            'verificado',
+                            'verificado_por',
+                            'rechazado_por'
+                        ]
+                    })
+                    .then(result => {
+            
+                        res.json({
+                            OK: true,
+                            Documentos: result
+                        })
+                    })
+                    .catch(error => {
+                        res.status(412).json({
+                            OK: false,
+                            msg: error.message
+                        });
+                    });
+                }
+            }
+            else {
+                for(let bd of body.docs) { 
+                    const [, base64Content] = bd.archivo.split(',');
+                    var big1 = Buffer.from(base64Content, 'base64');
+            
+                    var fechacorta = bd.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+                    fs.writeFileSync(directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion, big1);
+                    doc = directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion;
+            
+                    let nuevaPre = new prenominadocs({
+                        id_prenomina: null,
+                        id_liquidacion: bd.idd,
+                        nombre: bd.nombre,
+                        descripcion: bd.descripcion,
+                        tipo: bd.tipo,
+                        archivo: doc,
+                        comentario: bd.comentario,
+                        comentario_rechazo: bd.comentario_rechazo,
+                        fecha_creacion: bd.fecha_creacion,
+                        usuario: bd.usuario,
+                        verificado: 0,
+                        verificado_por: null,
+                        rechazado_por: null
+                    });
+            
+                    prenominadocs.update(nuevaPre.dataValues, {
+                        where: {
+                            id_pd: body.paud
+                        },
+                        fields: [
+                            'id_prenomina',
+                            'id_liquidacion',
+                            'nombre',
+                            'descripcion',
+                            'tipo',
+                            'archivo',
+                            'comentario',
+                            'comentario_rechazo',
+                            'fecha_creacion',
+                            'usuario',
+                            'verificado',
+                            'verificado_por',
+                            'rechazado_por'
+                        ]
+                    })
+                    .then(result => {
+            
+                        res.json({
+                            OK: true,
+                            Documentos: result
+                        })
+                    })
+                    .catch(error => {
+                        res.status(412).json({
+                            OK: false,
+                            msg: error.message
+                        });
+                    });
+                }
+            }
+        }
+        else{
+            if(body.tipo === 'agregar') {
+                for(let bd of body.docs) { 
+                    const [, base64Content] = bd.archivo.split(',');
+                    var big1 = Buffer.from(base64Content, 'base64');
+            
+                    var fechacorta = bd.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+                    fs.writeFileSync(directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion, big1);
+                    doc = directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion;
+            
+                    let nuevaPre = new prenominadocs({
+                        id_prenomina: bd.idd,
+                        id_liquidacion: null,
+                        nombre: bd.nombre,
+                        descripcion: bd.descripcion,
+                        tipo: bd.tipo,
+                        archivo: doc,
+                        comentario: bd.comentario,
+                        comentario_rechazo: bd.comentario_rechazo,
+                        fecha_creacion: bd.fecha_creacion,
+                        usuario: bd.usuario,
+                        verificado: 0,
+                        verificado_por: null,
+                        rechazado_por: null
+                    });
+            
+                    prenominadocs.create(nuevaPre.dataValues, {
+                        fields: [
+                            'id_prenomina',
+                            'id_liquidacion',
+                            'nombre',
+                            'descripcion',
+                            'tipo',
+                            'archivo',
+                            'comentario',
+                            'comentario_rechazo',
+                            'fecha_creacion',
+                            'usuario',
+                            'verificado',
+                            'verificado_por',
+                            'rechazado_por'
+                        ]
+                    })
+                    .then(result => {
+            
+                        res.json({
+                            OK: true,
+                            Documentos: result
+                        })
+                    })
+                    .catch(error => {
+                        res.status(412).json({
+                            OK: false,
+                            msg: error.message
+                        });
+                    });
+                }
+            }
+            else {
+                for(let bd of body.docs) { 
+                    const [, base64Content] = bd.archivo.split(',');
+                    var big1 = Buffer.from(base64Content, 'base64');
+            
+                    var fechacorta = bd.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+                    fs.writeFileSync(directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion, big1);
+                    doc = directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion;
+            
+                    let nuevaPre = new prenominadocs({
+                        id_prenomina: bd.idd,
+                        id_liquidacion: null,
+                        nombre: bd.nombre,
+                        descripcion: bd.descripcion,
+                        tipo: bd.tipo,
+                        archivo: doc,
+                        comentario: bd.comentario,
+                        comentario_rechazo: bd.comentario_rechazo,
+                        fecha_creacion: bd.fecha_creacion,
+                        usuario: bd.usuario,
+                        verificado: 0,
+                        verificado_por: null,
+                        rechazado_por: null
+                    });
+            
+                    prenominadocs.update(nuevaPre.dataValues, {
+                        where: {
+                            id_pd: body.paud
+                        },
+                        fields: [
+                            'id_prenomina',
+                            'id_liquidacion',
+                            'nombre',
+                            'descripcion',
+                            'tipo',
+                            'archivo',
+                            'comentario',
+                            'comentario_rechazo',
+                            'fecha_creacion',
+                            'usuario',
+                            'verificado',
+                            'verificado_por',
+                            'rechazado_por'
+                        ]
+                    })
+                    .then(result => {
+            
+                        res.json({
+                            OK: true,
+                            Documentos: result
+                        })
+                    })
+                    .catch(error => {
+                        res.status(412).json({
+                            OK: false,
+                            msg: error.message
+                        });
+                    });
+                }
+            }
+        }
 
     }
 
