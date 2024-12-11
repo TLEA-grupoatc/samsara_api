@@ -2,7 +2,7 @@ module.exports = app => {
     const { verificarToken } = app.middlewares.auth;
     const Peticion = app.controllers.peticiones;
     
-    app.get('/obtenerParaGuardarUnidades', verificarToken, Peticion.obtenerParaGuardarUnidades);
+    app.get('/obtenerParaGuardarUnidades', Peticion.obtenerParaGuardarUnidades);
 
     app.get('/totalUnidades', verificarToken, Peticion.totalUnidades);
 

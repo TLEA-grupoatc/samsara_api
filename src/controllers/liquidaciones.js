@@ -429,8 +429,42 @@ module.exports = app => {
             var listadeitems = [];
             var lista;
 
-            const pres = ['OTROS DOCUMENTOS', 'PENSIONES', 'PERMISOS DE CARGA', 'PRENOMINA', 'RESETEO', 'TALACHAS', 'TICKETS DE CASETAS', 'TICKETS DE DIESEL'];
-            const liquis = ['ALCOHOLIMETRO', 'ANTIDOPING', 'CARATULA DE LIQUIDACION FIRMADA', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'CONFIRMACION DE DEPOSITO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE RELLENO', 'FOTOS DE TRACTO', 'INVENTARIO', 'OTROS DOCUMENTOS', 'REPORTE DE CRUCES DE PASE', 'REPORTE DE EXCEL MANIOBAS EXTRAS', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE DEDUCCIONES', 'REPORTE PAGINA ULTRAGAS', 'RESUMEN DE LA LIQUIDACION (ADVAN)', 'RESUMEN DE NOMINA DEL OPERADOR', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DE TAXIS'];
+            const pres = [
+                'CARATULA DE PRENOMINA', 
+                'RESETEO', 
+                'TICKETS DE DIESEL',
+                'TICKETS DE CASETAS', 
+                'OTROS DOCUMENTOS', 
+                'PENSIONES', 
+                'PERMISOS DE CARGA', 
+                'TALACHAS', 
+            ];
+
+            const liquis = [
+                'LIQUIDACION DEL OPERADOR', 
+                'RECIBO DE OPERADOR DEVENGADOS Y PAGADOS', 
+                'RESUMEN DE LA LIQUIDACION', 
+                'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 
+                'REPORTE DE VALES DE COMBUSTIBLE', 
+                'REPORTE PAGINA ULTRAGAS', 
+                'REPORTE DEDUCCIONES', 
+                'REPORTE DE CRUCES DE PASE', 
+                'VALES DE COMIDA NO REGISTRADAS', 
+                'VALES DE INCIDENCIA', 
+                'VALES DE GASTOS EXTRAS', 
+                'VALES DE TAXIS',
+                'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES', 
+                'REPORTE DE EXCEL MANIOBAS EXTRAS', 
+                'OTROS DOCUMENTOS', 
+
+                'ANTIDOPING', 
+                'CARATULA DE LIQUIDACION FIRMADA', 
+                'CONFIRMACION DE DEPOSITO', 
+                'FOTOS DE PRUEBA DE AGUA', 
+                'FOTOS DE RELLENO', 
+                'FOTOS DE TRACTO', 
+                'INVENTARIO'
+            ];
 
             if(camp === 'id_liquidacion') {
                 lista = liquis;
