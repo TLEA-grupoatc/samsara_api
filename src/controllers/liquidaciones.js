@@ -430,7 +430,7 @@ module.exports = app => {
             var lista;
 
             const pres = ['OTROS DOCUMENTOS', 'TICKETS DE DIESEL', 'TICKETS DE CASETAS', 'RESETEO', 'OTROS DOCUMENTOS', 'TALACHAS', 'PENSIONES', 'PERMISOS DE CARGA', 'PRENOMINA'];
-            const liquis = ['OTROS DOCUMENTOS', 'RESUMEN DE LA LIQUIDACION', 'ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DE TAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS', 'CONFIRMACION DE DEPOSITO', 'CARATULA DE LIQUIDACION FIRMADA'];
+            const liquis = ['OTROS DOCUMENTOS', 'RESUMEN DE NOMINA DEL OPERADOR', 'RESUMEN DE LA LIQUIDACION (ADVAN)', 'ANTIDOPING', 'ALCOHOLIMETRO', 'FOTOS DE RELLENO', 'FOTOS DE PRUEBA DE AGUA', 'FOTOS DE TRACTO', 'INVENTARIO', 'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 'REPORTE DE VALES DE COMBUSTIBLE', 'REPORTE PAGINA ULTRAGAS', 'REPORTE DEDUCCIONES', 'REPORTE DE CRUCES DE PASE', 'VALES DE COMIDA NO REGISTRADAS', 'VALES DE GASTOS EXTRAS', 'VALES DE TAXIS', 'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',  'REPORTE DE EXCEL MANIOBAS EXTRAS', 'CONFIRMACION DE DEPOSITO', 'CARATULA DE LIQUIDACION FIRMADA'];
 
             if(camp === 'id_liquidacion') {
                 lista = liquis;
@@ -726,18 +726,49 @@ module.exports = app => {
     }
 
     app.rechazarDocumento = (req, res) => {
-        let deleteunidad = new prenominadocs({
+        let data = new prenominadocs({
             comentario_rechazo : req.params.comentario == 'undefined' ? null : req.params.comentario,
             verificado : 2,
             rechazado_por : req.params.usuario
         });
 
-        prenominadocs.update(deleteunidad.dataValues, {
+        prenominadocs.update(data.dataValues, {
             where: {
                 id_pd: req.params.id
             },
             fields: ['comentario_rechazo', 'verificado', 'rechazado_por']
         }).then(result => {
+            if(req.params.tipo === 'liquidacion') {
+                let data = new liquidacion({
+                    estado: 'RECHAZADO',
+                });
+        
+                liquidacion.update(data.dataValues, {
+                    where: {
+                        id_liquidacion: req.params.idpl
+                    },
+                    individualHooks: true,
+                    fields: ['estado']
+                }).then(result => {
+                }).catch(err => {
+                });
+            }
+            else {
+                let data = new prenomina({
+                    estado: 'RECHAZADO',
+                });
+        
+                prenomina.update(data.dataValues, {
+                    where: {
+                        id_prenomina: req.params.idpl
+                    },
+                    individualHooks: true,
+                    fields: ['estado']
+                }).then(result => {
+                }).catch(err => {
+                });
+            }
+            
             res.json({
                 OK: true,
                 rows_affected: result[0]

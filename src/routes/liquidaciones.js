@@ -15,7 +15,7 @@ module.exports = app => {
 
     app.delete('/verificarDocumento/:id/:comentario/:usuario', verificarToken, Liq.verificarDocumento);
 
-    app.delete('/rechazarDocumento/:id/:comentario/:usuario', verificarToken, Liq.rechazarDocumento);
+    app.delete('/rechazarDocumento/:id/:comentario/:usuario/:idpl/:tipo', verificarToken, Liq.rechazarDocumento);
 
     app.put('/verificarPrenomina/:id/:campo/:usuario', verificarToken, Liq.verificarPrenomina);
 
