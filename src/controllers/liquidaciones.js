@@ -441,28 +441,25 @@ module.exports = app => {
             ];
 
             const liquis = [
-                'LIQUIDACION DEL OPERADOR', 
-                'RECIBO DE OPERADOR DEVENGADOS Y PAGADOS', 
-                'RESUMEN DE LA LIQUIDACION', 
-                'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)', 
-                'REPORTE DE VALES DE COMBUSTIBLE', 
-                'REPORTE PAGINA ULTRAGAS', 
-                'REPORTE DEDUCCIONES', 
-                'REPORTE DE CRUCES DE PASE', 
-                'VALES DE COMIDA NO REGISTRADAS', 
-                'VALES DE INCIDENCIA', 
-                'VALES DE GASTOS EXTRAS', 
+                'LIQUIDACION DEL OPERADOR',
+                'RECIBO DE SALARIOS DEVENGADOS Y PAGADOS',
+                'RESUMEN DE LA NOMINA DEL OPERADOR',
+                'PRENOMINAS',
+                'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)',
+                'REPORTE DE VALES DE COMBUSTIBLE',
+                'REPORTE PAGINA ULTRAGAS',
+                'REPORTE DEDUCCIONES',
+                'REPORTE DE CRUCES DE PASE',
+                'VALES DE COMIDA NO REGISTRADAS',
+                'VALES DE INCIDENCIA',
+                'VALES DE GASTOS EXTRAS',
                 'VALES DE TAXIS',
-                'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES', 
-                'REPORTE DE EXCEL MANIOBAS EXTRAS', 
-                'OTROS DOCUMENTOS', 
-
-                'ANTIDOPING', 
-                'CARATULA DE LIQUIDACION FIRMADA', 
-                'CONFIRMACION DE DEPOSITO', 
-                'FOTOS DE PRUEBA DE AGUA', 
-                'FOTOS DE RELLENO', 
-                'FOTOS DE TRACTO', 
+                'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',
+                'REPORTE DE EXCEL MANIOBAS EXTRAS',
+                'OTROS DOCUMENTOS',
+                'FOTOS DE PRUEBA DE AGUA',
+                'FOTOS DE RELLENO',
+                'FOTOS DE TRACTO',
                 'INVENTARIO'
             ];
 
@@ -523,6 +520,7 @@ module.exports = app => {
             usuario: body.usuario,
             verificado_por: body.verificado_por,
             fecha_enviado_rev: body.fecha_enviado_rev,
+            diferencia_diesel: body.diferencia_diesel,
             comentarios: body.comentarios,
             estado: body.estado
         });
@@ -541,6 +539,7 @@ module.exports = app => {
                 'usuario',
                 'verificado_por',
                 'fecha_enviado_rev',
+                'diferencia_diesel',
                 'comentarios',
                 'estado'
             ]

@@ -53,6 +53,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        diferencia_diesel:{
+            type: DataType.FLOAT,
+            allowNull: false
+        },
         comentarios:{
             type: DataType.STRING,
             allowNull: true
