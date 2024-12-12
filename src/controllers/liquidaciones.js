@@ -536,7 +536,7 @@ module.exports = app => {
 
             res.json({
                 OK: true,
-                PrenominasDocs: listadeitems
+                PrenominasDocs: result
             });
         })
         .catch(error => {
@@ -1445,22 +1445,61 @@ module.exports = app => {
     }   
 
 
-    function agregarSufijosSiDuplicados(array, campo) {
-        const conteo = {};
-        return array.map((item) => {
-            const valor = item[campo];
-            if (conteo[valor]) {
-                conteo[valor] += 1;
-                return {
-                    ...item,
-                    [campo]: `${valor}${conteo[valor] - 1}`,
-                };
-            } else {
-                conteo[valor] = 1;
-                return item;
+
+    // especiales
+
+    
+    app.eliminarPermanentePrenominas = (req, res) => {
+        prenomina.findByPk(req.params.id_prenomina).then(result => {
+            if(!result) {
+                return res.status(404).json({
+                    OK: false,
+                    msg: 'Prenomina not found'
+                });
             }
+
+            return result.destroy();
+        })
+        .then(result => {     
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
         });
     }
+    
+    app.eliminarPermanenteLiquidaciones = (req, res) => {
+        liquidacion.findByPk(req.params.id_liquidacion).then(result => {
+            if(!result) {
+                return res.status(404).json({
+                    OK: false,
+                    msg: 'Liquidacion not found'
+                });
+            }
+
+            return result.destroy();
+        })
+        .then(result => {     
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
 
     function getDatesArray(startDate, endDate) {
         const dates = [];
