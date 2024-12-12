@@ -434,6 +434,8 @@ module.exports = app => {
                 'RESETEO', 
                 'TICKETS DE DIESEL',
                 'TICKETS DE CASETAS', 
+                'UREA', 
+                'CARTAS PORTE', 
                 'OTROS DOCUMENTOS', 
                 'PENSIONES', 
                 'PERMISOS DE CARGA', 
@@ -531,7 +533,7 @@ module.exports = app => {
                     });
                 }
             }
-            
+
             res.json({
                 OK: true,
                 PrenominasDocs: listadeitems
