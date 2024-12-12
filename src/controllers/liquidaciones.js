@@ -469,28 +469,69 @@ module.exports = app => {
             else {
                 lista = pres;
             }
-
-            for(let index = 0; index < lista.length; index++) {
-                const docu = result.find(aud => aud.nombre === lista[index]);
-
-                let rd = ({
-                    id_pd: docu != undefined ? docu.id_pd : 0,
-                    id_prenomina: docu != undefined ? docu.id_prenomina : null,
-                    id_liquidacion: docu != undefined ? docu.id_liquidacion : null,
-                    nombre: lista[index],
-                    descripcion: docu != undefined ? docu.descripcion : 'Sin Archivo',
-                    tipo: docu != undefined ? docu.tipo : '',
-                    archivo: docu != undefined ? docu.archivo : null,
-                    comentario: docu != undefined ? docu.comentario : null,
-                    comentario_rechazo: docu != undefined ? docu.comentario_rechazo : null,
-                    fecha_creacion: docu != undefined ? docu.fecha_creacion : null,
-                    usuario: docu != undefined ? docu.usuario : null,
-                    verificado: docu != undefined ? docu.verificado : null,
-                    verificado_por: docu != undefined ? docu.verificado_por : null
-                });
-
-                listadeitems.push(rd);
+ 
+            let nombresProcesados = {};
+             
+            for (let index = 0; index < lista.length; index++) {
+                const documentos = result.filter(aud => aud.nombre === lista[index]);
+                let nombreBase = lista[index] || "Sin Nombre";
+             
+                if(documentos.length === 0) {
+                    let nombreFinal = nombreBase;
+                    if (nombresProcesados[nombreBase]) {
+                        nombresProcesados[nombreBase]++;
+                        nombreFinal = `${nombreBase} ${nombresProcesados[nombreBase]}`;
+                    } 
+                    else {
+                        nombresProcesados[nombreBase] = 1;
+                    }
+             
+                    listadeitems.push({
+                        id_pd: 0,
+                        id_prenomina: null,
+                        id_liquidacion: null,
+                        nombre: nombreFinal,
+                        descripcion: 'Sin Archivo',
+                        tipo: '',
+                        archivo: null,
+                        comentario: null,
+                        comentario_rechazo: null,
+                        fecha_creacion: null,
+                        usuario: null,
+                        verificado: null,
+                        verificado_por: null
+                    });
+                } 
+                else {
+                    documentos.forEach((docu, idx) => {
+                        let nombreFinal = docu.nombre || nombreBase;
+                        if(nombresProcesados[nombreBase]) {
+                            nombresProcesados[nombreBase]++;
+                            nombreFinal = `${nombreBase} ${nombresProcesados[nombreBase]}`;
+                        } 
+                        else {
+                            nombresProcesados[nombreBase] = 1;
+                        }
+             
+                        listadeitems.push({
+                            id_pd: docu.id_pd || 0,
+                            id_prenomina: docu.id_prenomina || null,
+                            id_liquidacion: docu.id_liquidacion || null,
+                            nombre: nombreFinal,
+                            descripcion: docu.descripcion || 'Sin Archivo',
+                            tipo: docu.tipo || '',
+                            archivo: docu.archivo || null,
+                            comentario: docu.comentario || null,
+                            comentario_rechazo: docu.comentario_rechazo || null,
+                            fecha_creacion: docu.fecha_creacion || null,
+                            usuario: docu.usuario || null,
+                            verificado: docu.verificado || null,
+                            verificado_por: docu.verificado_por || null
+                        });
+                    });
+                }
             }
+            
             res.json({
                 OK: true,
                 PrenominasDocs: listadeitems
@@ -1402,6 +1443,22 @@ module.exports = app => {
     }   
 
 
+    function agregarSufijosSiDuplicados(array, campo) {
+        const conteo = {};
+        return array.map((item) => {
+            const valor = item[campo];
+            if (conteo[valor]) {
+                conteo[valor] += 1;
+                return {
+                    ...item,
+                    [campo]: `${valor}${conteo[valor] - 1}`,
+                };
+            } else {
+                conteo[valor] = 1;
+                return item;
+            }
+        });
+    }
 
     function getDatesArray(startDate, endDate) {
         const dates = [];
