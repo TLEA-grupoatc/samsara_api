@@ -536,7 +536,8 @@ module.exports = app => {
 
             res.json({
                 OK: true,
-                PrenominasDocs: result
+                Parapruebas: result,
+                PrenominasDocs: listadeitems
             });
         })
         .catch(error => {
