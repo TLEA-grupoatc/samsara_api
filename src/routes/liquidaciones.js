@@ -45,7 +45,9 @@ module.exports = app => {
     
     app.delete('/eliminarPermanentePrenominas/:id_prenomina', verificarToken, Liq.eliminarPermanentePrenominas);
 
-    app.delete('/eliminarPermanenteLiquidaciones/:id_liquidaciones', verificarToken, Liq.eliminarPermanenteLiquidaciones);
+    app.delete('/eliminarPermanenteLiquidaciones/:id_liquidacion', verificarToken, Liq.eliminarPermanenteLiquidaciones);
+    
+    app.delete('/eliminarPermanenteDocumentos/:id_pd', verificarToken, Liq.eliminarPermanenteDocumentos);
 
 
     

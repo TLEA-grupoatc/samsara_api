@@ -474,7 +474,7 @@ module.exports = app => {
  
             let nombresProcesados = {};
              
-            for (let index = 0; index < lista.length; index++) {
+            for(let index = 0; index < lista.length; index++) {
                 const documentos = result.filter(aud => aud.nombre === lista[index]);
                 let nombreBase = lista[index] || "Sin Nombre";
              
@@ -501,7 +501,8 @@ module.exports = app => {
                         fecha_creacion: null,
                         usuario: null,
                         verificado: null,
-                        verificado_por: null
+                        verificado_por: null,
+                        rechazado_por: null
                     });
                 } 
                 else {
@@ -527,8 +528,9 @@ module.exports = app => {
                             comentario_rechazo: docu.comentario_rechazo || null,
                             fecha_creacion: docu.fecha_creacion || null,
                             usuario: docu.usuario || null,
-                            verificado: docu.verificado || null,
-                            verificado_por: docu.verificado_por || null
+                            verificado: docu.verificado,
+                            verificado_por: docu.verificado_por || null,
+                            rechazado_por: docu.rechazado_por || null
                         });
                     });
                 }
@@ -1481,6 +1483,31 @@ module.exports = app => {
                 return res.status(404).json({
                     OK: false,
                     msg: 'Liquidacion not found'
+                });
+            }
+
+            return result.destroy();
+        })
+        .then(result => {     
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+    
+    app.eliminarPermanenteDocumentos = (req, res) => {
+        prenominadocs.findByPk(req.params.id_pd).then(result => {
+            if(!result) {
+                return res.status(404).json({
+                    OK: false,
+                    msg: 'Documento not found'
                 });
             }
 
