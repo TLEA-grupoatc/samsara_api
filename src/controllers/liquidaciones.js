@@ -514,7 +514,7 @@ module.exports = app => {
                         } 
                         else {
                             nombresProcesados[nombreBase] = 1;
-                        }
+                        }   
              
                         listadeitems.push({
                             id_pd: docu.id_pd || 0,
@@ -661,6 +661,62 @@ module.exports = app => {
         });
     }
 
+    app.editarPrenomina = (req, res) => {
+        let body = req.body;
+
+        let editarPre = new prenomina({
+            operador: body.operador,
+            tracto: body.tracto,
+            localidad: body.localidad,
+            terminal: body.terminal,
+            folio: body.folio,
+            checklist: body.checklist,
+            firma: body.firma,
+            pago: body.pago,
+            fecha: body.fecha,
+            usuario: body.usuario,
+            verificado_por: body.verificado_por,
+            fecha_enviado_rev: body.fecha_enviado_rev,
+            diferencia_diesel: body.diferencia_diesel,
+            comentarios: body.comentarios,
+            estado: body.estado
+        });
+
+        prenomina.update(editarPre.dataValues, {
+            where: {
+                id_prenomina: req.params.id_prenomina
+            },
+            individualHooks: true,
+            fields: [
+                'operador',
+                'tracto',
+                'localidad',
+                'terminal',
+                'folio',
+                'checklist',
+                'firma',
+                'pago',
+                'fecha',
+                'usuario',
+                'verificado_por',
+                'fecha_enviado_rev',
+                'diferencia_diesel',
+                'comentarios',
+                'estado'
+            ]
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            })
+        }).catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
     app.registrarLiquidacion = (req, res) => {
         let body = req.body;
         var documentos = body.docs;
@@ -772,6 +828,68 @@ module.exports = app => {
             })
         })
         .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+    
+    app.editarLiquidacion = (req, res) => {
+        let body = req.body;
+
+        let editarLiq = new liquidacion({
+            operador: body.operador,
+            terminal: body.terminal,
+            folio: body.folio,
+            monto: body.monto,
+            checklist: body.checklist,
+            firma: body.firma,
+            pago: body.pago,
+            fecha: body.fecha,
+            usuario: body.usuario,
+            verificado_por: body.verificado_por,
+            fecha_verificado: body.fecha_verificado,
+            cargo_firma: body.cargo_firma,
+            fecha_firma: body.fecha_firma,
+            cargo_pago: body.cargo_pago,
+            fecha_pago: body.fecha_pago,
+            fecha_enviado_rev: body.fecha_enviado_rev,
+            comentarios: body.comentarios,
+            estado: body.estado
+        });
+
+        liquidacion.update(editarLiq.dataValues, {
+            where: {
+                id_liquidacion: req.params.id_liquidacion
+            },
+            individualHooks: true,
+            fields: [
+                'operador',
+                'terminal',
+                'folio',
+                'monto',
+                'checklist',
+                'firma',
+                'pago',
+                'fecha',
+                'usuario',
+                'verificado_por',
+                'fecha_verificado',
+                'cargo_firma',
+                'fecha_firma',
+                'cargo_pago',
+                'fecha_pago',
+                'fecha_enviado_rev',
+                'comentarios',
+                'estado'
+            ]
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            })
+        }).catch(error => {
             res.status(412).json({
                 OK: false,
                 msg: error.message

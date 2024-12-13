@@ -21,7 +21,6 @@ module.exports = app => {
     
     app.put('/verificarLiquidacion/:id/:campo/:usuario', verificarToken, Liq.verificarLiquidacion);
     
-    
     app.put('/enviarAVerificarPrenomina/:id/:estado', verificarToken, Liq.enviarAVerificarPrenomina);
     
     app.put('/enviarAVerificarLiquidacion/:id/:estado', verificarToken, Liq.enviarAVerificarLiquidacion);
@@ -35,11 +34,14 @@ module.exports = app => {
     app.post('/verificarFA', verificarToken, Liq.verificarFA);
     
     app.post('/registrarPrenomina', verificarToken, Liq.registrarPrenomina);
+
+    app.put('/editarPrenomina/:id_prenomina', verificarToken, Liq.editarPrenomina);
     
     app.post('/cargaDeExtras', verificarToken, Liq.cargaDeExtras);
     
     app.post('/registrarLiquidacion', [verificarToken, UniqueLiquidacionInsert], Liq.registrarLiquidacion);
     
+    app.put('/editarLiquidacion/:id_liquidacion', verificarToken, Liq.editarLiquidacion);
     
     // Especiales
     
