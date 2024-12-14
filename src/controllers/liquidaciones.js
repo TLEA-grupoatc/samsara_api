@@ -362,7 +362,7 @@ module.exports = app => {
             liquidacion.findAll({
                 where: {
                     firma: 1,
-                      estado: 'EN PROCESO'
+                    estado: 'EN PROCESO'
                 },
                 order: [['fecha', 'DESC']],
             }).then(result => {
@@ -430,39 +430,39 @@ module.exports = app => {
             var lista;
 
             const pres = [
-                'CARATULA DE PRENOMINA', 
-                'RESETEO', 
-                'TICKETS DE DIESEL',
-                'TICKETS DE CASETAS', 
-                'UREA', 
-                'CARTAS PORTE', 
-                'OTROS DOCUMENTOS', 
-                'PENSIONES', 
-                'PERMISOS DE CARGA', 
-                'TALACHAS', 
+                '1 CARATULA DE PRENOMINA', 
+                '2 RESETEO', 
+                '3 TICKETS DE DIESEL',
+                '4 TICKETS DE CASETAS', 
+                '5 UREA', 
+                '6 CARTAS PORTE', 
+                '7 OTROS DOCUMENTOS', 
+                '8 PENSIONES', 
+                '9 PERMISOS DE CARGA', 
+                '10 TALACHAS'
             ];
 
             const liquis = [
-                'LIQUIDACION DEL OPERADOR',
-                'RECIBO DE SALARIOS DEVENGADOS Y PAGADOS',
-                'RESUMEN DE LA NOMINA DEL OPERADOR',
-                'PRENOMINAS',
-                'COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)',
-                'REPORTE DE VALES DE COMBUSTIBLE',
-                'REPORTE PAGINA ULTRAGAS',
-                'REPORTE DEDUCCIONES',
-                'REPORTE DE CRUCES DE PASE',
-                'VALES DE COMIDA NO REGISTRADAS',
-                'VALES DE INCIDENCIA',
-                'VALES DE GASTOS EXTRAS',
-                'VALES DE TAXIS',
-                'CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',
-                'REPORTE DE EXCEL MANIOBAS EXTRAS',
-                'OTROS DOCUMENTOS',
-                'FOTOS DE PRUEBA DE AGUA',
-                'FOTOS DE RELLENO',
-                'FOTOS DE TRACTO',
-                'INVENTARIO'
+                '1 LIQUIDACION DEL OPERADOR',
+                '2 RECIBO DE SALARIOS DEVENGADOS Y PAGADOS',
+                '3 RESUMEN DE LA NOMINA DEL OPERADOR',
+                '4 PRENOMINAS',
+                '5 COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)',
+                '6 REPORTE DE VALES DE COMBUSTIBLE',
+                '7 REPORTE PAGINA ULTRAGAS',
+                '8 REPORTE DEDUCCIONES',
+                '9 REPORTE DE CRUCES DE PASE',
+                '10 VALES DE COMIDA NO REGISTRADAS',
+                '11 VALES DE INCIDENCIA',
+                '12 VALES DE GASTOS EXTRAS',
+                '13 VALES DE TAXIS',
+                '14 CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',
+                '15 REPORTE DE EXCEL MANIOBAS EXTRAS',
+                '16 OTROS DOCUMENTOS',
+                '17 FOTOS DE PRUEBA DE AGUA',
+                '18 FOTOS DE RELLENO',
+                '19 FOTOS DE TRACTO',
+                '20 FOTOS DE INVENTARIO'
             ];
 
             if(camp === 'id_liquidacion') {
