@@ -19,15 +19,15 @@ module.exports = (sequelize, DataType) => {
         },
         descripcion:{
             type: DataType.STRING,
-            allowNull: false
+            allowNull: true
         },
         tipo:{
             type: DataType.STRING,
-            allowNull: false
+            allowNull: true
         },
         archivo:{
             type: DataType.STRING,
-            allowNull: false
+            allowNull: true
         },
         comentario:{
             type: DataType.STRING,

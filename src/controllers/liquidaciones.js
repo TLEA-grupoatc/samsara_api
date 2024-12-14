@@ -462,7 +462,8 @@ module.exports = app => {
                 '17 FOTOS DE PRUEBA DE AGUA',
                 '18 FOTOS DE RELLENO',
                 '19 FOTOS DE TRACTO',
-                '20 FOTOS DE INVENTARIO'
+                '20 FOTOS DE INVENTARIO',
+                '21 ALCOHOLIMETRO'
             ];
 
             if(camp === 'id_liquidacion') {
@@ -598,54 +599,97 @@ module.exports = app => {
             }
 
             for(let index = 0; index < documentos.length; index++) {
-                const [, base64Content] = documentos[index].archivo.split(',');
-                var big1 = Buffer.from(base64Content, 'base64');
+                if(documentos[index].comentario) {
+                    let nuevaPre = new prenominadocs({
+                        id_prenomina: result.dataValues.id_prenomina,
+                        id_liquidacion: null,
+                        nombre: documentos[index].nombre,
+                        descripcion: null,
+                        tipo: null,
+                        archivo: doc,
+                        comentario: documentos[index].comentario,
+                        comentario_rechazo: documentos[index].comentario_rechazo,
+                        fecha_creacion: documentos[index].fecha_creacion,
+                        usuario: documentos[index].usuario,
+                        verificado: 0,
+                        verificado_por: null,
+                        rechazado_por: null
+                    });
+            
+                    prenominadocs.create(nuevaPre.dataValues, {
+                        fields: [
+                            'id_prenomina',
+                            'id_liquidacion',
+                            'nombre',
+                            'descripcion',
+                            'tipo',
+                            'archivo',
+                            'comentario',
+                            'comentario_rechazo',
+                            'fecha_creacion',
+                            'usuario',
+                            'verificado',
+                            'verificado_por',
+                            'rechazado_por'
+                        ]
+                    })
+                    .then(result => {
+                        console.log('insertado');
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+                }
+                else {
+                    const [, base64Content] = documentos[index].archivo.split(',');
+                    var big1 = Buffer.from(base64Content, 'base64');
 
-                var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+                    var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
 
-                fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_prenomina + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
-                
-                doc = directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_prenomina + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
+                    fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_prenomina + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
+                    
+                    doc = directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_prenomina + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
 
-                let nuevaPre = new prenominadocs({
-                    id_prenomina: result.dataValues.id_prenomina,
-                    id_liquidacion: null,
-                    nombre: documentos[index].nombre,
-                    descripcion: documentos[index].descripcion,
-                    tipo: documentos[index].tipo,
-                    archivo: doc,
-                    comentario: documentos[index].comentario,
-                    comentario_rechazo: documentos[index].comentario_rechazo,
-                    fecha_creacion: documentos[index].fecha_creacion,
-                    usuario: documentos[index].usuario,
-                    verificado: 0,
-                    verificado_por: null,
-                    rechazado_por: null
-                });
-        
-                prenominadocs.create(nuevaPre.dataValues, {
-                    fields: [
-                        'id_prenomina',
-                        'id_liquidacion',
-                        'nombre',
-                        'descripcion',
-                        'tipo',
-                        'archivo',
-                        'comentario',
-                        'comentario_rechazo',
-                        'fecha_creacion',
-                        'usuario',
-                        'verificado',
-                        'verificado_por',
-                        'rechazado_por'
-                    ]
-                })
-                .then(result => {
-                    console.log('insertado');
-                })
-                .catch(error => {
-                    console.log(error);
-                });
+                    let nuevaPre = new prenominadocs({
+                        id_prenomina: result.dataValues.id_prenomina,
+                        id_liquidacion: null,
+                        nombre: documentos[index].nombre,
+                        descripcion: documentos[index].descripcion,
+                        tipo: documentos[index].tipo,
+                        archivo: doc,
+                        comentario: documentos[index].comentario,
+                        comentario_rechazo: documentos[index].comentario_rechazo,
+                        fecha_creacion: documentos[index].fecha_creacion,
+                        usuario: documentos[index].usuario,
+                        verificado: 0,
+                        verificado_por: null,
+                        rechazado_por: null
+                    });
+            
+                    prenominadocs.create(nuevaPre.dataValues, {
+                        fields: [
+                            'id_prenomina',
+                            'id_liquidacion',
+                            'nombre',
+                            'descripcion',
+                            'tipo',
+                            'archivo',
+                            'comentario',
+                            'comentario_rechazo',
+                            'fecha_creacion',
+                            'usuario',
+                            'verificado',
+                            'verificado_por',
+                            'rechazado_por'
+                        ]
+                    })
+                    .then(result => {
+                        console.log('insertado');
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+                }
             }
 
             res.json({
@@ -772,54 +816,98 @@ module.exports = app => {
             }
 
             for(let index = 0; index < documentos.length; index++) {
-                const [, base64Content] = documentos[index].archivo.split(',');
-                var big1 = Buffer.from(base64Content, 'base64');
+                documentos[index].comentario
+                if(documentos[index].comentario) {
+                    let nuevaPre = new prenominadocs({
+                        id_prenomina: null,
+                        id_liquidacion: result.dataValues.id_liquidacion,
+                        nombre: documentos[index].nombre,
+                        descripcion: null,
+                        tipo: null,
+                        archivo: null,
+                        comentario: documentos[index].comentario,
+                        comentario_rechazo: documentos[index].comentario_rechazo,
+                        fecha_creacion: documentos[index].fecha_creacion,
+                        usuario: documentos[index].usuario,
+                        verificado: 0,
+                        verificado_por: null,
+                        rechazado_por: null
+                    });
+            
+                    prenominadocs.create(nuevaPre.dataValues, {
+                        fields: [
+                            'id_prenomina',
+                            'id_liquidacion',
+                            'nombre',
+                            'descripcion',
+                            'tipo',
+                            'archivo',
+                            'comentario',
+                            'comentario_rechazo',
+                            'fecha_creacion',
+                            'usuario',
+                            'verificado',
+                            'verificado_por',
+                            'rechazado_por'
+                        ]
+                    })
+                    .then(result => {
+                        console.log('insertado');
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+                }
+                else {
+                    const [, base64Content] = documentos[index].archivo.split(',');
+                    var big1 = Buffer.from(base64Content, 'base64');
 
-                var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+                    var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
 
-                fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_liquidacion + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
-                
-                doc = directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_liquidacion + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
+                    fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_liquidacion + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
+                    
+                    doc = directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_liquidacion + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
 
-                let nuevaPre = new prenominadocs({
-                    id_prenomina: null,
-                    id_liquidacion: result.dataValues.id_liquidacion,
-                    nombre: documentos[index].nombre,
-                    descripcion: documentos[index].descripcion,
-                    tipo: documentos[index].tipo,
-                    archivo: doc,
-                    comentario: documentos[index].comentario,
-                    comentario_rechazo: documentos[index].comentario_rechazo,
-                    fecha_creacion: documentos[index].fecha_creacion,
-                    usuario: documentos[index].usuario,
-                    verificado: 0,
-                    verificado_por: null,
-                    rechazado_por: null
-                });
-        
-                prenominadocs.create(nuevaPre.dataValues, {
-                    fields: [
-                        'id_prenomina',
-                        'id_liquidacion',
-                        'nombre',
-                        'descripcion',
-                        'tipo',
-                        'archivo',
-                        'comentario',
-                        'comentario_rechazo',
-                        'fecha_creacion',
-                        'usuario',
-                        'verificado',
-                        'verificado_por',
-                        'rechazado_por'
-                    ]
-                })
-                .then(result => {
-                    console.log('insertado');
-                })
-                .catch(error => {
-                    console.log(error);
-                });
+                    let nuevaPre = new prenominadocs({
+                        id_prenomina: null,
+                        id_liquidacion: result.dataValues.id_liquidacion,
+                        nombre: documentos[index].nombre,
+                        descripcion: documentos[index].descripcion,
+                        tipo: documentos[index].tipo,
+                        archivo: doc,
+                        comentario: documentos[index].comentario,
+                        comentario_rechazo: documentos[index].comentario_rechazo,
+                        fecha_creacion: documentos[index].fecha_creacion,
+                        usuario: documentos[index].usuario,
+                        verificado: 0,
+                        verificado_por: null,
+                        rechazado_por: null
+                    });
+            
+                    prenominadocs.create(nuevaPre.dataValues, {
+                        fields: [
+                            'id_prenomina',
+                            'id_liquidacion',
+                            'nombre',
+                            'descripcion',
+                            'tipo',
+                            'archivo',
+                            'comentario',
+                            'comentario_rechazo',
+                            'fecha_creacion',
+                            'usuario',
+                            'verificado',
+                            'verificado_por',
+                            'rechazado_por'
+                        ]
+                    })
+                    .then(result => {
+                        console.log('insertado');
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+                }
             }
 
             res.json({
