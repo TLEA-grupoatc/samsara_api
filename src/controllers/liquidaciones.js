@@ -898,7 +898,7 @@ module.exports = app => {
         prenominadocs.findAll({
             where: {
                 id_liquidacion: req.params.id,
-                nombre: 'CARATULA DE LIQUIDACION FIRMADA'
+                nombre: '2 CARATULA DE LIQUIDACION FIRMADA'
             }
         }).then(result => {
             res.json({
@@ -917,7 +917,7 @@ module.exports = app => {
         prenominadocs.findAll({
             where: {
                 id_liquidacion: req.params.id,
-                nombre: 'CONFIRMACION DE DEPOSITO'
+                nombre: '1 CONFIRMACION DE DEPOSITO'
             }
         }).then(result => {
             res.json({
