@@ -773,7 +773,8 @@ module.exports = app => {
         var pres = await prenomina.findAll({
             where: {
                 estado: 'COMPLETO'
-            }
+            },
+            order: [['operador', 'ASC']],
         });
 
         var fecha = year + '-' +  12;
@@ -935,7 +936,8 @@ module.exports = app => {
         var pres = await prenomina.findAll({
             where: {
                 estado: 'COMPLETO'
-            }
+            },
+            order: [['tracto', 'ASC']],
         });
 
         const agrupados = {};
