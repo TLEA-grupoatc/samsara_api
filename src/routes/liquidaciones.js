@@ -51,6 +51,11 @@ module.exports = app => {
     app.get('/matrixDieselOperador', Liq.matrixDieselOperador);
 
     app.get('/matrixDieselTracto', Liq.matrixDieselTracto);
+
+
+    app.get('/verFirmaLiquidacion/:id', Liq.verFirmaLiquidacion);
+
+    app.get('/verPagoLiquidacion/:id', Liq.verPagoLiquidacion);
     
     // Especiales
     

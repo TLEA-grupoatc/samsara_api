@@ -894,6 +894,47 @@ module.exports = app => {
 
 
 
+    app.verFirmaLiquidacion = (req, res) => {
+        prenominadocs.findAll({
+            where: {
+                id_liquidacion: req.params.id,
+                nombre: 'CARATULA DE LIQUIDACION FIRMADA'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Firma: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.verPagoLiquidacion = (req, res) => {
+        prenominadocs.findAll({
+            where: {
+                id_liquidacion: req.params.id,
+                nombre: 'CONFIRMACION DE DEPOSITO'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Pago: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
 
 
 
@@ -944,7 +985,7 @@ module.exports = app => {
 
         pres.forEach((item) => {
             const tracto = item.tracto;
-            const dia = parseInt(item.fecha.split(' ')[0].split('-')[2], 10); // Convertir el día a número
+            const dia = parseInt(item.fecha.split(' ')[0].split('-')[2], 10);
         
             if (!agrupados[tracto]) {
                 agrupados[tracto] = { tracto };
@@ -957,56 +998,6 @@ module.exports = app => {
         });
         
         const resultado = Object.values(agrupados);
-
-
-
-
-
-
-
-
-
-        // const estructuraDias = generarEstructuraFechas(year, month, firstDay, lastDay);
-        // var datosne = agregarDatosPorDia(dias, ops);
-        // // console.log(estructuraDias);
-        
-
-        
-
-
-        // for(let indexd = 0; indexd < dias.length; indexd++) {
-        //     const registros = ops.filter(aud => aud.fecha.split(' ')[0] === dias[indexd].toISOString().split('T')[0]);
-        //     if(!datos[indexd]) {
-        //         datos[indexd] = [];
-        //     }
-
-        //     if(registros.length > 0) {
-        //         for(var r = 0; r < registros.length; r++) {
-        //             var inf = ({
-        //                 fecha: dias[indexd].toISOString().split('T')[0],
-        //                 id_prenomina: registros[r].id_prenomina,
-        //                 fecha_creacion: registros[r].fecha,
-        //                 operador: registros[r].operador,
-        //                 tracto: registros[r].tracto,
-        //                 diferencia: registros[r].diferencia_diesel,
-        //             });
-                    
-        //             datos.push(inf);
-        //         }            
-        //     }
-        //     else {
-        //         var inf = ({
-        //             fecha: dias[indexd].toISOString().split('T')[0],
-        //             id_prenomina: null,
-        //             fecha_creacion: null,
-        //             operador: '',
-        //             tracto: '',
-        //             diferencia: null
-        //         });
-                
-        //         datos.push(inf);
-        //     }
-        // }
 
         res.json({
             OK: true,
