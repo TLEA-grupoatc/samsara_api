@@ -709,51 +709,160 @@ module.exports = app => {
     app.registrarSoloComentario = (req, res) => {
         let body = req.body
 
-        let nuevaPre = new prenominadocs({
-            id_prenomina: body.id_prenomina,
-            id_liquidacion: body.id_liquidacion,
-            nombre: body.nombre,
-            descripcion: null,
-            tipo: null,
-            archivo: null,
-            comentario: body.comentario,
-            comentario_rechazo: body.comentario_rechazo,
-            fecha_creacion: body.fecha_creacion,
-            usuario: body.usuario,
-            verificado: 0,
-            verificado_por: null,
-            rechazado_por: null
-        });
+        var quees = body.quesehara;
 
-        prenominadocs.create(nuevaPre.dataValues, {
-            fields: [
-                'id_prenomina',
-                'id_liquidacion',
-                'nombre',
-                'descripcion',
-                'tipo',
-                'archivo',
-                'comentario',
-                'comentario_rechazo',
-                'fecha_creacion',
-                'usuario',
-                'verificado',
-                'verificado_por',
-                'rechazado_por'
-            ]
-        })
-        .then(result => {
-            res.json({
-                OK: true,
-                Prenomina: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                OK: false,
-                msg: error.message
+        console.log(quees);
+        
+
+        if(quees === 'agregar') {
+            let nuevaPre = new prenominadocs({
+                id_prenomina: body.id_prenomina,
+                id_liquidacion: body.id_liquidacion,
+                nombre: body.nombre,
+                descripcion: null,
+                tipo: null,
+                archivo: null,
+                comentario: body.comentario,
+                comentario_rechazo: body.comentario_rechazo,
+                fecha_creacion: body.fecha_creacion,
+                usuario: body.usuario,
+                verificado: 0,
+                verificado_por: null,
+                rechazado_por: null
             });
-        });
+    
+            prenominadocs.create(nuevaPre.dataValues, {
+                fields: [
+                    'id_prenomina',
+                    'id_liquidacion',
+                    'nombre',
+                    'descripcion',
+                    'tipo',
+                    'archivo',
+                    'comentario',
+                    'comentario_rechazo',
+                    'fecha_creacion',
+                    'usuario',
+                    'verificado',
+                    'verificado_por',
+                    'rechazado_por'
+                ]
+            })
+            .then(result => {
+                res.json({
+                    OK: true,
+                    Prenomina: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    OK: false,
+                    msg: error.message
+                });
+            });
+        }
+        else {
+            // if(tipoes === 'liquidacion') {
+            //     let nuevaPre = new prenominadocs({
+            //         id_prenomina: body.id_prenomina,
+            //         id_liquidacion: body.id_liquidacion,
+            //         nombre: body.nombre,
+            //         descripcion: body.descripcion,
+            //         tipo: body.tipo,
+            //         archivo: body.archivo,
+            //         comentario: body.comentario,
+            //         comentario_rechazo: body.comentario_rechazo,
+            //         fecha_creacion: body.fecha_creacion,
+            //         usuario: body.usuario,
+            //         verificado: 0,
+            //         verificado_por: null,
+            //         rechazado_por: null
+            //     });
+
+            //     prenominadocs.update(nuevaPre.dataValues, {
+            //         where: {
+            //             id_pd: body.id_pd
+            //         },
+            //         fields: [
+            //             'id_prenomina',
+            //             'id_liquidacion',
+            //             'nombre',
+            //             'descripcion',
+            //             'tipo',
+            //             'archivo',
+            //             'comentario',
+            //             'comentario_rechazo',
+            //             'fecha_creacion',
+            //             'usuario',
+            //             'verificado',
+            //             'verificado_por',
+            //             'rechazado_por'
+            //         ]
+            //     })
+            //     .then(result => {
+            //         res.json({
+            //             OK: true,
+            //             Prenomina: result
+            //         })
+            //     })
+            //     .catch(error => {
+            //         res.status(412).json({
+            //             OK: false,
+            //             msg: error.message
+            //         });
+            //     });
+            // }
+            // else {
+                let nuevaPre = new prenominadocs({
+                    id_prenomina: body.id_prenomina,
+                    id_liquidacion: body.id_liquidacion,
+                    nombre: body.nombre,
+                    descripcion: body.descripcion,
+                    tipo: body.tipo,
+                    archivo: body.archivo,
+                    comentario: body.comentario,
+                    comentario_rechazo: body.comentario_rechazo,
+                    fecha_creacion: body.fecha_creacion,
+                    usuario: body.usuario,
+                    verificado: 0,
+                    verificado_por: null,
+                    rechazado_por: null
+                });
+
+                prenominadocs.update(nuevaPre.dataValues, {
+                    where: {
+                        id_pd: body.id_pd
+                    },
+                    fields: [
+                        'id_prenomina',
+                        'id_liquidacion',
+                        'nombre',
+                        'descripcion',
+                        'tipo',
+                        'archivo',
+                        'comentario',
+                        'comentario_rechazo',
+                        'fecha_creacion',
+                        'usuario',
+                        'verificado',
+                        'verificado_por',
+                        'rechazado_por'
+                    ]
+                })
+                .then(result => {
+                    res.json({
+                        OK: true,
+                        Prenomina: result
+                    })
+                })
+                .catch(error => {
+                    res.status(412).json({
+                        OK: false,
+                        msg: error.message
+                    });
+                });
+            }
+        // }
     }
 
 
@@ -1451,6 +1560,7 @@ module.exports = app => {
                 tipo: datos[index].tipo,
                 archivo: doc,
                 comentario: datos[index].comentario,
+                comentario_rechazo: datos[index].comentario_rechazo,
                 fecha_creacion: datos[index].fecha_creacion,
                 usuario: datos[index].usuario,
                 verificado: 0,
@@ -1466,6 +1576,7 @@ module.exports = app => {
                     'tipo',
                     'archivo',
                     'comentario',
+                    'comentario_rechazo',
                     'fecha_creacion',
                     'usuario',
                     'verificado',
@@ -1488,7 +1599,8 @@ module.exports = app => {
         let data = new liquidacion({
             firma: 1,
             cargo_firma: body.usuario,
-            fecha_firma: hoy
+            fecha_firma: hoy,
+            estado: 'EN PROCESO'
         });
 
         liquidacion.update(data.dataValues, {
@@ -1530,6 +1642,7 @@ module.exports = app => {
             tipo: body.tipo,
             archivo: doc,
             comentario: body.comentario,
+            comentario_rechazo: body.comentario_rechazo,
             fecha_creacion: body.fecha_creacion,
             usuario: body.usuario,
             verificado: 0,
@@ -1545,6 +1658,7 @@ module.exports = app => {
                 'tipo',
                 'archivo',
                 'comentario',
+                'comentario_rechazo',
                 'fecha_creacion',
                 'usuario',
                 'verificado',
