@@ -705,6 +705,314 @@ module.exports = app => {
         });
     }
 
+
+    app.registrarSoloComentario = (req, res) => {
+        let body = req.body
+
+        let nuevaPre = new prenominadocs({
+            id_prenomina: body.id_prenomina,
+            id_liquidacion: body.id_liquidacion,
+            nombre: body.nombre,
+            descripcion: null,
+            tipo: null,
+            archivo: null,
+            comentario: body.comentario,
+            comentario_rechazo: body.comentario_rechazo,
+            fecha_creacion: body.fecha_creacion,
+            usuario: body.usuario,
+            verificado: 0,
+            verificado_por: null,
+            rechazado_por: null
+        });
+
+        prenominadocs.create(nuevaPre.dataValues, {
+            fields: [
+                'id_prenomina',
+                'id_liquidacion',
+                'nombre',
+                'descripcion',
+                'tipo',
+                'archivo',
+                'comentario',
+                'comentario_rechazo',
+                'fecha_creacion',
+                'usuario',
+                'verificado',
+                'verificado_por',
+                'rechazado_por'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Prenomina: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+    app.matrixDieselOperador = async (req, res) => {
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = now.getMonth();
+        
+
+        // let {firstDay, lastDay} = getFirstAndLastDayOfMonth(year, month);
+        // var dias = getDatesArray(firstDay, lastDay);
+        
+        var datos = [];
+
+        
+        var pres = await prenomina.findAll({
+            where: {
+                estado: 'COMPLETO'
+            }
+        });
+
+        var fecha = year + '-' +  12;
+
+        // for(var indexp = 0; indexp < pres.length; indexp++){
+            
+        //     var opera = ({
+        //         operador: pres[indexp].operador,
+
+        //         diferencia1: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '01' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia2: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '02' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia3: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '03' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia4: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '04' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia5: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '05' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia6: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '06' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia7: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '07' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia8: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '08' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia9: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '09' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia10: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '10' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia11: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '11' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia12: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '12' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia13: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '13' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia14: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '14' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia15: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '15' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia16: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '16' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia17: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '17' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia18: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '18' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia19: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '19' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia20: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '20' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia21: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '21' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia22: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '22' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia23: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '23' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia24: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '24' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia25: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '25' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia26: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '26' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia27: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '27' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia28: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '28' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia29: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '29' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia30: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '30' ? pres[indexp].diferencia_diesel : null,
+        //         diferencia31: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '31' ? pres[indexp].diferencia_diesel : null
+        //     });
+
+        //     datos.push(opera)
+        // }
+
+
+        const agrupados = {};
+
+        pres.forEach((item) => {
+            const operador = item.operador;
+            const dia = parseInt(item.fecha.split(' ')[0].split('-')[2], 10); // Convertir el día a número
+        
+            if (!agrupados[operador]) {
+                agrupados[operador] = { operador };
+                for (let i = 1; i <= 31; i++) {
+                    agrupados[operador][`diferencia${i}`] = null;
+                }
+            }
+        
+            agrupados[operador][`diferencia${dia}`] = item.diferencia_diesel;
+        });
+        
+        const resultado = Object.values(agrupados);
+        // console.log(resultado);
+
+        // const estructuraDias = generarEstructuraFechas(year, month, firstDay, lastDay);
+        // var datosne = agregarDatosPorDia(dias, ops);
+        // // console.log(estructuraDias);
+        
+
+        
+
+
+        // for(let indexd = 0; indexd < dias.length; indexd++) {
+        //     const registros = ops.filter(aud => aud.fecha.split(' ')[0] === dias[indexd].toISOString().split('T')[0]);
+        //     if(!datos[indexd]) {
+        //         datos[indexd] = [];
+        //     }
+
+        //     if(registros.length > 0) {
+        //         for(var r = 0; r < registros.length; r++) {
+        //             var inf = ({
+        //                 fecha: dias[indexd].toISOString().split('T')[0],
+        //                 id_prenomina: registros[r].id_prenomina,
+        //                 fecha_creacion: registros[r].fecha,
+        //                 operador: registros[r].operador,
+        //                 tracto: registros[r].tracto,
+        //                 diferencia: registros[r].diferencia_diesel,
+        //             });
+                    
+        //             datos.push(inf);
+        //         }            
+        //     }
+        //     else {
+        //         var inf = ({
+        //             fecha: dias[indexd].toISOString().split('T')[0],
+        //             id_prenomina: null,
+        //             fecha_creacion: null,
+        //             operador: '',
+        //             tracto: '',
+        //             diferencia: null
+        //         });
+                
+        //         datos.push(inf);
+        //     }
+        // }
+
+        res.json({
+            OK: true,
+            Diferencias: resultado
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.matrixDieselTracto = async (req, res) => {
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = now.getMonth();
+        
+
+        // let {firstDay, lastDay} = getFirstAndLastDayOfMonth(year, month);
+        // var dias = getDatesArray(firstDay, lastDay);
+        
+        var datos = [];
+
+        
+        var pres = await prenomina.findAll({
+            where: {
+                estado: 'COMPLETO'
+            }
+        });
+
+        const agrupados = {};
+
+        pres.forEach((item) => {
+            const tracto = item.tracto;
+            const dia = parseInt(item.fecha.split(' ')[0].split('-')[2], 10); // Convertir el día a número
+        
+            if (!agrupados[tracto]) {
+                agrupados[tracto] = { tracto };
+                for (let i = 1; i <= 31; i++) {
+                    agrupados[tracto][`diferencia${i}`] = null;
+                }
+            }
+        
+            agrupados[tracto][`diferencia${dia}`] = item.diferencia_diesel;
+        });
+        
+        const resultado = Object.values(agrupados);
+
+
+
+
+
+
+
+
+
+        // const estructuraDias = generarEstructuraFechas(year, month, firstDay, lastDay);
+        // var datosne = agregarDatosPorDia(dias, ops);
+        // // console.log(estructuraDias);
+        
+
+        
+
+
+        // for(let indexd = 0; indexd < dias.length; indexd++) {
+        //     const registros = ops.filter(aud => aud.fecha.split(' ')[0] === dias[indexd].toISOString().split('T')[0]);
+        //     if(!datos[indexd]) {
+        //         datos[indexd] = [];
+        //     }
+
+        //     if(registros.length > 0) {
+        //         for(var r = 0; r < registros.length; r++) {
+        //             var inf = ({
+        //                 fecha: dias[indexd].toISOString().split('T')[0],
+        //                 id_prenomina: registros[r].id_prenomina,
+        //                 fecha_creacion: registros[r].fecha,
+        //                 operador: registros[r].operador,
+        //                 tracto: registros[r].tracto,
+        //                 diferencia: registros[r].diferencia_diesel,
+        //             });
+                    
+        //             datos.push(inf);
+        //         }            
+        //     }
+        //     else {
+        //         var inf = ({
+        //             fecha: dias[indexd].toISOString().split('T')[0],
+        //             id_prenomina: null,
+        //             fecha_creacion: null,
+        //             operador: '',
+        //             tracto: '',
+        //             diferencia: null
+        //         });
+                
+        //         datos.push(inf);
+        //     }
+        // }
+
+        res.json({
+            OK: true,
+            Diferencias: resultado
+        });
+    }
+    
+
     app.editarPrenomina = (req, res) => {
         let body = req.body;
 
@@ -1735,14 +2043,127 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+    function agregarDatosPorDia(estructura, datosAcomodar) {
+        var fechadia;
+        datosAcomodar.forEach(dato => {
+            const diaEncontrado = estructura.find(d => 
+                
+            
+                d.fecha.toISOString().split('T')[0] === dato.fecha.split(' ')[0]
+            
+            ); 
+            
+            if(diaEncontrado) {
+                var inf = ({
+                    // fecha: fechadia,
+                    id_prenomina: dato.id_prenomina,
+                    fecha_creacion: dato.fecha,
+                    operador: dato.operador,    
+                    tracto: dato.tracto,
+                    diferencia: dato.diferencia_diesel
+                });
+
+                diaEncontrado.datos.push(inf);
+            } 
+            else {
+                var inf = ({
+                    // fecha: fechadia,
+                    id_prenomina: null,
+                    fecha_creacion: null,
+                    operador: '',
+                    tracto: '',
+                    diferencia: null
+                });
+                
+                // diaEncontrado.datos.push(inf);
+            }
+
+            console.log(diaEncontrado);
+            
+        });
+    }
+    
+    // Función para agregar datos al día correspondiente
+    // function agregarDatosPorDia(estructura, dia, dato) {
+    //     const diaEncontrado = estructura.find(d => d.dia === dia);
+    //     if (diaEncontrado) {
+    //         diaEncontrado.datos.push(dato);
+    //     } else {
+    //         console.error(`Día ${dia} no encontrado en la estructura.`);
+    //     }
+    // }
+
+
+
+
+
+
+
+
+
+
+
+
+    function generarEstructuraFechas(mes, anio, firstDay, lastDay) {
+        // const diasEnMes = new Date(anio, mes, 0).getDate(); // Obtiene la cantidad de días en el mes
+        var dias = getDatesArray(firstDay, lastDay);
+
+        console.log(dias.length);
+        
+        const estructura = [];
+    
+        for (let dia = 1; dia < dias.length; dia++) {
+            // Crear una fecha localmente
+            const fecha = new Date(anio, mes - 1, dia);
+    
+            // Formatear la fecha manualmente en formato YYYY-MM-DD
+            const fechaFormateada = fecha.getFullYear() + "-" + String(fecha.getMonth() + 1).padStart(2, '0') + "-" + String(fecha.getDate()).padStart(2, '0');
+    
+            estructura.push({ 
+                fecha: dia, 
+                datos: []
+            });
+        }
+    
+        return estructura;
+    }
+    
+
+
+    function getFirstAndLastDayOfMonth(year, month) {
+        let firstDay = new Date(year, month, 1);
+        let lastDay = new Date(year, month + 1, 0);
+
+        return {
+          firstDay: firstDay,
+          lastDay: lastDay
+        };
+    }
+
     function getDatesArray(startDate, endDate) {
         const dates = [];
         let currentDate = new Date(startDate);
       
-        while(currentDate <= new Date(endDate)) {
-          dates.push(new Date(currentDate));
-          currentDate.setDate(currentDate.getDate() + 1);
+        let a = 0; // Declarar a fuera del bucle para que sea persistente
+        while (currentDate <= new Date(endDate)) {
+            a++; // Incrementar a en cada iteración
+            dates.push({
+                dia: a,
+                fecha: new Date(currentDate),
+                datos: []
+            });
+            currentDate.setDate(currentDate.getDate() + 1);
         }
+        
       
         return dates;
     }

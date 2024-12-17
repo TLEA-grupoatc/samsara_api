@@ -42,6 +42,15 @@ module.exports = app => {
     app.post('/registrarLiquidacion', [verificarToken, UniqueLiquidacionInsert], Liq.registrarLiquidacion);
     
     app.put('/editarLiquidacion/:id_liquidacion', verificarToken, Liq.editarLiquidacion);
+
+
+
+    app.post('/registrarSoloComentario', verificarToken, Liq.registrarSoloComentario);
+
+
+    app.get('/matrixDieselOperador', Liq.matrixDieselOperador);
+
+    app.get('/matrixDieselTracto', Liq.matrixDieselTracto);
     
     // Especiales
     
