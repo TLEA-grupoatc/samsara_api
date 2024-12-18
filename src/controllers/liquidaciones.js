@@ -2162,7 +2162,7 @@ module.exports = app => {
                 id_prenomina: req.params.id_prenomina
             },
             individualHooks: true, 
-            fields: ['estado']
+            fields: ['estado', 'checklist']
         }).then(result => {
             res.json({
                 OK: true,
@@ -2190,7 +2190,7 @@ module.exports = app => {
                 id_liquidacion: req.params.id_liquidacion
             },
             individualHooks: true, 
-            fields: ['estado']
+            fields: ['estado', 'checklist']
         }).then(result => {
             res.json({
                 OK: true,
