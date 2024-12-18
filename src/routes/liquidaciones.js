@@ -42,21 +42,31 @@ module.exports = app => {
     app.post('/registrarLiquidacion', [verificarToken, UniqueLiquidacionInsert], Liq.registrarLiquidacion);
     
     app.put('/editarLiquidacion/:id_liquidacion', verificarToken, Liq.editarLiquidacion);
-
-
-
-    app.post('/registrarSoloComentario', verificarToken, Liq.registrarSoloComentario);
-
-
-    app.get('/matrixDieselOperador', Liq.matrixDieselOperador);
-
-    app.get('/matrixDieselTracto', Liq.matrixDieselTracto);
-
-
-    app.get('/verFirmaLiquidacion/:id', Liq.verFirmaLiquidacion);
-
-    app.get('/verPagoLiquidacion/:id', Liq.verPagoLiquidacion);
     
+    
+    
+    app.post('/registrarSoloComentario', verificarToken, Liq.registrarSoloComentario);
+    
+    
+    app.get('/matrixDieselOperador', Liq.matrixDieselOperador);
+    
+    app.get('/matrixDieselTracto', Liq.matrixDieselTracto);
+    
+    
+    app.get('/verFirmaLiquidacion/:id', Liq.verFirmaLiquidacion);
+    
+    app.get('/verPagoLiquidacion/:id', Liq.verPagoLiquidacion);
+
+
+
+
+
+    
+    app.delete('/reactivarPrenomina/:id_prenomina', verificarToken, Liq.reactivarPrenomina);
+
+    app.delete('/reactivarLiquidacion/:id_liquidacion', verificarToken, Liq.reactivarLiquidacion);
+
+
     // Especiales
     
     app.delete('/eliminarPermanentePrenominas/:id_prenomina', verificarToken, Liq.eliminarPermanentePrenominas);

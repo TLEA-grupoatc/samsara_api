@@ -2150,6 +2150,60 @@ module.exports = app => {
 
 
 
+    app.reactivarPrenomina = (req, res) => {
+        let data = new prenomina({
+            estado: 'EN PROCESO',
+            
+        });
+
+        prenomina.update(data.dataValues, {
+            where: {
+                id_prenomina: req.params.id_prenomina
+            },
+            individualHooks: true, 
+            fields: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
+    app.reactivarLiquidacion = (req, res) => {
+        let data = new liquidacion({
+            estado: 'EN PROCESO',
+            
+        });
+
+        liquidacion.update(data.dataValues, {
+            where: {
+                id_liquidacion: req.params.id_liquidacion
+            },
+            individualHooks: true, 
+            fields: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
 
 
 
