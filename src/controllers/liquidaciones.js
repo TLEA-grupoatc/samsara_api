@@ -2153,6 +2153,7 @@ module.exports = app => {
     app.reactivarPrenomina = (req, res) => {
         let data = new prenomina({
             estado: 'EN PROCESO',
+            checklist: 0
             
         });
 
@@ -2180,6 +2181,7 @@ module.exports = app => {
     app.reactivarLiquidacion = (req, res) => {
         let data = new liquidacion({
             estado: 'EN PROCESO',
+            checklist: 0
             
         });
 
