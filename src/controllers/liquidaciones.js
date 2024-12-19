@@ -320,6 +320,10 @@ module.exports = app => {
             where.localidad = req.params.local;
         }
 
+        if(req.params.usuario != 'undefined') {
+            where.usuario = req.params.usuario;
+        }
+
         prenomina.findAll({
             where,
             order: [['fecha', 'DESC']],
@@ -399,6 +403,10 @@ module.exports = app => {
     
             if(req.params.status != 'undefined') {
                 where.estado = req.params.status;
+            }
+
+            if(req.params.usuario != 'undefined') {
+                where.usuario = req.params.usuario;
             }
     
             liquidacion.findAll({
@@ -705,7 +713,6 @@ module.exports = app => {
         });
     }
 
-
     app.registrarSoloComentario = (req, res) => {
         let body = req.body
 
@@ -997,80 +1004,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-    app.verFirmaLiquidacion = (req, res) => {
-        prenominadocs.findAll({
-            where: {
-                id_liquidacion: req.params.id,
-                nombre: '2 CARATULA DE LIQUIDACION FIRMADA'
-            }
-        }).then(result => {
-            res.json({
-                OK: true,
-                Firma: result,
-            });
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-    app.verPagoLiquidacion = (req, res) => {
-        prenominadocs.findAll({
-            where: {
-                id_liquidacion: req.params.id,
-                nombre: '1 CONFIRMACION DE DEPOSITO'
-            }
-        }).then(result => {
-            res.json({
-                OK: true,
-                Pago: result,
-            });
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.matrixDieselTracto = async (req, res) => {
         var now = new Date();
         var year = now.getFullYear();
@@ -1113,7 +1046,45 @@ module.exports = app => {
             Diferencias: resultado
         });
     }
-    
+
+
+    app.verFirmaLiquidacion = (req, res) => {
+        prenominadocs.findAll({
+            where: {
+                id_liquidacion: req.params.id,
+                nombre: '2 CARATULA DE LIQUIDACION FIRMADA'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Firma: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.verPagoLiquidacion = (req, res) => {
+        prenominadocs.findAll({
+            where: {
+                id_liquidacion: req.params.id,
+                nombre: '1 CONFIRMACION DE DEPOSITO'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Pago: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
     app.editarPrenomina = (req, res) => {
         let body = req.body;
@@ -2176,8 +2147,6 @@ module.exports = app => {
         });
     }
 
-
-
     app.reactivarLiquidacion = (req, res) => {
         let data = new liquidacion({
             estado: 'EN PROCESO',
@@ -2205,112 +2174,6 @@ module.exports = app => {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-    function agregarDatosPorDia(estructura, datosAcomodar) {
-        var fechadia;
-        datosAcomodar.forEach(dato => {
-            const diaEncontrado = estructura.find(d => 
-                
-            
-                d.fecha.toISOString().split('T')[0] === dato.fecha.split(' ')[0]
-            
-            ); 
-            
-            if(diaEncontrado) {
-                var inf = ({
-                    // fecha: fechadia,
-                    id_prenomina: dato.id_prenomina,
-                    fecha_creacion: dato.fecha,
-                    operador: dato.operador,    
-                    tracto: dato.tracto,
-                    diferencia: dato.diferencia_diesel
-                });
-
-                diaEncontrado.datos.push(inf);
-            } 
-            else {
-                var inf = ({
-                    // fecha: fechadia,
-                    id_prenomina: null,
-                    fecha_creacion: null,
-                    operador: '',
-                    tracto: '',
-                    diferencia: null
-                });
-                
-                // diaEncontrado.datos.push(inf);
-            }
-
-            console.log(diaEncontrado);
-            
-        });
-    }
-    
-    // Función para agregar datos al día correspondiente
-    // function agregarDatosPorDia(estructura, dia, dato) {
-    //     const diaEncontrado = estructura.find(d => d.dia === dia);
-    //     if (diaEncontrado) {
-    //         diaEncontrado.datos.push(dato);
-    //     } else {
-    //         console.error(`Día ${dia} no encontrado en la estructura.`);
-    //     }
-    // }
-
-
-
-
-
-
-
-
-
-
-
-
-    function generarEstructuraFechas(mes, anio, firstDay, lastDay) {
-        // const diasEnMes = new Date(anio, mes, 0).getDate(); // Obtiene la cantidad de días en el mes
-        var dias = getDatesArray(firstDay, lastDay);
-
-        console.log(dias.length);
-        
-        const estructura = [];
-    
-        for (let dia = 1; dia < dias.length; dia++) {
-            // Crear una fecha localmente
-            const fecha = new Date(anio, mes - 1, dia);
-    
-            // Formatear la fecha manualmente en formato YYYY-MM-DD
-            const fechaFormateada = fecha.getFullYear() + "-" + String(fecha.getMonth() + 1).padStart(2, '0') + "-" + String(fecha.getDate()).padStart(2, '0');
-    
-            estructura.push({ 
-                fecha: dia, 
-                datos: []
-            });
-        }
-    
-        return estructura;
-    }
-    
-
-
-    function getFirstAndLastDayOfMonth(year, month) {
-        let firstDay = new Date(year, month, 1);
-        let lastDay = new Date(year, month + 1, 0);
-
-        return {
-          firstDay: firstDay,
-          lastDay: lastDay
-        };
-    }
 
     function getDatesArray(startDate, endDate) {
         const dates = [];
