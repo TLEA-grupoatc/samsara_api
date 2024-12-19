@@ -9,7 +9,7 @@ module.exports = app => {
     
     app.get('/obtenerPrenomina/:fechas/:operador/:tracto/:status/:local/:usuario/:tipo', verificarToken, Liq.obtenerPrenomina);
 
-    app.get('/obtenerLiquidacion/:fechas/:operador/:folio/:negocio/:status/:usuario/:pendiente/:tipo', verificarToken, Liq.obtenerLiquidacion);
+    app.get('/obtenerLiquidacion/:fechas/:operador/:folio/:negocio/:status/:pendiente/:usuario/:tipo', verificarToken, Liq.obtenerLiquidacion);
 
     app.get('/obtenerPrenominaDocumentos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentos);
 
@@ -48,18 +48,18 @@ module.exports = app => {
     app.post('/registrarSoloComentario', verificarToken, Liq.registrarSoloComentario);
     
     
-    app.get('/matrixDieselOperador', Liq.matrixDieselOperador);
+    app.get('/matrixDieselOperador', verificarToken, Liq.matrixDieselOperador);
     
-    app.get('/matrixDieselTracto', Liq.matrixDieselTracto);
+    app.get('/matrixDieselTracto', verificarToken, Liq.matrixDieselTracto);
     
     
-    app.get('/verFirmaLiquidacion/:id', Liq.verFirmaLiquidacion);
+    app.get('/verFirmaLiquidacion/:id', verificarToken, Liq.verFirmaLiquidacion);
     
-    app.get('/verPagoLiquidacion/:id', Liq.verPagoLiquidacion);
+    app.get('/verPagoLiquidacion/:id', verificarToken, Liq.verPagoLiquidacion);
 
 
 
-    app.get('/listaDeFolios', Liq.listaDeFolios);
+    app.get('/listaDeFolios', verificarToken, Liq.listaDeFolios);
 
 
 
@@ -78,7 +78,4 @@ module.exports = app => {
     app.delete('/eliminarPermanenteLiquidaciones/:id_liquidacion', verificarToken, Liq.eliminarPermanenteLiquidaciones);
     
     app.delete('/eliminarPermanenteDocumentos/:id_pd', verificarToken, Liq.eliminarPermanenteDocumentos);
-
-
-    
 }

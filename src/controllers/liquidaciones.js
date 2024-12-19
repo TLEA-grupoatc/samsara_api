@@ -410,7 +410,7 @@ module.exports = app => {
             }
     
 
-            console.log(where);
+            console.log(req.params.usuario);
             
             liquidacion.findAll({
                 where,
