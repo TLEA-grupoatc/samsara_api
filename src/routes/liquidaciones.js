@@ -59,6 +59,10 @@ module.exports = app => {
 
 
 
+    app.get('/listaDeFolios', Liq.listaDeFolios);
+
+
+
 
 
     

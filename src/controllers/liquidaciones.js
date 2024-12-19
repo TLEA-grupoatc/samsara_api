@@ -393,7 +393,7 @@ module.exports = app => {
                 where.operador = req.params.operador;
             }
     
-            if(req.params.folio != 'null') {
+            if(req.params.folio != 'undefined') {
                 where.folio = req.params.folio;
             }
     
@@ -2120,6 +2120,30 @@ module.exports = app => {
         .catch(error => {
             res.status(412).json({
                 OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+    app.listaDeFolios = (req, res) => {
+        liquidacion.findAll({
+        }).then(result => {
+            res.json({
+                OK: true,
+                Folios: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
                 msg: error.message
             });
         });
