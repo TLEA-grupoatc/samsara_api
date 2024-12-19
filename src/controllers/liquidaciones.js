@@ -409,6 +409,9 @@ module.exports = app => {
                 where.usuario = req.params.usuario;
             }
     
+
+            console.log(where);
+            
             liquidacion.findAll({
                 where,
                 order: [['fecha', 'DESC']],
@@ -1052,7 +1055,9 @@ module.exports = app => {
         prenominadocs.findAll({
             where: {
                 id_liquidacion: req.params.id,
-                nombre: '2 CARATULA DE LIQUIDACION FIRMADA'
+                nombre: {
+                    [Op.in]: ['1 ANTIDOPING', '2 CARATULA DE LIQUIDACION FIRMADA'], 
+                }
             }
         }).then(result => {
             res.json({
