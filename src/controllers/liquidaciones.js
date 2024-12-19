@@ -1056,7 +1056,8 @@ module.exports = app => {
             where: {
                 id_liquidacion: req.params.id,
                 nombre: {
-                    [Op.in]: ['1 ANTIDOPING', '2 CARATULA DE LIQUIDACION FIRMADA'], 
+                    // [Op.in]: ['1 ANTIDOPING', '2 CARATULA DE LIQUIDACION FIRMADA'], 
+                    [Op.or]: ['1 ANTIDOPING', '2 CARATULA DE LIQUIDACION FIRMADA'], 
                 }
             }
         }).then(result => {
