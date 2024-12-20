@@ -56,12 +56,15 @@ module.exports = app => {
     app.get('/verFirmaLiquidacion/:id', verificarToken, Liq.verFirmaLiquidacion);
     
     app.get('/verPagoLiquidacion/:id', verificarToken, Liq.verPagoLiquidacion);
-
-
-
+    
+    
+    
     app.get('/listaDeFolios', verificarToken, Liq.listaDeFolios);
+    
+    
+    app.post('/cargarDocumentosExtra', verificarToken, Liq.cargarDocumentosExtra);
 
-
+    app.post('/cargarDocumentosExtraLiquidacion', verificarToken, Liq.cargarDocumentosExtraLiquidacion);
 
 
 

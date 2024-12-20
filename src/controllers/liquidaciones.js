@@ -408,9 +408,6 @@ module.exports = app => {
             if(req.params.usuario != 'undefined') {
                 where.usuario = req.params.usuario;
             }
-    
-
-            console.log(req.params.usuario);
             
             liquidacion.findAll({
                 where,
@@ -881,13 +878,8 @@ module.exports = app => {
         var now = new Date();
         var year = now.getFullYear();
         var month = now.getMonth();
-        
-
-        // let {firstDay, lastDay} = getFirstAndLastDayOfMonth(year, month);
-        // var dias = getDatesArray(firstDay, lastDay);
-        
+    
         var datos = [];
-
         
         var pres = await prenomina.findAll({
             where: {
@@ -896,55 +888,11 @@ module.exports = app => {
             order: [['operador', 'ASC']],
         });
 
-        var fecha = year + '-' +  12;
-
-        // for(var indexp = 0; indexp < pres.length; indexp++){
-            
-        //     var opera = ({
-        //         operador: pres[indexp].operador,
-
-        //         diferencia1: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '01' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia2: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '02' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia3: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '03' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia4: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '04' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia5: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '05' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia6: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '06' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia7: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '07' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia8: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '08' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia9: pres[indexp].fecha.split(' ')[0] === fecha + '-' +  '09' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia10: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '10' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia11: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '11' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia12: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '12' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia13: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '13' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia14: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '14' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia15: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '15' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia16: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '16' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia17: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '17' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia18: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '18' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia19: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '19' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia20: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '20' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia21: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '21' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia22: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '22' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia23: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '23' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia24: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '24' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia25: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '25' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia26: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '26' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia27: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '27' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia28: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '28' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia29: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '29' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia30: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '30' ? pres[indexp].diferencia_diesel : null,
-        //         diferencia31: pres[indexp].fecha.split(' ')[0] === fecha + '-' + '31' ? pres[indexp].diferencia_diesel : null
-        //     });
-
-        //     datos.push(opera)
-        // }
-
-
         const agrupados = {};
 
         pres.forEach((item) => {
             const operador = item.operador;
-            const dia = parseInt(item.fecha.split(' ')[0].split('-')[2], 10); // Convertir el día a número
+            const dia = parseInt(item.fecha.split(' ')[0].split('-')[2], 10);
         
             if (!agrupados[operador]) {
                 agrupados[operador] = { operador };
@@ -957,49 +905,6 @@ module.exports = app => {
         });
         
         const resultado = Object.values(agrupados);
-        // console.log(resultado);
-
-        // const estructuraDias = generarEstructuraFechas(year, month, firstDay, lastDay);
-        // var datosne = agregarDatosPorDia(dias, ops);
-        // // console.log(estructuraDias);
-        
-
-        
-
-
-        // for(let indexd = 0; indexd < dias.length; indexd++) {
-        //     const registros = ops.filter(aud => aud.fecha.split(' ')[0] === dias[indexd].toISOString().split('T')[0]);
-        //     if(!datos[indexd]) {
-        //         datos[indexd] = [];
-        //     }
-
-        //     if(registros.length > 0) {
-        //         for(var r = 0; r < registros.length; r++) {
-        //             var inf = ({
-        //                 fecha: dias[indexd].toISOString().split('T')[0],
-        //                 id_prenomina: registros[r].id_prenomina,
-        //                 fecha_creacion: registros[r].fecha,
-        //                 operador: registros[r].operador,
-        //                 tracto: registros[r].tracto,
-        //                 diferencia: registros[r].diferencia_diesel,
-        //             });
-                    
-        //             datos.push(inf);
-        //         }            
-        //     }
-        //     else {
-        //         var inf = ({
-        //             fecha: dias[indexd].toISOString().split('T')[0],
-        //             id_prenomina: null,
-        //             fecha_creacion: null,
-        //             operador: '',
-        //             tracto: '',
-        //             diferencia: null
-        //         });
-                
-        //         datos.push(inf);
-        //     }
-        // }
 
         res.json({
             OK: true,
@@ -2127,13 +2032,6 @@ module.exports = app => {
 
 
 
-
-
-
-
-
-
-
     app.listaDeFolios = (req, res) => {
         liquidacion.findAll({
         }).then(result => {
@@ -2150,6 +2048,135 @@ module.exports = app => {
     }
 
 
+
+    // docuemntos extras en pres
+    app.cargarDocumentosExtra = (req, res) => {
+        var body = req.body;
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        for(let bd of body.docs) { 
+            const [, base64Content] = bd.archivo.split(',');
+            var big1 = Buffer.from(base64Content, 'base64');
+    
+            var fechacorta = bd.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+            fs.writeFileSync(directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion, big1);
+            doc = directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion;
+    
+            let nuevaPre = new prenominadocs({
+                id_prenomina: bd.id_prenomina,
+                id_liquidacion: null,
+                nombre: bd.nombre,
+                descripcion: bd.descripcion,
+                tipo: bd.tipo,
+                archivo: doc,
+                comentario: bd.comentario,
+                comentario_rechazo: bd.comentario_rechazo,
+                fecha_creacion: bd.fecha_creacion,
+                usuario: bd.usuario,
+                verificado: 0,
+                verificado_por: null,
+                rechazado_por: null
+            });
+    
+            prenominadocs.create(nuevaPre.dataValues, {
+                fields: [
+                    'id_prenomina',
+                    'id_liquidacion',
+                    'nombre',
+                    'descripcion',
+                    'tipo',
+                    'archivo',
+                    'comentario',
+                    'comentario_rechazo',
+                    'fecha_creacion',
+                    'usuario',
+                    'verificado',
+                    'verificado_por',
+                    'rechazado_por'
+                ]
+            })
+            .then(result => {
+                res.json({
+                    OK: true,
+                    DocumentosExtras: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    OK: false,
+                    msg: error.message
+                });
+            });
+        }
+    }
+
+    app.cargarDocumentosExtraLiquidacion = (req, res) => {
+        var body = req.body;
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        for(let bd of body.docs) { 
+            const [, base64Content] = bd.archivo.split(',');
+            var big1 = Buffer.from(base64Content, 'base64');
+    
+            var fechacorta = bd.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+            fs.writeFileSync(directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion, big1);
+            doc = directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion;
+    
+            let nuevaPre = new prenominadocs({
+                id_prenomina: null,
+                id_liquidacion: bd.id_liquidacion,
+                nombre: bd.nombre,
+                descripcion: bd.descripcion,
+                tipo: bd.tipo,
+                archivo: doc,
+                comentario: bd.comentario,
+                comentario_rechazo: bd.comentario_rechazo,
+                fecha_creacion: bd.fecha_creacion,
+                usuario: bd.usuario,
+                verificado: 0,
+                verificado_por: null,
+                rechazado_por: null
+            });
+    
+            prenominadocs.create(nuevaPre.dataValues, {
+                fields: [
+                    'id_prenomina',
+                    'id_liquidacion',
+                    'nombre',
+                    'descripcion',
+                    'tipo',
+                    'archivo',
+                    'comentario',
+                    'comentario_rechazo',
+                    'fecha_creacion',
+                    'usuario',
+                    'verificado',
+                    'verificado_por',
+                    'rechazado_por'
+                ]
+            })
+            .then(result => {
+                res.json({
+                    OK: true,
+                    DocumentosExtras: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    OK: false,
+                    msg: error.message
+                });
+            });
+        }
+    }
 
     app.reactivarPrenomina = (req, res) => {
         let data = new prenomina({
