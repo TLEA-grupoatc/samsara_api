@@ -74,6 +74,9 @@ module.exports = app => {
     app.delete('/reactivarLiquidacion/:id_liquidacion', verificarToken, Liq.reactivarLiquidacion);
 
 
+    app.get('/obtenerPrenominaCompleto', verificarToken, Liq.obtenerPrenominaCompleto);
+
+
     // Especiales
     
     app.delete('/eliminarPermanentePrenominas/:id_prenomina', verificarToken, Liq.eliminarPermanentePrenominas);

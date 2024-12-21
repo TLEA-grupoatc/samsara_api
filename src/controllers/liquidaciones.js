@@ -961,10 +961,10 @@ module.exports = app => {
             where: {
                 id_liquidacion: req.params.id,
                 nombre: {
-                    // [Op.in]: ['1 ANTIDOPING', '2 CARATULA DE LIQUIDACION FIRMADA'], 
                     [Op.or]: ['1 ANTIDOPING', '2 CARATULA DE LIQUIDACION FIRMADA'], 
                 }
-            }
+            },
+            order: [['fecha_creacion', 'DESC']],
         }).then(result => {
             res.json({
                 OK: true,
@@ -1952,6 +1952,28 @@ module.exports = app => {
 
 
 
+    app.obtenerPrenominaCompleto = (req, res) => {
+        prenomina.findAll({
+            where: {
+                checklist: 1,
+                estado: 'COMPLETO'
+            },
+            order: [['fecha', 'DESC']],
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Prenominas: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message,
+            });
+        });
+    }
+
+
     // especiales
 
     
@@ -2034,6 +2056,7 @@ module.exports = app => {
 
     app.listaDeFolios = (req, res) => {
         liquidacion.findAll({
+            order: [['fecha', 'DESC']],
         }).then(result => {
             res.json({
                 OK: true,
