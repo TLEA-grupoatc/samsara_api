@@ -1733,8 +1733,8 @@ module.exports = app => {
                         fecha_creacion: bd.fecha_creacion,
                         usuario: bd.usuario,
                         verificado: 0,
-                        verificado_por: null,
-                        rechazado_por: null
+                        verificado_por: bd.verificado_por,
+                        rechazado_por: bd.rechazado_por
                     });
             
                     prenominadocs.update(nuevaPre.dataValues, {
@@ -1852,8 +1852,8 @@ module.exports = app => {
                         fecha_creacion: bd.fecha_creacion,
                         usuario: bd.usuario,
                         verificado: 0,
-                        verificado_por: null,
-                        rechazado_por: null
+                        verificado_por: bd.verificado_por,
+                        rechazado_por: bd.rechazado_por
                     });
             
                     prenominadocs.update(nuevaPre.dataValues, {
@@ -2056,6 +2056,11 @@ module.exports = app => {
 
     app.listaDeFolios = (req, res) => {
         liquidacion.findAll({
+            where: {
+                fecha: {
+                    [Op.between]: [`${req.params.fechas.split(' ')[0]} 00:00:00`, `${req.params.fechas.split(' ')[1]} 23:59:59`],
+                }
+            },
             order: [['fecha', 'DESC']],
         }).then(result => {
             res.json({
