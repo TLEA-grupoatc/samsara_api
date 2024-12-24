@@ -1207,25 +1207,25 @@ module.exports = app => {
                 }
             }
 
-            var pres = body.prenominas;
+            // var pres = body.prenominas;
 
-            for(let indexPre = 0; indexPre < pres.length; indexPre++) {
-                let editarPre = new prenomina({
-                    folio: body.folio
-                });
+            // for(let indexPre = 0; indexPre < pres.length; indexPre++) {
+            //     let editarPre = new prenomina({
+            //         folio: body.folio
+            //     });
 
-                prenomina.update(editarPre.dataValues, {
-                    where: {
-                        id_prenomina: pres[indexPre]
-                    },
-                    individualHooks: true,
-                    fields: [
-                        'folio',
-                    ]
-                }).then(result => {
-                }).catch(error => {
-                });
-            }
+            //     prenomina.update(editarPre.dataValues, {
+            //         where: {
+            //             id_prenomina: pres[indexPre]
+            //         },
+            //         individualHooks: true,
+            //         fields: [
+            //             'folio',
+            //         ]
+            //     }).then(result => {
+            //     }).catch(error => {
+            //     });
+            // }
 
             res.json({
                 OK: true,
