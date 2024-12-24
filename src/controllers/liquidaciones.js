@@ -567,7 +567,7 @@ module.exports = app => {
             tracto: body.tracto,
             localidad: body.localidad,
             terminal: body.terminal,
-            folio: body.folio,
+            folio: null,
             checklist: body.checklist,
             firma: body.firma,
             pago: body.pago,
@@ -870,6 +870,29 @@ module.exports = app => {
                 });
             }
         // }
+    }
+
+
+
+
+    app.obtenerPrenominasLigadas = (req, res) => {
+        prenomina.findAll({
+            where: {
+                folio: req.params.folio
+            },
+            order: [['fecha', 'DESC']],
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Prenominas: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message,
+            });
+        });
     }
 
 
@@ -1182,6 +1205,26 @@ module.exports = app => {
                         console.log(error);
                     });
                 }
+            }
+
+            var pres = body.prenominas;
+
+            for(let indexPre = 0; indexPre < pres.length; indexPre++) {
+                let editarPre = new prenomina({
+                    folio: body.folio
+                });
+
+                prenomina.update(editarPre.dataValues, {
+                    where: {
+                        id_prenomina: pres[indexPre]
+                    },
+                    individualHooks: true,
+                    fields: [
+                        'folio',
+                    ]
+                }).then(result => {
+                }).catch(error => {
+                });
             }
 
             res.json({
@@ -1938,7 +1981,10 @@ module.exports = app => {
         prenomina.findAll({
             where: {
                 checklist: 1,
-                estado: 'COMPLETO'
+                estado: 'COMPLETO',
+                fecha: {
+                    [Op.between]: [`${req.params.fechas.split(' ')[0]} 00:00:00`, `${req.params.fechas.split(' ')[1]} 23:59:59`],
+                }
             },
             order: [['fecha', 'DESC']],
         })
