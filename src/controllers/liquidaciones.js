@@ -875,13 +875,7 @@ module.exports = app => {
 
 
     app.matrixDieselOperador = async (req, res) => {
-        var now = new Date();
-        var year = now.getFullYear();
-        var month = now.getMonth();
-    
-        var datos = [];
-        
-        var pres = await prenomina.findAll({
+       var pres = await prenomina.findAll({
             where: {
                 estado: 'COMPLETO'
             },
@@ -894,13 +888,13 @@ module.exports = app => {
             const operador = item.operador;
             const dia = parseInt(item.fecha.split(' ')[0].split('-')[2], 10);
         
-            if (!agrupados[operador]) {
+            if(!agrupados[operador]) {
                 agrupados[operador] = { operador };
-                for (let i = 1; i <= 31; i++) {
+                for(let i = 1; i <= 31; i++) {
                     agrupados[operador][`diferencia${i}`] = null;
                 }
             }
-        
+            
             agrupados[operador][`diferencia${dia}`] = item.diferencia_diesel;
         });
         
@@ -913,18 +907,7 @@ module.exports = app => {
     }
 
     app.matrixDieselTracto = async (req, res) => {
-        var now = new Date();
-        var year = now.getFullYear();
-        var month = now.getMonth();
-        
-
-        // let {firstDay, lastDay} = getFirstAndLastDayOfMonth(year, month);
-        // var dias = getDatesArray(firstDay, lastDay);
-        
-        var datos = [];
-
-        
-        var pres = await prenomina.findAll({
+       var pres = await prenomina.findAll({
             where: {
                 estado: 'COMPLETO'
             },
@@ -937,9 +920,9 @@ module.exports = app => {
             const tracto = item.tracto;
             const dia = parseInt(item.fecha.split(' ')[0].split('-')[2], 10);
         
-            if (!agrupados[tracto]) {
+            if(!agrupados[tracto]) {
                 agrupados[tracto] = { tracto };
-                for (let i = 1; i <= 31; i++) {
+                for(let i = 1; i <= 31; i++) {
                     agrupados[tracto][`diferencia${i}`] = null;
                 }
             }
@@ -954,7 +937,6 @@ module.exports = app => {
             Diferencias: resultado
         });
     }
-
 
     app.verFirmaLiquidacion = (req, res) => {
         prenominadocs.findAll({

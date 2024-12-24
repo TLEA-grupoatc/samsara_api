@@ -48,7 +48,7 @@ module.exports = app => {
     app.post('/registrarSoloComentario', verificarToken, Liq.registrarSoloComentario);
     
     
-    app.get('/matrixDieselOperador', verificarToken, Liq.matrixDieselOperador);
+    app.get('/matrixDieselOperador', Liq.matrixDieselOperador);
     
     app.get('/matrixDieselTracto', verificarToken, Liq.matrixDieselTracto);
     
@@ -59,7 +59,7 @@ module.exports = app => {
     
     
     
-    app.get('/listaDeFolios', verificarToken, Liq.listaDeFolios);
+    app.get('/listaDeFolios/:fechas', verificarToken, Liq.listaDeFolios);
     
     
     app.post('/cargarDocumentosExtra', verificarToken, Liq.cargarDocumentosExtra);
