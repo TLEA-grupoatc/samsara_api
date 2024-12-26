@@ -23,7 +23,7 @@ module.exports = (sequelize, DataType) => {
         },
         folio:{
             type: DataType.STRING,
-            allowNull: false
+            allowNull: true
         },
         checklist:{
             type: DataType.INTEGER,
