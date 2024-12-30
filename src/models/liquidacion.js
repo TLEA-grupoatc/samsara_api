@@ -74,6 +74,22 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        diferencia_diesel:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        verificado_diesel_por:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        fecha_verificado_diesel:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        aplica_cobro_diesel:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         estado:{
             type: DataType.STRING,
             allowNull: true

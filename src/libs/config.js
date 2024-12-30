@@ -22,9 +22,9 @@ module.exports = {
     SEED_TOKEN: process.env.SEED_TOKEN || 'tlea2023',
     CADUCIDAD_TOKEN: process.env.CADUCIDAD_TOKEN || '48h',
     correoOpciones: {
-        correo_electronico: process.env.EMAIL || 'test@gmail.com',
-        contrasena_correo: process.env.PASSWORD_EMAIL || 'test1',
-        servicio: process.env.SERVICE_EMAIL ||'Hotmail'
+        correo_electronico: process.env.EMAIL || 'flujoliquidaciones@gmail.com',
+        contrasena_correo: process.env.PASSWORD_EMAIL || 'xuip wqgk iwsl htub',
+        servicio: process.env.SERVICE_EMAIL ||'Gmail'
     }
     
 };

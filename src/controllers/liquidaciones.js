@@ -4,6 +4,7 @@ const moment = require('moment');
 const fs = require("fs");
 const path = require("path");
 const sql = require('mssql');
+const nodemailer = require('nodemailer');
 
 module.exports = app => {
     const operador = app.database.models.Operadores;
@@ -353,7 +354,7 @@ module.exports = app => {
             }).then(result => {
                 res.json({
                     OK: true,
-                    Liquidaciones: result
+                    Liquidaciones : result
                 })
             })
             .catch(error => {
@@ -381,7 +382,8 @@ module.exports = app => {
                 });
             });
         }
-        else {
+        else {  
+            
             if(req.params.fechas != 'undefined') {
                 const [startDate, endDate] = req.params.fechas.split(' ');
                 where.fecha = {
@@ -872,9 +874,6 @@ module.exports = app => {
         // }
     }
 
-
-
-
     app.obtenerPrenominasLigadas = (req, res) => {
         prenomina.findAll({
             where: {
@@ -894,8 +893,6 @@ module.exports = app => {
             });
         });
     }
-
-
 
     app.matrixDieselOperador = async (req, res) => {
        var pres = await prenomina.findAll({
@@ -1080,6 +1077,10 @@ module.exports = app => {
             fecha_pago: body.fecha_pago,
             fecha_enviado_rev: body.fecha_enviado_rev,
             comentarios: body.comentarios,
+            diferencia_diesel: body.diferencia_diesel,
+            verificado_diesel_por: null,
+            fecha_verificado_diesel: null,
+            aplica_cobro_diesel: null,
             estado: body.estado
         });
 
@@ -1102,18 +1103,22 @@ module.exports = app => {
                 'fecha_pago',
                 'fecha_enviado_rev',
                 'comentarios',
+                'diferencia_diesel',
+                'verificado_diesel_por',
+                'fecha_verificado_diesel',
+                'aplica_cobro_diesel',
                 'estado'
             ]
         })
-        .then(result => {
+        .then(async result => {
             var directorio = 'documentos/';
+            var pres = body.prenominas;
 
             if(!fs.existsSync(directorio)) {
                 fs.mkdirSync(directorio, {recursive: true});
             }
 
             for(let index = 0; index < documentos.length; index++) {
-                documentos[index].comentario
                 if(documentos[index].comentario) {
                     let nuevaPre = new prenominadocs({
                         id_prenomina: null,
@@ -1207,10 +1212,7 @@ module.exports = app => {
                 }
             }
 
-            var pres = body.prenominas;
-
-            if(pres.length > 0) {
-                
+            if(pres.length > 0) {       
                 for(let indexPre = 0; indexPre < pres.length; indexPre++) {
                     let editarPre = new prenomina({
                         folio: body.folio
@@ -1230,6 +1232,51 @@ module.exports = app => {
                 }
             }
 
+            setTimeout(async () => {
+                if(body.diferencia_diesel == 1) {
+                    var listadocumentosporemail = [];
+
+                    const losdocs = await prenominadocs.findAll({
+                        where: {
+                            id_liquidacion: result.dataValues.id_liquidacion
+                        }
+                    });
+                    
+                    for(let index = 0; index < losdocs.length; index++) {
+                        listadocumentosporemail.push('https://apisamsara.tlea.online/' + losdocs[index].archivo)
+                    }
+
+                    let transporter = nodemailer.createTransport({
+                        host: "smtp-mail.outlook.com",
+                        port: 587,
+                        secure: false,
+                        auth: {
+                          user: 'hugo.guerrero@tlea.com.mx',
+                          pass: 'HA2044**'
+                        },
+                        tls: {
+                          ciphers: 'SSLv3'
+                        }
+                    });
+
+                    let itemsHtml = listadocumentosporemail.map(item => `<li>${item}</li>`);
+
+                    let mailOptions = {
+                        from: '"Flujo de Liquidaciones PRUEBA" <hugo.guerrero@tlea.com.mx>',
+                        to: 'david.martinez@tlea.com.mx, jaime.olivares@tlea.com.mx, luz.medina@tlea.com.mx, abraham.rodriguez@tlea.com.mx',
+                        subject: 'Diferencia de Diesel',
+                        html: `<h3>Folio: ${body.folio}, Operador: ${body.operador}</h3><br><h4>Liquidador: ${body.usuario}</h4><br><h4>Documentos</h4><br><ul>${itemsHtml}</ul>`
+                    };
+                    
+                    
+                    transporter.sendMail(mailOptions, (error, info) => {
+                        if(error) {
+                            return console.log(error);
+                        }
+                    });
+                }
+            }, 10000);
+ 
             res.json({
                 OK: true,
                 Liquidacion: result
@@ -1978,13 +2025,14 @@ module.exports = app => {
         });
     }   
 
-
-
     app.obtenerPrenominaCompleto = (req, res) => {
         prenomina.findAll({
             where: {
-                checklist: 1,
-                estado: 'COMPLETO',
+                // checklist: 1,
+                // estado: 'COMPLETO',
+                folio: {
+                    [Op.is]: null,
+                },
                 fecha: {
                     [Op.between]: [`${req.params.fechas.split(' ')[0]} 00:00:00`, `${req.params.fechas.split(' ')[1]} 23:59:59`],
                 }
@@ -2082,8 +2130,6 @@ module.exports = app => {
             });
         });
     }
-
-
 
     app.listaDeFolios = (req, res) => {
         liquidacion.findAll({
