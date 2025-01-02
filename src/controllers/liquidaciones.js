@@ -1268,7 +1268,7 @@ module.exports = app => {
                     let itemsHtml = listadocumentosporemail.map(item => `<li>${item}</li>`);
 
                     let mailOptions = {
-                        from: '"Flujo de Liquidaciones PRUEBA" <Deni.lopez@tlea.com.mx>',
+                        from: '"Flujo de Liquidaciones" <Deni.lopez@tlea.com.mx>',
                         to: 'david.martinez@tlea.com.mx, jaime.olivares@tlea.com.mx, luz.medina@tlea.com.mx, abraham.rodriguez@tlea.com.mx',
                         subject: 'Diferencia de Diesel',
                         html: `<h3>Folio: ${body.folio}, Operador: ${body.operador}</h3><br><h4>Liquidador: ${body.usuario}</h4><br><h4>Documentos</h4><br><ul>${itemsHtml}</ul>`
