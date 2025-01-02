@@ -469,10 +469,10 @@ module.exports = app => {
                 '14 CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',
                 '15 REPORTE DE EXCEL MANIOBAS EXTRAS',
                 '16 OTROS DOCUMENTOS',
-                '17 FOTOS DE PRUEBA DE AGUA',
-                '18 FOTOS DE RELLENO',
-                '19 FOTOS DE TRACTO',
-                '20 FOTOS DE INVENTARIO',
+                // '17 FOTOS DE PRUEBA DE AGUA',
+                // '18 FOTOS DE RELLENO',
+                // '19 FOTOS DE TRACTO',
+                // '20 FOTOS DE INVENTARIO',
                 '21 ALCOHOLIMETRO'
             ];
 
@@ -897,7 +897,10 @@ module.exports = app => {
     app.matrixDieselOperador = async (req, res) => {
        var pres = await prenomina.findAll({
             where: {
-                estado: 'COMPLETO'
+                estado: 'COMPLETO',
+                fecha: {
+                    [Op.gte]: '2025-01-01 00:00:00'
+                },
             },
             order: [['operador', 'ASC']],
         });
@@ -929,7 +932,10 @@ module.exports = app => {
     app.matrixDieselTracto = async (req, res) => {
        var pres = await prenomina.findAll({
             where: {
-                estado: 'COMPLETO'
+                estado: 'COMPLETO',
+                fecha: {
+                    [Op.gte]: '2025-01-01 00:00:00'
+                }
             },
             order: [['tracto', 'ASC']],
         });
@@ -1251,8 +1257,8 @@ module.exports = app => {
                         port: 587,
                         secure: false,
                         auth: {
-                          user: 'hugo.guerrero@tlea.com.mx',
-                          pass: 'HA2044**'
+                          user: 'Deni.lopez@tlea.com.mx',
+                          pass: 'DLR2849**'
                         },
                         tls: {
                           ciphers: 'SSLv3'
@@ -1262,7 +1268,7 @@ module.exports = app => {
                     let itemsHtml = listadocumentosporemail.map(item => `<li>${item}</li>`);
 
                     let mailOptions = {
-                        from: '"Flujo de Liquidaciones PRUEBA" <hugo.guerrero@tlea.com.mx>',
+                        from: '"Flujo de Liquidaciones PRUEBA" <Deni.lopez@tlea.com.mx>',
                         to: 'david.martinez@tlea.com.mx, jaime.olivares@tlea.com.mx, luz.medina@tlea.com.mx, abraham.rodriguez@tlea.com.mx',
                         subject: 'Diferencia de Diesel',
                         html: `<h3>Folio: ${body.folio}, Operador: ${body.operador}</h3><br><h4>Liquidador: ${body.usuario}</h4><br><h4>Documentos</h4><br><ul>${itemsHtml}</ul>`
@@ -2051,6 +2057,124 @@ module.exports = app => {
             });
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+    // rendimientos
+
+    app.cargarEvidenciaRendimientos = (req, res) => {
+        var body = req.body;
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.archivo.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' +  body.descripcion, big1);
+        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' +  body.descripcion;
+
+        let nuevaPre = new prenominadocs({
+            id_prenomina: null,
+            id_liquidacion: body.idd,
+            nombre: body.nombre,
+            descripcion: body.descripcion,
+            tipo: body.tipo,
+            archivo: doc,
+            comentario: body.comentario,
+            comentario_rechazo: body.comentario_rechazo,
+            fecha_creacion: body.fecha_creacion,
+            usuario: body.usuario,
+            verificado: 0,
+            verificado_por: null,
+            rechazado_por: null
+        });
+
+        prenominadocs.create(nuevaPre.dataValues, {
+            fields: [
+                'id_prenomina',
+                'id_liquidacion',
+                'nombre',
+                'descripcion',
+                'tipo',
+                'archivo',
+                'comentario',
+                'comentario_rechazo',
+                'fecha_creacion',
+                'usuario',
+                'verificado',
+                'verificado_por',
+                'rechazado_por'
+            ]
+        })
+        .then(result => {
+
+            let data = new liquidacion({
+                verificado_diesel_por: body.usuario,
+                fecha_verificado_diesel: body.fecha_creacion,
+                aplica_cobro_diesel: body.aplica_cobro_diesel,
+                estado: 'EN PROCESO'
+            });
+    
+            liquidacion.update(data.dataValues, {
+                where: {
+                    id_liquidacion: body.idd
+                },
+                individualHooks: true,
+                fields: ['verificado_diesel_por', 'fecha_verificado_diesel', 'aplica_cobro_diesel', 'estado']
+            }).then(result => {
+                console.log(result);
+                
+            }).catch(err => {
+                console.log(err);
+                
+            });
+
+
+
+            res.json({
+                OK: true,
+                Documentos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.verEvidenciadeRendimientos = (req, res) => {
+        prenominadocs.findAll({
+            where: {
+                id_liquidacion: req.params.id,
+                nombre: '1 EVIDENCIA DIFERENCIA'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Evidencia: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
 
 
     // especiales

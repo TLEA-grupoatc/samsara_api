@@ -65,20 +65,30 @@ module.exports = app => {
     app.post('/cargarDocumentosExtra', verificarToken, Liq.cargarDocumentosExtra);
 
     app.post('/cargarDocumentosExtraLiquidacion', verificarToken, Liq.cargarDocumentosExtraLiquidacion);
+    
+    
+    
+    
+    app.delete('/reactivarPrenomina/:id_prenomina', verificarToken, Liq.reactivarPrenomina);
+    
+    app.delete('/reactivarLiquidacion/:id_liquidacion', verificarToken, Liq.reactivarLiquidacion);
+    
+    
+    app.get('/obtenerPrenominaCompleto/:fechas', verificarToken, Liq.obtenerPrenominaCompleto);
+    
+    
+    app.get('/obtenerPrenominasLigadas/:folio', verificarToken, Liq.obtenerPrenominasLigadas);
+
+
+
+
 
 
 
     
-    app.delete('/reactivarPrenomina/:id_prenomina', verificarToken, Liq.reactivarPrenomina);
+    app.post('/cargarEvidenciaRendimientos', verificarToken, Liq.cargarEvidenciaRendimientos);
 
-    app.delete('/reactivarLiquidacion/:id_liquidacion', verificarToken, Liq.reactivarLiquidacion);
-
-
-    app.get('/obtenerPrenominaCompleto/:fechas', verificarToken, Liq.obtenerPrenominaCompleto);
-
-
-    app.get('/obtenerPrenominasLigadas/:folio', verificarToken, Liq.obtenerPrenominasLigadas);
-
+    app.get('/verEvidenciadeRendimientos/:id', verificarToken, Liq.verEvidenciadeRendimientos);
 
     // Especiales
     
