@@ -717,11 +717,7 @@ module.exports = app => {
 
     app.registrarSoloComentario = (req, res) => {
         let body = req.body
-
         var quees = body.quesehara;
-
-        console.log(quees);
-        
 
         if(quees === 'agregar') {
             let nuevaPre = new prenominadocs({
@@ -1368,7 +1364,7 @@ module.exports = app => {
 
     app.verificarDocumento = (req, res) => {
         let deleteunidad = new prenominadocs({
-            comentario : req.params.comentario == 'undefined' ? null : req.params.comentario,
+            comentario_rechazo : req.params.comentario == 'undefined' ? null : req.params.comentario,
             verificado : 1,
             verificado_por : req.params.usuario
         });
@@ -1377,7 +1373,7 @@ module.exports = app => {
             where: {
                 id_pd: req.params.id
             },
-            fields: ['comentario', 'verificado', 'verificado_por']
+            fields: ['comentario_rechazo', 'verificado', 'verificado_por']
         }).then(result => {
             res.json({
                 OK: true,
