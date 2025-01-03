@@ -895,12 +895,16 @@ module.exports = app => {
     }
 
     app.matrixDieselOperador = async (req, res) => {
-       var pres = await prenomina.findAll({
+        var an = req.params.ano;
+        var me = req.params.mes;
+        var di = req.params.dia;
+
+        var pres = await prenomina.findAll({
             where: {
                 estado: 'COMPLETO',
                 fecha: {
-                    [Op.gte]: '2025-01-01 00:00:00'
-                },
+                    [Op.between]: [`${an}-${me}-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
+                }
             },
             order: [['operador', 'ASC']],
         });
@@ -930,11 +934,15 @@ module.exports = app => {
     }
 
     app.matrixDieselTracto = async (req, res) => {
+        var an = req.params.ano;
+        var me = req.params.mes;
+        var di = req.params.dia;
+
        var pres = await prenomina.findAll({
             where: {
                 estado: 'COMPLETO',
                 fecha: {
-                    [Op.gte]: '2025-01-01 00:00:00'
+                    [Op.between]: [`${an}-${me}-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
                 }
             },
             order: [['tracto', 'ASC']],
