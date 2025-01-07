@@ -1284,6 +1284,7 @@ module.exports = app => {
             fecha_pago: body.fecha_pago,
             fecha_enviado_rev: body.fecha_enviado_rev,
             comentarios: body.comentarios,
+            diferencia_diesel: body.diferencia_diesel,
             estado: body.estado
         });
 
@@ -1310,6 +1311,7 @@ module.exports = app => {
                 'fecha_pago',
                 'fecha_enviado_rev',
                 'comentarios',
+                'diferencia_diesel',
                 'estado'
             ]
         }).then(result => {
@@ -2049,6 +2051,67 @@ module.exports = app => {
     }
 
 
+
+
+    app.agregarDiferenciaHechas = (req, res) => {
+
+        var body = req.body;
+        let data = new liquidacion({
+            diferencia_diesel: 1,
+            estado: 'REVISION DE DIFERENCIA'
+        });
+
+        liquidacion.update(data.dataValues, {
+            where: {
+                id_liquidacion: req.params.id_liquidacion
+            },
+            individualHooks: true, 
+            fields: ['diferencia_diesel', 'estado']
+        }).then(result => {
+  
+            setTimeout(async () => {
+
+                    let transporter = nodemailer.createTransport({
+                        host: "smtp-mail.outlook.com",
+                        port: 587,
+                        secure: false,
+                        auth: {
+                          user: 'Deni.lopez@tlea.com.mx',
+                          pass: 'DLR2849**'
+                        },
+                        tls: {
+                          ciphers: 'SSLv3'
+                        }
+                    });
+
+
+                    let mailOptions = {
+                        from: '"Flujo de Liquidaciones" <Deni.lopez@tlea.com.mx>',
+                        to: 'david.martinez@tlea.com.mx, jaime.olivares@tlea.com.mx, luz.medina@tlea.com.mx, abraham.rodriguez@tlea.com.mx',
+                        subject: 'Diferencia de Diesel',
+                        html: `<h3>Folio: ${body.folio}, Operador: ${body.operador}</h3><br><h4>Liquidador: ${body.usuario}</h4>`
+                    };
+                    
+                    
+                    transporter.sendMail(mailOptions, (error, info) => {
+                        if(error) {
+                            return console.log(error);
+                        }
+                    });
+                
+            }, 5000);
+
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
 
 
 

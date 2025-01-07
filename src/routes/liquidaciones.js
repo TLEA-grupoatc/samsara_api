@@ -63,6 +63,10 @@ module.exports = app => {
     app.get('/obtenerPrenominasPorEstatus/:estado', verificarToken, Liq.obtenerPrenominasPorEstatus);
 
 
+    
+    app.put('/agregarDiferenciaHechas/:id_liquidacion', verificarToken, Liq.agregarDiferenciaHechas);
+
+
 
 
 
