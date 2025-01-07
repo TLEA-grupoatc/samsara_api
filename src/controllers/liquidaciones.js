@@ -544,6 +544,7 @@ module.exports = app => {
         });
 
         prenomina.create(nuevaPre.dataValues, {
+            individualHooks: true,
             fields: [
                 'operador',
                 'tracto',
