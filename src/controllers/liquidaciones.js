@@ -1056,6 +1056,7 @@ module.exports = app => {
         });
 
         liquidacion.create(nuevaLiq.dataValues, {
+            individualHooks: true,
             fields: [
                 'operador',
                 'terminal',
@@ -2045,6 +2046,53 @@ module.exports = app => {
             });
         });
     }
+
+
+
+
+
+    app.obtenerLiquidacionesPorEstatus = (req, res) => {
+        liquidacion.findAll({
+            where: {
+                estado: req.params.estado,
+            },
+            order: [['fecha', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Liquidaciones : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerPrenominasPorEstatus = (req, res) => {
+        prenomina.findAll({
+            where: {
+                estado: req.params.estado,
+            },
+            order: [['fecha', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Prenominas : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
 
 
 

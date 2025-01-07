@@ -45,6 +45,41 @@ module.exports = app => {
 
 
     app.get('/obtenerInfoOperador/:operador', verificarToken, Liq.obtenerInfoOperador);
+
+
+
+
+
+
+
+
+
+
+
+
+    app.get('/obtenerLiquidacionesPorEstatus/:estado', verificarToken, Liq.obtenerLiquidacionesPorEstatus);
+
+
+    app.get('/obtenerPrenominasPorEstatus/:estado', verificarToken, Liq.obtenerPrenominasPorEstatus);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     
     

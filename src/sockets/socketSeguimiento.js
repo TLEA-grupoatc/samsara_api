@@ -11,11 +11,6 @@ module.exports = app => {
         var horafin = fecha + " 23:59:59"; 
 
         seguimiento.findAll({
-            where: {
-                fechahora: {
-                    [Op.between]: [horainicio, horafin]
-                }
-            },
             order: [
                 ['fechahora', 'DESC']
             ]
