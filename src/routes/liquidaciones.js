@@ -42,6 +42,9 @@ module.exports = app => {
     app.post('/registrarLiquidacion', [verificarToken, UniqueLiquidacionInsert], Liq.registrarLiquidacion);
     
     app.put('/editarLiquidacion/:id_liquidacion', verificarToken, Liq.editarLiquidacion);
+
+
+    app.get('/obtenerInfoOperador/:operador', verificarToken, Liq.obtenerInfoOperador);
     
     
     

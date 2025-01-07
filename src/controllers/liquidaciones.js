@@ -344,88 +344,49 @@ module.exports = app => {
 
     app.obtenerLiquidacion = (req, res) => {
         const where = {};
-        if(req.params.pendiente === 'PENDIENTE FIRMA') {
-            liquidacion.findAll({
-                where: {
-                    checklist: 1,
-                    estado: 'EN PROCESO'
-                },
-                order: [['fecha', 'DESC']],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Liquidaciones : result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
-        }
-        else if(req.params.pendiente === 'PENDIENTE PAGO') {
-            liquidacion.findAll({
-                where: {
-                    firma: 1,
-                    estado: 'EN PROCESO'
-                },
-                order: [['fecha', 'DESC']],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Liquidaciones: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
-        }
-        else {  
             
-            if(req.params.fechas != 'undefined') {
-                const [startDate, endDate] = req.params.fechas.split(' ');
-                where.fecha = {
-                    [Op.between]: [`${startDate} 00:00:00`, `${endDate} 23:59:59`],
-                };
-            }
-    
-            if(req.params.operador != 'undefined') {
-                where.operador = req.params.operador;
-            }
-    
-            if(req.params.folio != 'undefined') {
-                where.folio = req.params.folio;
-            }
-    
-            if(req.params.negocio != 'undefined') {
-                where.terminal = req.params.negocio;
-            }
-    
-            if(req.params.status != 'undefined') {
-                where.estado = req.params.status;
-            }
+        if(req.params.fechas != 'undefined') {
+            const [startDate, endDate] = req.params.fechas.split(' ');
+            where.fecha = {
+                [Op.between]: [`${startDate} 00:00:00`, `${endDate} 23:59:59`],
+            };
+        }
 
-            if(req.params.usuario != 'undefined') {
-                where.usuario = req.params.usuario;
-            }
-            
-            liquidacion.findAll({
-                where,
-                order: [['fecha', 'DESC']],
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    Liquidaciones: result
-                })
-            })
-            .catch(error => {
-                res.status(412).json({
-                    msg: error.message
-                });
-            });
+        if(req.params.operador != 'undefined') {
+            where.operador = req.params.operador;
         }
+
+        if(req.params.folio != 'undefined') {
+            where.folio = req.params.folio;
+        }
+
+        if(req.params.negocio != 'undefined') {
+            where.terminal = req.params.negocio;
+        }
+
+        // if(req.params.status != 'undefined') {
+            // where.estado != req.params.status;
+            where.estado != 'OCULTO';
+        // }
+
+        if(req.params.usuario != 'undefined') {
+            where.usuario = req.params.usuario;
+        }
+        
+        liquidacion.findAll({
+            where,
+            order: [['fecha', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Liquidaciones: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
     }
 
     app.obtenerPrenominaDocumentos = (req, res) => {
@@ -1480,7 +1441,7 @@ module.exports = app => {
            checklist: 1,
            verificado_por: req.params.usuario,
            fecha_verificado: hoy,
-           estado: 'EN PROCESO'
+           estado: 'PENDIENTE DE FIRMA'
         });
 
         liquidacion.update(deleteunidad.dataValues, {
@@ -1567,7 +1528,7 @@ module.exports = app => {
             firma: 1,
             cargo_firma: body.usuario,
             fecha_firma: hoy,
-            estado: 'EN PROCESO'
+            estado: 'PENDIENTE DE PAGO'
         });
 
         liquidacion.update(data.dataValues, {
@@ -1575,7 +1536,7 @@ module.exports = app => {
                 id_liquidacion: body.idd
             },
             individualHooks: true,
-            fields: ['firma', 'cargo_firma', 'fecha_firma']
+            fields: ['firma', 'cargo_firma', 'fecha_firma', 'estado']
         }).then(result => {
         }).catch(err => {
         });
@@ -2066,7 +2027,24 @@ module.exports = app => {
 
 
 
-
+    app.obtenerInfoOperador = (req, res) => {
+        liquidacion.findAll({
+            where: {
+                operador: req.params.operador,
+            },
+            order: [['fecha', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Liquidaciones : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 
