@@ -45,7 +45,7 @@ module.exports = app => {
             order: [
                 ['fecha', 'DESC']
             ],
-            limit: 50
+            limit: 90
         }).then(result => {
             app.io.emit('SHOW_LIQUIDACIONES', {Liquidaciones: result});
         })
