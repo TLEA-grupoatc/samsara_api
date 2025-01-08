@@ -327,6 +327,7 @@ module.exports = app => {
 
         prenomina.findAll({
             where,
+            limit: 100,
             order: [['fecha', 'DESC']],
         })
         .then(result => {

@@ -15,14 +15,15 @@ module.exports = app => {
         var weekStartAndEnd1 = getWeekStartAndEnd(year, weekNumber);
 
         prenomina.findAll({
-            where: {
-                fecha: {
-                    [Op.between]: [weekStartAndEnd1.start.toISOString().split('T')[0] + ' 00:00:00', weekStartAndEnd1.end.toISOString().split('T')[0] + ' 23:59:59'],
-                }
-            },
+            // where: {
+            //     fecha: {
+            //         [Op.between]: [weekStartAndEnd1.start.toISOString().split('T')[0] + ' 00:00:00', weekStartAndEnd1.end.toISOString().split('T')[0] + ' 23:59:59'],
+            //     }
+            // },
             order: [
                 ['fecha', 'DESC']
             ],
+            limit: 50
         }).then(result => {
             app.io.emit('SHOW_PRENOMINAS', {Prenominas: result});
         })
@@ -36,14 +37,15 @@ module.exports = app => {
         const formato = moment(date).format('YYYY-MM-DD');
 
         liquidacion.findAll({
-            where: {
-                fecha: {
-                    [Op.between]: [formato + ' 00:00:00', formato + ' 23:59:59']
-                }
-            },
+            // where: {
+            //     fecha: {
+            //         [Op.between]: [formato + ' 00:00:00', formato + ' 23:59:59']
+            //     }
+            // },
             order: [
                 ['fecha', 'DESC']
             ],
+            limit: 50
         }).then(result => {
             app.io.emit('SHOW_LIQUIDACIONES', {Liquidaciones: result});
         })
