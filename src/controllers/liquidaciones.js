@@ -2005,8 +2005,8 @@ module.exports = app => {
     app.obtenerPrenominaCompleto = (req, res) => {
         prenomina.findAll({
             where: {
-                // checklist: 1,
-                // estado: 'COMPLETO',
+                checklist: 1,
+                estado: 'COMPLETO',
                 folio: {
                     [Op.is]: null,
                 },
