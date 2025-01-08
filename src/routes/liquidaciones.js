@@ -45,6 +45,19 @@ module.exports = app => {
 
 
     app.get('/obtenerInfoOperador/:operador', verificarToken, Liq.obtenerInfoOperador);
+    
+    
+    
+    
+    
+    
+    
+    app.put('/ligarNuevasPrenominas/:folio', verificarToken, Liq.ligarNuevasPrenominas);
+
+    app.put('/quitarPrenominasLigadas/:folio', verificarToken, Liq.quitarPrenominasLigadas);
+
+
+
 
 
 

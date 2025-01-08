@@ -365,7 +365,7 @@ module.exports = app => {
             where.terminal = req.params.negocio;
         }
         
-        where.estado != 'OCULTO';
+        // where.estado != 'OCULTO';
         if(req.params.status != 'undefined') {
             where.estado != req.params.status;
         }
@@ -2164,6 +2164,84 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+app.ligarNuevasPrenominas = (req, res) => {
+    var body = req.body; 
+
+    var pres = body.prenominas;
+    
+    if(pres.length > 0) {       
+        for(let indexPre = 0; indexPre < pres.length; indexPre++) {
+            let editarPre = new prenomina({
+                folio: body.folio
+            });
+
+            prenomina.update(editarPre.dataValues, {
+                where: {
+                    id_prenomina: pres[indexPre]
+                },
+                individualHooks: true,
+                fields: [
+                    'folio',
+                ]
+            }).then(result => {
+            }).catch(error => {
+            });
+        }
+    }
+}
+
+
+app.quitarPrenominasLigadas = (req, res) => {
+    var body = req.body; 
+
+    var pres = body.prenominas;
+    
+    if(pres.length > 0) {       
+        for(let indexPre = 0; indexPre < pres.length; indexPre++) {
+            let editarPre = new prenomina({
+                folio: null
+            });
+
+            prenomina.update(editarPre.dataValues, {
+                where: {
+                    id_prenomina: pres[indexPre]
+                },
+                individualHooks: true,
+                fields: [
+                    'folio',
+                ]
+            }).then(result => {
+            }).catch(error => {
+            });
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // rendimientos
 
     app.cargarEvidenciaRendimientos = (req, res) => {
@@ -2554,6 +2632,7 @@ module.exports = app => {
             });
         });
     }
+
 
 
 
