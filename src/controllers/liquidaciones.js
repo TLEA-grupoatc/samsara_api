@@ -327,7 +327,7 @@ module.exports = app => {
 
         prenomina.findAll({
             where,
-            limit: 100,
+            limit: 50,
             order: [['fecha', 'DESC']],
         })
         .then(result => {
@@ -376,7 +376,7 @@ module.exports = app => {
         
         liquidacion.findAll({
             where,
-            limit: 100,
+            limit: 50,
             order: [['fecha', 'DESC']],
         }).then(result => {
             res.json({
