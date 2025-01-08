@@ -364,11 +364,11 @@ module.exports = app => {
         if(req.params.negocio != 'undefined') {
             where.terminal = req.params.negocio;
         }
-
-        // if(req.params.status != 'undefined') {
-            // where.estado != req.params.status;
-            where.estado != 'OCULTO';
-        // }
+        
+        where.estado != 'OCULTO';
+        if(req.params.status != 'undefined') {
+            where.estado != req.params.status;
+        }
 
         if(req.params.usuario != 'undefined') {
             where.usuario = req.params.usuario;
@@ -376,6 +376,7 @@ module.exports = app => {
         
         liquidacion.findAll({
             where,
+            limit: 100,
             order: [['fecha', 'DESC']],
         }).then(result => {
             res.json({
