@@ -365,9 +365,9 @@ module.exports = app => {
             where.terminal = req.params.negocio;
         }
         
-        // where.estado != 'OCULTO';
+        
         if(req.params.status != 'undefined') {
-            where.estado != req.params.status;
+            where.estado = req.params.status;
         }
 
         if(req.params.usuario != 'undefined') {
@@ -2178,19 +2178,26 @@ app.ligarNuevasPrenominas = (req, res) => {
     if(pres.length > 0) {       
         for(let indexPre = 0; indexPre < pres.length; indexPre++) {
             let editarPre = new prenomina({
-                folio: body.folio
+                folio: req.params.folio
             });
 
             prenomina.update(editarPre.dataValues, {
                 where: {
                     id_prenomina: pres[indexPre]
                 },
-                individualHooks: true,
                 fields: [
                     'folio',
                 ]
             }).then(result => {
+                res.json({
+                    OK: true,
+                    rows_affected: result[0]
+                });
             }).catch(error => {
+                res.status(412).json({
+                    OK: false,
+                    msg: err
+                });
             });
         }
     }
@@ -2212,12 +2219,19 @@ app.quitarPrenominasLigadas = (req, res) => {
                 where: {
                     id_prenomina: pres[indexPre]
                 },
-                individualHooks: true,
                 fields: [
                     'folio',
                 ]
             }).then(result => {
+                res.json({
+                    OK: true,
+                    rows_affected: result[0]
+                });
             }).catch(error => {
+                res.status(412).json({
+                    OK: false,
+                    msg: err
+                });
             });
         }
     }
