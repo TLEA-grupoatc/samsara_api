@@ -13,6 +13,8 @@ module.exports = app => {
 
     app.get('/obtenerPrenominaDocumentos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentos);
 
+    app.get('/obtenerPrenominaDocumentosParaFirma/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentosParaFirma);
+
     app.delete('/verificarDocumento/:id/:comentario/:usuario', verificarToken, Liq.verificarDocumento);
 
     app.delete('/rechazarDocumento/:id/:comentario/:usuario/:idpl/:tipo', verificarToken, Liq.rechazarDocumento);

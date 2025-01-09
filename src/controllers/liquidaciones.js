@@ -861,7 +861,9 @@ module.exports = app => {
 
         var pres = await prenomina.findAll({
             where: {
-                estado: 'COMPLETO',
+                estado: {
+                          [Op.ne]: 'CANCELADO',
+                },
                 fecha: {
                     [Op.between]: [`${an}-${me}-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
                 }
@@ -900,7 +902,9 @@ module.exports = app => {
 
        var pres = await prenomina.findAll({
             where: {
-                estado: 'COMPLETO',
+                estado: {
+                    [Op.ne]: 'CANCELADO',
+                },
                 fecha: {
                     [Op.between]: [`${an}-${me}-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
                 }
@@ -1356,9 +1360,9 @@ module.exports = app => {
 
     app.rechazarDocumento = (req, res) => {
         let data = new prenominadocs({
-            comentario_rechazo : req.params.comentario == 'undefined' ? null : req.params.comentario,
-            verificado : 2,
-            rechazado_por : req.params.usuario
+            comentario_rechazo: req.params.comentario,
+            verificado: 2,
+            rechazado_por: req.params.usuario
         });
 
         prenominadocs.update(data.dataValues, {
@@ -2162,7 +2166,137 @@ module.exports = app => {
 
 
 
+    app.obtenerPrenominaDocumentosParaFirma = (req, res) => {
+        var camp = req.params.campo;
 
+        prenominadocs.findAll({
+            where: {
+                [camp]: req.params.id
+            },
+        }).then(result => {
+            var listadeitems = [];
+            var lista;
+
+            const pres = [
+                '1 CARATULA DE PRENOMINA', 
+                '2 RESETEO', 
+                '3 TICKETS DE DIESEL',
+                '4 TICKETS DE CASETAS', 
+                '5 UREA', 
+                '6 CARTAS PORTE', 
+                '7 OTROS DOCUMENTOS', 
+                '8 PENSIONES', 
+                '9 PERMISOS DE CARGA', 
+                '10 TALACHAS'
+            ];
+
+            const liquis = [
+                '1 LIQUIDACION DEL OPERADOR',
+                '2 RECIBO DE SALARIOS DEVENGADOS Y PAGADOS',
+                '3 RESUMEN DE LA NOMINA DEL OPERADOR',
+                '4 PRENOMINAS',
+                '5 COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)',
+                '6 REPORTE DE VALES DE COMBUSTIBLE',
+                '7 REPORTE PAGINA ULTRAGAS',
+                '8 REPORTE DEDUCCIONES',
+                '9 REPORTE DE CRUCES DE PASE',
+                '10 VALES DE COMIDA NO REGISTRADAS',
+                '11 VALES DE INCIDENCIA',
+                '12 VALES DE GASTOS EXTRAS',
+                '13 VALES DE TAXIS',
+                '14 CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',
+                '15 REPORTE DE EXCEL MANIOBAS EXTRAS',
+                '16 OTROS DOCUMENTOS',
+                // '17 FOTOS DE PRUEBA DE AGUA',
+                // '18 FOTOS DE RELLENO',
+                // '19 FOTOS DE TRACTO',
+                // '20 FOTOS DE INVENTARIO',
+                '21 ALCOHOLIMETRO'
+            ];
+
+            if(camp === 'id_liquidacion') {
+                lista = liquis;
+            }
+            else {
+                lista = pres;
+            }
+ 
+            let nombresProcesados = {};
+             
+            for(let index = 0; index < 3; index++) {
+                const documentos = result.filter(aud => aud.nombre === lista[index]);
+                let nombreBase = lista[index] || "Sin Nombre";
+             
+                if(documentos.length === 0) {
+                    let nombreFinal = nombreBase;
+                    if (nombresProcesados[nombreBase]) {
+                        nombresProcesados[nombreBase]++;
+                        nombreFinal = `${nombreBase} ${nombresProcesados[nombreBase]}`;
+                    } 
+                    else {
+                        nombresProcesados[nombreBase] = 1;
+                    }
+             
+                    listadeitems.push({
+                        id_pd: 0,
+                        id_prenomina: null,
+                        id_liquidacion: null,
+                        nombre: nombreFinal,
+                        descripcion: 'Sin Archivo',
+                        tipo: '',
+                        archivo: null,
+                        comentario: null,
+                        comentario_rechazo: null,
+                        fecha_creacion: null,
+                        usuario: null,
+                        verificado: null,
+                        verificado_por: null,
+                        rechazado_por: null
+                    });
+                } 
+                else {
+                    documentos.forEach((docu, idx) => {
+                        let nombreFinal = docu.nombre || nombreBase;
+                        if(nombresProcesados[nombreBase]) {
+                            nombresProcesados[nombreBase]++;
+                            nombreFinal = `${nombreBase} ${nombresProcesados[nombreBase]}`;
+                        } 
+                        else {
+                            nombresProcesados[nombreBase] = 1;
+                        }   
+             
+                        listadeitems.push({
+                            id_pd: docu.id_pd || 0,
+                            id_prenomina: docu.id_prenomina || null,
+                            id_liquidacion: docu.id_liquidacion || null,
+                            nombre: nombreFinal,
+                            descripcion: docu.descripcion || 'Sin Archivo',
+                            tipo: docu.tipo || '',
+                            archivo: docu.archivo || null,
+                            comentario: docu.comentario || null,
+                            comentario_rechazo: docu.comentario_rechazo || null,
+                            fecha_creacion: docu.fecha_creacion || null,
+                            usuario: docu.usuario || null,
+                            verificado: docu.verificado,
+                            verificado_por: docu.verificado_por || null,
+                            rechazado_por: docu.rechazado_por || null
+                        });
+                    });
+                }
+            }
+
+            res.json({
+                OK: true,
+                Parapruebas: result,
+                PrenominasDocs: listadeitems
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 
