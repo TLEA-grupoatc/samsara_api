@@ -11,6 +11,11 @@ module.exports = app => {
 
     app.get('/obtenerLiquidacion/:fechas/:operador/:folio/:negocio/:status/:pendiente/:usuario/:tipo', verificarToken, Liq.obtenerLiquidacion);
 
+    app.get('/obtenerPrenominaTotal', verificarToken, Liq.obtenerPrenominaTotal);
+
+    app.get('/obtenerLiquidacionTotal', verificarToken, Liq.obtenerLiquidacionTotal);
+
+
     app.get('/obtenerPrenominaDocumentos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentos);
 
     app.get('/obtenerPrenominaDocumentosParaFirma/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentosParaFirma);

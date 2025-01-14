@@ -295,6 +295,23 @@ module.exports = app => {
         }
     }
 
+    app.obtenerPrenominaTotal = (req, res) => {
+        prenomina.findAll({
+            order: [['fecha', 'DESC']],
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Prenominas: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message,
+            });
+        });
+    }
+
     app.obtenerPrenomina = (req, res) => {
         const where = {};
 
@@ -343,6 +360,22 @@ module.exports = app => {
         });
     }
 
+
+    app.obtenerLiquidacionTotal = (req, res) => { 
+        liquidacion.findAll({
+            order: [['fecha', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Liquidaciones: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
     app.obtenerLiquidacion = (req, res) => {
         const where = {};
             
@@ -2304,72 +2337,72 @@ module.exports = app => {
 
 
 
-app.ligarNuevasPrenominas = (req, res) => {
-    var body = req.body; 
+    app.ligarNuevasPrenominas = (req, res) => {
+        var body = req.body; 
 
-    var pres = body.prenominas;
-    
-    if(pres.length > 0) {       
-        for(let indexPre = 0; indexPre < pres.length; indexPre++) {
-            let editarPre = new prenomina({
-                folio: req.params.folio
-            });
+        var pres = body.prenominas;
+        
+        if(pres.length > 0) {       
+            for(let indexPre = 0; indexPre < pres.length; indexPre++) {
+                let editarPre = new prenomina({
+                    folio: req.params.folio
+                });
 
-            prenomina.update(editarPre.dataValues, {
-                where: {
-                    id_prenomina: pres[indexPre]
-                },
-                fields: [
-                    'folio',
-                ]
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    rows_affected: result[0]
+                prenomina.update(editarPre.dataValues, {
+                    where: {
+                        id_prenomina: pres[indexPre]
+                    },
+                    fields: [
+                        'folio',
+                    ]
+                }).then(result => {
+                    res.json({
+                        OK: true,
+                        rows_affected: result[0]
+                    });
+                }).catch(error => {
+                    res.status(412).json({
+                        OK: false,
+                        msg: err
+                    });
                 });
-            }).catch(error => {
-                res.status(412).json({
-                    OK: false,
-                    msg: err
-                });
-            });
+            }
         }
     }
-}
 
 
-app.quitarPrenominasLigadas = (req, res) => {
-    var body = req.body; 
+    app.quitarPrenominasLigadas = (req, res) => {
+        var body = req.body; 
 
-    var pres = body.prenominas;
-    
-    if(pres.length > 0) {       
-        for(let indexPre = 0; indexPre < pres.length; indexPre++) {
-            let editarPre = new prenomina({
-                folio: null
-            });
-
-            prenomina.update(editarPre.dataValues, {
-                where: {
-                    id_prenomina: pres[indexPre]
-                },
-                fields: [
-                    'folio',
-                ]
-            }).then(result => {
-                res.json({
-                    OK: true,
-                    rows_affected: result[0]
+        var pres = body.prenominas;
+        
+        if(pres.length > 0) {       
+            for(let indexPre = 0; indexPre < pres.length; indexPre++) {
+                let editarPre = new prenomina({
+                    folio: null
                 });
-            }).catch(error => {
-                res.status(412).json({
-                    OK: false,
-                    msg: err
+
+                prenomina.update(editarPre.dataValues, {
+                    where: {
+                        id_prenomina: pres[indexPre]
+                    },
+                    fields: [
+                        'folio',
+                    ]
+                }).then(result => {
+                    res.json({
+                        OK: true,
+                        rows_affected: result[0]
+                    });
+                }).catch(error => {
+                    res.status(412).json({
+                        OK: false,
+                        msg: err
+                    });
                 });
-            });
+            }
         }
     }
-}
 
 
 
