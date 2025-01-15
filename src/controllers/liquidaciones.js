@@ -360,7 +360,6 @@ module.exports = app => {
         });
     }
 
-
     app.obtenerLiquidacionTotal = (req, res) => { 
         liquidacion.findAll({
             order: [['fecha', 'DESC']],
@@ -376,6 +375,7 @@ module.exports = app => {
             });
         });
     }
+    
     app.obtenerLiquidacion = (req, res) => {
         const where = {};
             
