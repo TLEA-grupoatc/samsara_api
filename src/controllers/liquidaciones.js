@@ -375,7 +375,7 @@ module.exports = app => {
             });
         });
     }
-    
+
     app.obtenerLiquidacion = (req, res) => {
         const where = {};
             
@@ -2066,10 +2066,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
     app.obtenerInfoOperador = (req, res) => {
         liquidacion.findAll({
             where: {
@@ -2088,9 +2084,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
 
     app.agregarDiferenciaHechas = (req, res) => {
 
@@ -2152,8 +2145,6 @@ module.exports = app => {
         });
     }
 
-
-
     app.obtenerLiquidacionesPorEstatus = (req, res) => {
         liquidacion.findAll({
             where: {
@@ -2191,13 +2182,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
 
     app.obtenerPrenominaDocumentosParaFirma = (req, res) => {
         var camp = req.params.campo;
@@ -2331,12 +2315,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
     app.ligarNuevasPrenominas = (req, res) => {
         var body = req.body; 
 
@@ -2370,7 +2348,6 @@ module.exports = app => {
         }
     }
 
-
     app.quitarPrenominasLigadas = (req, res) => {
         var body = req.body; 
 
@@ -2403,25 +2380,6 @@ module.exports = app => {
             }
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // rendimientos
 
@@ -2530,8 +2488,6 @@ module.exports = app => {
         });
     }
 
-
-
     // especiales
 
     
@@ -2630,8 +2586,6 @@ module.exports = app => {
             });
         });
     }
-
-
 
     // docuemntos extras en pres
     app.cargarDocumentosExtra = (req, res) => {
@@ -2813,9 +2767,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
 
     function getDatesArray(startDate, endDate) {
         const dates = [];

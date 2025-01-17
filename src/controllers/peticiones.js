@@ -53,7 +53,7 @@ module.exports = app => {
                     vehicleRegulationMode: element.vehicleRegulationMode,
                     createdAtTime: element.createdAtTime,
                     updatedAtTime: element.updatedAtTime,
-                    esn: element.esn,
+                    esn: '',
                     estado: 'A'
                 });
                 tractos.push(nuevaUnidad);

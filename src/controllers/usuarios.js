@@ -39,11 +39,14 @@ module.exports = app => {
             contrasena: bcrypt.hashSync(body.contrasena, 10),
             id_role: body.id_role,
             cargo: body.cargo,
-            numero_empleado: body.numero_empleado
+            id_departamento: body.id_departamento,
+            id_area: body.id_area,
+            numero_empleado: body.numero_empleado,
+            correo_jefeimediato: body.correo_jefeimediato
         });
 
         Usuario.create(usuario.dataValues, {
-            fields: ['nombre_empleado', 'nombre_usuario', 'contrasena', 'id_role', 'cargo', 'numero_empleado']
+            fields: ['nombre_empleado', 'nombre_usuario', 'contrasena', 'id_role', 'cargo', 'id_departamento', 'id_area', 'numero_empleado', 'correo_jefeimediato']
         })
         .then(result => {
             delete result.dataValues.contrasena;
@@ -63,7 +66,7 @@ module.exports = app => {
     app.ActualizarUsuario = (req, res) => {
         let id = req.params.id;
         let body = req.body;   
-        let fields = ['nombre_empleado', 'nombre_usuario', 'id_role', 'status', 'cargo']     
+        let fields = ['nombre_empleado', 'nombre_usuario', 'id_role', 'status', 'cargo', 'id_departamento', 'id_area', 'numero_empleado', 'correo_jefeimediato']     
 
         let usuario = new Usuario();        
 
@@ -75,6 +78,10 @@ module.exports = app => {
                 id_role: body.role,
                 status: 'A',
                 cargo: body.cargo,
+                id_departamento: body.id_departamento,
+                id_area: body.id_area,
+                numero_empleado: body.numero_empleado,
+                correo_jefeimediato: body.correo_jefeimediato
             });
 
             fields.push('contrasena');
@@ -85,6 +92,10 @@ module.exports = app => {
                 id_role: body.id_role,
                 status: 'A',
                 cargo: body.cargo,
+                id_departamento: body.id_departamento,
+                id_area: body.id_area,
+                numero_empleado: body.numero_empleado,
+                correo_jefeimediato: body.correo_jefeimediato
             });
         }
 

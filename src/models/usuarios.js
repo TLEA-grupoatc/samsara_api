@@ -26,9 +26,21 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: false
         },
+        id_departamento: {
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        id_area: {
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         numero_empleado: {
             type: DataType.INTEGER,
             allowNull: false
+        },
+        correo_jefeimediato: {
+            type: DataType.STRING,
+            allowNull: true
         },
         status: {
             type: DataType.ENUM,
