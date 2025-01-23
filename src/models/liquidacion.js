@@ -86,6 +86,22 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        dieselrendimientos:{
+            type: DataType.DOUBLE,
+            allowNull: true
+        },
+        fecha_inicio_rendimientos:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        fecha_fin_rendimientos:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        dias_rendimientos:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         aplicaautorizacion:{
             type: DataType.INTEGER,
             allowNull: true

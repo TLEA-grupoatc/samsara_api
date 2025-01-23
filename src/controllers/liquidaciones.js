@@ -2491,6 +2491,12 @@ module.exports = app => {
         let data = new liquidacion({
             verificado_diesel_por: body.verificado_diesel_por,
             fecha_verificado_diesel: body.fecha_verificado_diesel,
+            
+            dieselrendimientos: body.dieselrendimientos,
+            fecha_inicio_rendimientos: body.fecha_inicio_rendimientos,
+            fecha_fin_rendimientos: body.fecha_fin_rendimientos,
+            dias_rendimientos: body.dias_rendimientos,
+
             aplicaautorizacion: body.aplicaautorizacion,
             aplica_cobro_diesel: body.aplica_cobro_diesel,
             aplica_cobro_por: body.aplica_cobro_por,
@@ -2502,7 +2508,7 @@ module.exports = app => {
                 id_liquidacion: req.params.id_liquidacion
             },
             individualHooks: true, 
-            fields: ['verificado_diesel_por', 'fecha_verificado_diesel', 'aplicaautorizacion', 'aplica_cobro_diesel', 'aplica_cobro_por', 'estado']
+            fields: ['verificado_diesel_por', 'fecha_verificado_diesel', 'dieselrendimientos', 'fecha_inicio_rendimientos', 'fecha_fin_rendimientos', 'dias_rendimientos', 'aplicaautorizacion', 'aplica_cobro_diesel', 'aplica_cobro_por', 'estado']
         }).then(result => {
             res.json({
                 OK: true,
