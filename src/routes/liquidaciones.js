@@ -15,8 +15,12 @@ module.exports = app => {
 
     app.get('/obtenerLiquidacionTotal', verificarToken, Liq.obtenerLiquidacionTotal);
 
+    app.get('/resumenLiquidaciones', Liq.resumenLiquidaciones);
+
 
     app.get('/obtenerPrenominaDocumentos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentos);
+
+    app.get('/obtenerPrenominaDocumentosRendimientos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentosRendimientos);
 
     app.get('/obtenerPrenominaDocumentosParaFirma/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentosParaFirma);
 
@@ -49,12 +53,20 @@ module.exports = app => {
     app.post('/registrarLiquidacion', [verificarToken, UniqueLiquidacionInsert], Liq.registrarLiquidacion);
     
     app.put('/editarLiquidacion/:id_liquidacion', verificarToken, Liq.editarLiquidacion);
-
-
+    
+    
     app.get('/obtenerInfoOperador/:operador', verificarToken, Liq.obtenerInfoOperador);
     
     
-    
+    app.delete('/guardarDiferenciaKM/:id_liquidacion/:diferenciakm', verificarToken, Liq.guardarDiferenciaKM);
+
+
+    app.put('/autorizacionDeCobro/:id_liquidacion', verificarToken, Liq.autorizacionDeCobro);
+
+    app.put('/respuestaDeAutorizacion/:id_liquidacion', verificarToken, Liq.respuestaDeAutorizacion);
+
+    app.post('/cargarDocumentosRendimientos', verificarToken, Liq.cargarDocumentosRendimientos);
+
     
     
     

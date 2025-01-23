@@ -445,7 +445,8 @@ module.exports = app => {
                 '7 OTROS DOCUMENTOS', 
                 '8 PENSIONES', 
                 '9 PERMISOS DE CARGA', 
-                '10 TALACHAS'
+                '10 TALACHAS',
+                '11 CONTRARECIBO'
             ];
 
             const liquis = [
@@ -465,11 +466,8 @@ module.exports = app => {
                 '14 CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',
                 '15 REPORTE DE EXCEL MANIOBAS EXTRAS',
                 '16 OTROS DOCUMENTOS',
-                // '17 FOTOS DE PRUEBA DE AGUA',
-                // '18 FOTOS DE RELLENO',
-                // '19 FOTOS DE TRACTO',
-                // '20 FOTOS DE INVENTARIO',
-                '21 ALCOHOLIMETRO'
+                '17 ANTICIPOS NO  MAYORES A 30 DÍAS',
+                '18 BITACORAS ANTERIORES A LA LIQUIDACIÓN'
             ];
 
             if(camp === 'id_liquidacion') {
@@ -547,6 +545,26 @@ module.exports = app => {
                 OK: true,
                 Parapruebas: result,
                 PrenominasDocs: listadeitems
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerPrenominaDocumentosRendimientos = (req, res) => {
+        var camp = req.params.campo;
+
+        prenominadocs.findAll({
+            where: {
+                [camp]: req.params.id
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Documentos: result,
             });
         })
         .catch(error => {
@@ -1092,6 +1110,8 @@ module.exports = app => {
             verificado_diesel_por: null,
             fecha_verificado_diesel: null,
             aplica_cobro_diesel: null,
+            aplica_cobro_por: null,
+            diferenciakilometros: null,
             estado: body.estado
         });
 
@@ -1119,6 +1139,8 @@ module.exports = app => {
                 'verificado_diesel_por',
                 'fecha_verificado_diesel',
                 'aplica_cobro_diesel',
+                'aplica_cobro_por',
+                'diferenciakilometros',
                 'estado'
             ]
         })
@@ -1324,6 +1346,11 @@ module.exports = app => {
             fecha_enviado_rev: body.fecha_enviado_rev,
             comentarios: body.comentarios,
             diferencia_diesel: body.diferencia_diesel,
+            verificado_diesel_por: body.verificado_diesel_por,
+            fecha_verificado_diesel: body.fecha_verificado_diesel,
+            aplica_cobro_diesel: body.aplica_cobro_diesel,
+            aplica_cobro_por: body.aplica_cobro_por,
+            diferenciakilometros: body.diferenciakilometros,
             estado: body.estado
         });
 
@@ -1351,6 +1378,11 @@ module.exports = app => {
                 'fecha_enviado_rev',
                 'comentarios',
                 'diferencia_diesel',
+                'verificado_diesel_por',
+                'fecha_verificado_diesel',
+                'aplica_cobro_diesel',
+                'aplica_cobro_por',
+                'diferenciakilometros',
                 'estado'
             ]
         }).then(result => {
@@ -2381,62 +2413,12 @@ module.exports = app => {
         }
     }
 
+
     // rendimientos
-
     app.cargarEvidenciaRendimientos = (req, res) => {
-        var body = req.body;
-        var directorio = 'documentos/';
-
-        if(!fs.existsSync(directorio)) {
-            fs.mkdirSync(directorio, {recursive: true});
-        }
-
-        const [, base64Content] = body.archivo.split(',');
-        var big1 = Buffer.from(base64Content, 'base64');
-
-        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
-        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' +  body.descripcion, big1);
-        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' +  body.descripcion;
-
-        let nuevaPre = new prenominadocs({
-            id_prenomina: null,
-            id_liquidacion: body.idd,
-            nombre: body.nombre,
-            descripcion: body.descripcion,
-            tipo: body.tipo,
-            archivo: doc,
-            comentario: body.comentario,
-            comentario_rechazo: body.comentario_rechazo,
-            fecha_creacion: body.fecha_creacion,
-            usuario: body.usuario,
-            verificado: 0,
-            verificado_por: null,
-            rechazado_por: null
-        });
-
-        prenominadocs.create(nuevaPre.dataValues, {
-            fields: [
-                'id_prenomina',
-                'id_liquidacion',
-                'nombre',
-                'descripcion',
-                'tipo',
-                'archivo',
-                'comentario',
-                'comentario_rechazo',
-                'fecha_creacion',
-                'usuario',
-                'verificado',
-                'verificado_por',
-                'rechazado_por'
-            ]
-        })
-        .then(result => {
-
             let data = new liquidacion({
-                verificado_diesel_por: body.usuario,
-                fecha_verificado_diesel: body.fecha_creacion,
                 aplica_cobro_diesel: body.aplica_cobro_diesel,
+                aplica_cobro_por: body.aplica_cobro_por,
                 estado: 'EN PROCESO'
             });
     
@@ -2445,16 +2427,8 @@ module.exports = app => {
                     id_liquidacion: body.idd
                 },
                 individualHooks: true,
-                fields: ['verificado_diesel_por', 'fecha_verificado_diesel', 'aplica_cobro_diesel', 'estado']
+                fields: ['fecha_verificado_diesel', 'aplica_cobro_por', 'estado']
             }).then(result => {
-                console.log(result);
-                
-            }).catch(err => {
-                console.log(err);
-                
-            });
-
-
 
             res.json({
                 OK: true,
@@ -2488,9 +2462,160 @@ module.exports = app => {
         });
     }
 
-    // especiales
+    app.guardarDiferenciaKM = (req, res) => {
+        let data = new liquidacion({
+            diferenciakilometros: req.params.diferenciakm,
+        });
 
+        liquidacion.update(data.dataValues, {
+            where: {
+                id_liquidacion: req.params.id_liquidacion
+            },
+            fields: ['diferenciakilometros']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.autorizacionDeCobro = (req, res) => {
+        var body = req.body;
+
+        let data = new liquidacion({
+            verificado_diesel_por: body.verificado_diesel_por,
+            fecha_verificado_diesel: body.fecha_verificado_diesel,
+            aplicaautorizacion: body.aplicaautorizacion,
+            aplica_cobro_diesel: body.aplica_cobro_diesel,
+            aplica_cobro_por: body.aplica_cobro_por,
+            estado: body.estado
+        });
+
+        liquidacion.update(data.dataValues, {
+            where: {
+                id_liquidacion: req.params.id_liquidacion
+            },
+            individualHooks: true, 
+            fields: ['verificado_diesel_por', 'fecha_verificado_diesel', 'aplicaautorizacion', 'aplica_cobro_diesel', 'aplica_cobro_por', 'estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.respuestaDeAutorizacion = (req, res) => {
+        var body = req.body;
+
+        let data = new liquidacion({
+            aplica_cobro_diesel: body.aplica_cobro_diesel,
+            aplica_cobro_por: body.aplica_cobro_por,
+            comentarioautorizacion: body.comentarioautorizacion,
+            estado: body.estado
+        });
+
+        liquidacion.update(data.dataValues, {
+            where: {
+                id_liquidacion: req.params.id_liquidacion
+            },
+            individualHooks: true, 
+            fields: ['aplica_cobro_diesel', 'aplica_cobro_por', 'comentarioautorizacion', 'estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.cargarDocumentosRendimientos = (req, res) => {
+        var body = req.body;
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        for(let bd of body.docs) { 
+            const [, base64Content] = bd.archivo.split(',');
+            var big1 = Buffer.from(base64Content, 'base64');
     
+            var fechacorta = bd.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+            fs.writeFileSync(directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion, big1);
+            doc = directorio + bd.usuario + '_' + fechacorta + '_' + bd.nombre + '_' +  bd.descripcion;
+    
+            let nuevaPre = new prenominadocs({
+                id_prenomina: null,
+                id_liquidacion: bd.id_liquidacion,
+                nombre: bd.nombre,
+                descripcion: bd.descripcion,
+                tipo: bd.tipo,
+                archivo: doc,
+                comentario: bd.comentario,
+                comentario_rechazo: bd.comentario_rechazo,
+                fecha_creacion: bd.fecha_creacion,
+                usuario: bd.usuario,
+                verificado: 0,
+                verificado_por: null,
+                rechazado_por: null
+            });
+    
+            prenominadocs.create(nuevaPre.dataValues, {
+                fields: [
+                    'id_prenomina',
+                    'id_liquidacion',
+                    'nombre',
+                    'descripcion',
+                    'tipo',
+                    'archivo',
+                    'comentario',
+                    'comentario_rechazo',
+                    'fecha_creacion',
+                    'usuario',
+                    'verificado',
+                    'verificado_por',
+                    'rechazado_por'
+                ]
+            })
+            .then(result => {
+                res.json({
+                    OK: true,
+                    DocumentosExtras: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    OK: false,
+                    msg: error.message
+                });
+            });
+        }
+    }
+
+
+
+
+
+
+
+    // especiales
     app.eliminarPermanentePrenominas = (req, res) => {
         prenomina.findByPk(req.params.id_prenomina).then(result => {
             if(!result) {
@@ -2767,6 +2892,46 @@ module.exports = app => {
             });
         });
     }
+
+
+
+    app.resumenLiquidaciones = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD');
+        const hoydia = ' 00:00:00';
+        const hoynoche = ' 23:59:59';
+        liquidacion.findAll({
+            attributes: [
+                'terminal',
+                'estado',
+                [liquidacion.sequelize.fn('COUNT', liquidacion.sequelize.col('estado')), 'total'],
+            ],
+            where: {
+                fecha: {
+                    [Op.between]: [hoy + hoydia, hoy + hoynoche],
+                },
+                estado: {
+                    [Op.ne]: 'OCULTO'
+                }
+            },
+            group: ['terminal', 'estado'],
+            order: [['terminal', 'ASC'], ['estado', 'ASC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Resumen : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+    
+
 
     function getDatesArray(startDate, endDate) {
         const dates = [];
