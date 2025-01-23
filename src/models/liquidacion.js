@@ -102,6 +102,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        investigacion_rendimientos:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         aplicaautorizacion:{
             type: DataType.INTEGER,
             allowNull: true
