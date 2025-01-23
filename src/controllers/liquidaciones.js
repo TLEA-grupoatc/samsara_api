@@ -2907,9 +2907,9 @@ module.exports = app => {
                 [liquidacion.sequelize.fn('COUNT', liquidacion.sequelize.col('estado')), 'total'],
             ],
             where: {
-                fecha: {
-                    [Op.between]: [hoy + hoydia, hoy + hoynoche],
-                },
+                // fecha: {
+                //     [Op.between]: [hoy + hoydia, hoy + hoynoche],
+                // },
                 estado: {
                     [Op.ne]: 'OCULTO'
                 }
