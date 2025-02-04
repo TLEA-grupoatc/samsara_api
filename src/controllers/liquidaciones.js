@@ -913,7 +913,7 @@ module.exports = app => {
         var pres = await prenomina.findAll({
             where: {
                 estado: {
-                          [Op.ne]: 'CANCELADO',
+                    [Op.ne]: 'CANCELADO',
                 },
                 fecha: {
                     [Op.between]: [`${an}-${me}-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
@@ -945,6 +945,121 @@ module.exports = app => {
             Diferencias: resultado
         });
     }
+
+
+
+    app.matrixDieselOperadorReporte = async (req, res) => {
+        var an = req.params.ano;
+        var me = req.params.mes;
+        var di = req.params.dia;
+
+        var pres = await prenomina.findAll({
+            where: {
+                estado: {
+                    [Op.ne]: 'CANCELADO',
+                },
+                fecha: {
+                    [Op.between]: [`2025-01-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
+                }
+            },
+            order: [['operador', 'ASC']],
+        });
+
+        const agrupados = {};
+
+        pres.forEach((item) => {
+            const operador = item.operador;
+            const dia = parseInt(item.fecha.split(' ')[0].split('-')[2], 10);
+        
+            if(!agrupados[operador]) {
+                agrupados[operador] = { operador };
+                for(let i = 1; i <= 31; i++) {
+                    agrupados[operador][`diferencia${i}`] = null;
+                }
+            }
+            
+            agrupados[operador][`diferencia${dia}`] = item.diferencia_diesel;
+        });
+        
+        const resultado = Object.values(agrupados);
+
+        res.json({
+            OK: true,
+            Diferencias: resultado
+        });
+    }
+
+
+
+
+
+
+    app.resumenMatrisOperador = async (req, res) => {
+        var pres = await prenomina.findAll({
+            attributes: [
+                'operador',
+                [liquidacion.sequelize.fn('DATEDIFF', liquidacion.sequelize.fn('NOW'), liquidacion.sequelize.col('fecha')), 'dias'],
+                // [literal(`(SELECT MAX(fecha) FROM prenomina AS p2 WHERE p2.estado != 'CANCELADO' AND p2.operador = Prenominas.operador)`), 'fecha'],
+                [liquidacion.sequelize.fn('COUNT', liquidacion.sequelize.col('fecha')), '7dias'],
+                'estado',
+            ],
+            where: {
+                estado: {
+                    [Op.ne]: 'CANCELADO',
+                },
+                fecha: {
+                    // [Op.between]: [`${an}-${me}-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
+                    [Op.between]: [sevenDaysAgo, today]
+                }
+            },
+        });
+
+
+
+
+        prenomina.count({
+            where: {
+                fecha: {
+                [Op.between]: [sevenDaysAgo, today]
+                },
+                estado: {
+                [Op.ne]: 'CANCELADO'
+                }
+            }
+        })
+
+        console.log(pres);
+
+        res.json({
+            OK: true,
+            Resumen: pres
+        });
+    }
+
+
+    app.ultimaFecha = async (req, res) => {
+        var pres = await prenomina.findAll({
+            attributes: [
+                'operador',
+                [literal(`(SELECT MAX(fecha) FROM prenomina WHERE estado != 'CANCELADO')`), 'fecha']
+            ],
+            where: {
+                estado: {
+                    [Op.ne]: 'CANCELADO',
+                },
+                operador: req.params.operador
+            },
+            limit: 1
+        });
+
+        res.json({
+            OK: true,
+            Dato: pres
+        });
+    }
+
+
+
 
     app.matrixDieselTracto = async (req, res) => {
         var an = req.params.ano;

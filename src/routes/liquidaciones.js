@@ -15,7 +15,7 @@ module.exports = app => {
 
     app.get('/obtenerLiquidacionTotal', verificarToken, Liq.obtenerLiquidacionTotal);
 
-    app.get('/resumenLiquidaciones', Liq.resumenLiquidaciones);
+    app.get('/resumenLiquidaciones', verificarToken, Liq.resumenLiquidaciones);
 
 
     app.get('/obtenerPrenominaDocumentos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentos);
@@ -122,7 +122,13 @@ module.exports = app => {
     app.post('/registrarSoloComentario', verificarToken, Liq.registrarSoloComentario);
     
     
-    app.get('/matrixDieselOperador/:ano/:mes/:dia', Liq.matrixDieselOperador);
+    app.get('/matrixDieselOperador/:ano/:mes/:dia', verificarToken, Liq.matrixDieselOperador);
+
+    app.get('/matrixDieselOperadorReporte/:ano/:mes/:dia', verificarToken, Liq.matrixDieselOperadorReporte);
+
+    app.get('/resumenMatrisOperador/:ano/:mes/:dia', Liq.resumenMatrisOperador);
+
+    app.get('/ultimaFecha/:operador', Liq.ultimaFecha);
     
     app.get('/matrixDieselTracto/:ano/:mes/:dia', verificarToken, Liq.matrixDieselTracto);
     
