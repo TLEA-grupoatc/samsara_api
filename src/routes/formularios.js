@@ -26,6 +26,10 @@ module.exports = app => {
 
     app.post('/crearOperador', verificarToken, Fo.crearOperador);
 
+    app.post('/crearCartaOperador', verificarToken, Fo.crearCartaOperador);
+
+    app.get('/obtenerCartas/:numero_empleado', verificarToken, Fo.obtenerCartas);
+
 
     app.post('/crearCobro', verificarToken, Fo.crearCobro);
     

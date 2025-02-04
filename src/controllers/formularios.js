@@ -1,5 +1,6 @@
 const moment = require('moment');
 const _ = require('lodash');
+const fs = require("fs");
 
 module.exports = app => {
     const evento = app.database.models.Eventos;
@@ -8,6 +9,8 @@ module.exports = app => {
 
     const operador = app.database.models.Operadores;
     const historico = app.database.models.HistoricoOperadores;
+
+    const docoperador = app.database.models.DocOperadores;
     
     const alerta = app.database.models.Alertas;
 
@@ -449,12 +452,80 @@ module.exports = app => {
         });
     }
 
+    app.crearCartaOperador = (req, res) => {
+        let body = req.body;
 
-    
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.archivo.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre, big1);
+        
+        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre;
+
+        let nuevoDocumento = new docoperador({
+            operador: body.operador,
+            numero_empleado: body.numero_empleado,
+            nombre: body.nombre,
+            descripcion: body.descripcion,
+            tipo: body.tipo,
+            archivo: doc,
+            comentario: body.comentario,
+            fecha_creacion: body.fecha_creacion,
+            usuario: body.usuario
+        });
+
+        docoperador.create(nuevoDocumento.dataValues, {
+            fields: [
+                'operador', 
+                'numero_empleado', 
+                'nombre', 
+                'descripcion', 
+                'tipo', 
+                'archivo',
+                'comentario',
+                'fecha_creacion',
+                'usuario'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Documento: result
+            });
+        }).catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
 
 
-
-
+    app.obtenerCartas = (req, res) => {
+        docoperador.findAll({
+            where: {
+                numero_empleado: req.params.numero_empleado
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Cartas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 
