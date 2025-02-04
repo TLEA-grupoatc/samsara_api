@@ -122,7 +122,7 @@ module.exports = app => {
     app.post('/registrarSoloComentario', verificarToken, Liq.registrarSoloComentario);
     
     
-    app.get('/matrixDieselOperador/:ano/:mes/:dia', verificarToken, Liq.matrixDieselOperador);
+    app.get('/matrixDieselOperador/:ano/:mes/:dia', Liq.matrixDieselOperador);
 
     app.get('/matrixDieselOperadorReporte/:ano/:mes/:dia', Liq.matrixDieselOperadorReporte);
 
