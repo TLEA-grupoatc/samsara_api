@@ -124,7 +124,7 @@ module.exports = app => {
     
     app.get('/matrixDieselOperador/:ano/:mes/:dia', verificarToken, Liq.matrixDieselOperador);
 
-    app.get('/matrixDieselOperadorReporte/:ano/:mes/:dia', verificarToken, Liq.matrixDieselOperadorReporte);
+    app.get('/matrixDieselOperadorReporte/:ano/:mes/:dia', Liq.matrixDieselOperadorReporte);
 
     app.get('/resumenMatrisOperador/:ano/:mes/:dia', Liq.resumenMatrisOperador);
 
