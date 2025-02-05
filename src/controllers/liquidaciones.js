@@ -376,6 +376,28 @@ module.exports = app => {
         });
     }
 
+
+    app.obtenerLiquidacionXAnno = (req, res) => { 
+        liquidacion.findAll({
+            where: {
+                fecha: {
+                    [Op.between]: [`${req.params.anno}-01-01 00:00:00`, `${req.params.anno}-12-31 23:59:59`]
+                }
+            },
+            order: [['fecha', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Liquidaciones: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.obtenerLiquidacion = (req, res) => {
         const where = {};
             
