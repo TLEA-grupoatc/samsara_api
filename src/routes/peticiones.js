@@ -12,7 +12,7 @@ module.exports = app => {
 
     app.get('/totalUnidadesConParoMotor', verificarToken, Peticion.totalUnidadesConParoMotor);
 
-    app.get('/obtenerVehiculos', verificarToken, Peticion.obtenerVehiculos);
+    app.get('/obtenerVehiculos', Peticion.obtenerVehiculos);
 
     app.get('/obtenerVehiculosxTag/:tag', verificarToken, Peticion.obtenerVehiculosxTag);
 
