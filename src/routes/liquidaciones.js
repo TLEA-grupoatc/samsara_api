@@ -62,6 +62,8 @@ module.exports = app => {
     
     app.delete('/guardarDiferenciaKM/:id_liquidacion/:diferenciakm', verificarToken, Liq.guardarDiferenciaKM);
 
+    app.delete('/guardarDiferenciaKMPrenomina/:id_prenomina/:diferenciakm', verificarToken, Liq.guardarDiferenciaKMPrenomina);
+
 
     app.put('/autorizacionDeCobro/:id_liquidacion', verificarToken, Liq.autorizacionDeCobro);
 
@@ -154,12 +156,33 @@ module.exports = app => {
     app.delete('/reactivarPrenomina/:id_prenomina', verificarToken, Liq.reactivarPrenomina);
     
     app.delete('/reactivarLiquidacion/:id_liquidacion', verificarToken, Liq.reactivarLiquidacion);
+
+    app.delete('/reactivarLiquidacionEnRendimientos/:id_liquidacion', verificarToken, Liq.reactivarLiquidacionEnRendimientos);
     
     
     app.get('/obtenerPrenominaCompleto/:fechas', verificarToken, Liq.obtenerPrenominaCompleto);
     
     
     app.get('/obtenerPrenominasLigadas/:folio', verificarToken, Liq.obtenerPrenominasLigadas);
+
+
+
+
+
+
+
+
+
+
+
+    app.get('/obtenerTotalLocalidadDiario/:fecha', verificarToken, Liq.obtenerTotalLocalidadDiario);
+
+    app.get('/obtenerTotalEstatusPrenomina', verificarToken, Liq.obtenerTotalEstatusPrenomina);
+
+
+    app.get('/obtenerTotalEstatusLiquidacion', verificarToken, Liq.obtenerTotalEstatusLiquidacion);
+
+    app.get('/obtenerTotalEstatusLiquidacionXUnidad/:terminal', verificarToken, Liq.obtenerTotalEstatusLiquidacionXUnidad);
 
 
 

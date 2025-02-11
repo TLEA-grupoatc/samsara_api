@@ -81,7 +81,6 @@ module.exports = app => {
     
       try {
         for(var i = 0; i < numeros.length; i++) {
-          console.log(numeros[i]);
           const data = {
             messaging_product: 'whatsapp',
             to: numeros[i],

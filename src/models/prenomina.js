@@ -57,6 +57,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.FLOAT,
             allowNull: false
         },
+        diferenciakilometros:{
+            type: DataType.FLOAT,
+            allowNull: false
+        },
         comentarios:{
             type: DataType.STRING,
             allowNull: true

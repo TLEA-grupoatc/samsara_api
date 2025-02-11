@@ -437,7 +437,6 @@ module.exports = app => {
     }
 
     async function getCargasSamsara(fecha, tracto) {
-        console.log(fecha);
         try {
             var resultado = await geogaso.findAll({
                 where: {
@@ -451,7 +450,6 @@ module.exports = app => {
                 ]
             });
 
-            console.log(resultado);
         } 
         catch (error) {
             
@@ -490,9 +488,7 @@ module.exports = app => {
             // var data = result['data']['data'][0]['fuelPercents'].length > 0 ? result['data']['data'][0]['fuelPercents'][result['data']['data'][0]['fuelPercents'].length -1]['value'] : 0;
             // litros = data;
 
-            console.log(result['data']['data'][0]['fuelPercents']);
-            
-
+    
             return litros;
 
             

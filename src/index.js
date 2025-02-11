@@ -186,8 +186,6 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
 
 app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
-  console.log(payload);
-  console.log(payload.data.conditions[0]['details']);
 });
 
 app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), async (req, res) => {
@@ -233,8 +231,6 @@ app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), asy
 
 app.post('/webhookManipulacion', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
-  console.log(payload.data.conditions);
-  console.log(payload.data.conditions[0]);
 });
 
 app.post('/slack/events',  async (req, res) => {
@@ -393,10 +389,7 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
   if(encontro.length > 0) {
     var idgaso;
     var tan;
-    console.log(encontro);
     encontro.forEach((re) => {
-      console.log(re.id_geo_gaso);
-      console.log(re.tanque);
       idgaso = re.id_geo_gaso;
       tan = re.tanque;
     });

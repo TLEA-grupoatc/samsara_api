@@ -2622,6 +2622,29 @@ module.exports = app => {
         });
     }
 
+    app.guardarDiferenciaKMPrenomina = (req, res) => {
+        let data = new prenomina({
+            diferenciakilometros: req.params.diferenciakm,
+        });
+
+        prenomina.update(data.dataValues, {
+            where: {
+                id_prenomina: req.params.id_prenomina
+            },
+            fields: ['diferenciakilometros']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
     app.autorizacionDeCobro = (req, res) => {
         var body = req.body;
 
@@ -3014,8 +3037,7 @@ module.exports = app => {
     app.reactivarLiquidacion = (req, res) => {
         let data = new liquidacion({
             estado: 'EN PROCESO',
-            checklist: 0
-            
+            checklist: 0   
         });
 
         liquidacion.update(data.dataValues, {
@@ -3037,7 +3059,30 @@ module.exports = app => {
         });
     }
 
+    app.reactivarLiquidacionEnRendimientos = (req, res) => {
+        let data = new liquidacion({
+            estado: 'EN PROCESO',
+            diferencia_diesel: 0
+        });
 
+        liquidacion.update(data.dataValues, {
+            where: {
+                id_liquidacion: req.params.id_liquidacion
+            },
+            individualHooks: true, 
+            fields: ['estado', 'diferencia_diesel']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
 
     app.resumenLiquidaciones = (req, res) => {
         var today = new Date();
@@ -3073,6 +3118,114 @@ module.exports = app => {
         });
     }
 
+
+
+
+
+
+
+
+    app.obtenerTotalLocalidadDiario = (req, res) => {
+        prenomina.findAll({
+            attributes: [
+                'localidad',
+                [Sequelize.fn('COUNT', Sequelize.col('localidad')), 'total']
+            ],
+            where: { 
+                fecha: {
+                    [Op.between]: [`${req.params.fecha} 00:00:00`, `${req.params.fecha} 23:59:59`]
+                }
+            },
+            group: ['localidad'],
+            order: ['localidad']
+        }).then(result => {
+            res.json({
+                OK: true,
+                Totales: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerTotalEstatusPrenomina = (req, res) => {
+        prenomina.findAll({
+            attributes: [
+                'estado',
+                [Sequelize.fn('COUNT', Sequelize.col('estado')), 'total']
+            ],
+            group: ['estado'],
+            order: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                Totales: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+    app.obtenerTotalEstatusLiquidacion = (req, res) => {
+        liquidacion.findAll({
+            attributes: [
+                'estado',
+                [Sequelize.fn('COUNT', Sequelize.col('estado')), 'total']
+            ],
+            where: {
+                estado: {
+                    [Op.ne]: 'OCULTO'
+                }
+            },
+            group: ['estado'],
+            order: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                Totales: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerTotalEstatusLiquidacionXUnidad = (req, res) => {
+        liquidacion.findAll({
+            attributes: [
+                'estado',
+                [Sequelize.fn('COUNT', Sequelize.col('estado')), 'total']
+            ],
+            where: {
+                terminal: req.params.terminal,
+                estado: {
+                    [Op.ne]: 'OCULTO'
+                }
+            },
+            group: ['estado'],
+            order: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                Totales: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
     
 

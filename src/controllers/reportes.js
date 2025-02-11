@@ -19,11 +19,9 @@ module.exports = app => {
         const dateArray = getDatesArray(req.params.fechaInicio, req.params.fechaFin);
             
             for(let index = 0; index < dateArray.length; index++) {
-                console.log(dateArray[index]);
                 
                 const formato = dateArray[index].toISOString().split('T')[0];
                 for(let index = 0; index < tags.length; index++) {
-                    console.log(tags[index]);
 
                     await Samsara.getFuelEnergyVehicleReports({
                         startDate: formato + 'T00:00:00.00-06:00',
@@ -35,7 +33,6 @@ module.exports = app => {
                         
                         for(let i = 0; i < resu.length; i++) {
                             var procentaje = await getPercent(formato, resu[i]['vehicle']['id']);
-                            console.log(procentaje);
                             
                             let rd = ({
                                 tracto: resu[i]['vehicle']['name'],
@@ -87,7 +84,6 @@ module.exports = app => {
                 types: 'fuelPercents'
             });
             
-            // console.log(result['data']['data'][0]['fuelPercents']);
             var data = result['data']['data'][0]['fuelPercents'];
               
               const filterByInterval = (data, intervalInMinutes = 10) => {
@@ -111,7 +107,6 @@ module.exports = app => {
               
               const filteredData = filterByInterval(data);
 
-              console.log(filteredData);
               
             
             
