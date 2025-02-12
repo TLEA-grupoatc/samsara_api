@@ -17,6 +17,8 @@ module.exports = app => {
 
     app.get('/obtenerLiquidacionXAnno/:anno', Liq.obtenerLiquidacionXAnno);
 
+    app.get('/obtenerPrenominaXAnno/:anno', Liq.obtenerPrenominaXAnno);
+
     app.get('/resumenLiquidaciones', verificarToken, Liq.resumenLiquidaciones);
 
 
