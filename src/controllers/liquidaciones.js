@@ -1444,8 +1444,8 @@ module.exports = app => {
                         port: 587,
                         secure: false,
                         auth: {
-                          user: 'Deni.lopez@tlea.com.mx',
-                          pass: 'DLR2849**'
+                          user: process.env.CORREOFLUJO,
+                          pass: process.env.CONTRACORREOFLUJO
                         },
                         tls: {
                           ciphers: 'SSLv3'
@@ -1455,7 +1455,7 @@ module.exports = app => {
                     let itemsHtml = listadocumentosporemail.map(item => `<li>${item}</li>`);
 
                     let mailOptions = {
-                        from: '"Flujo de Liquidaciones" <Deni.lopez@tlea.com.mx>',
+                        from: '"Flujo de Liquidaciones" <' + process.env.CORREOFLUJO + '>',
                         to: 'david.martinez@tlea.com.mx, jaime.olivares@tlea.com.mx, luz.medina@tlea.com.mx, abraham.rodriguez@tlea.com.mx',
                         subject: 'Diferencia de Diesel',
                         html: `<h3>Folio: ${body.folio}, Operador: ${body.operador}</h3><br><h4>Liquidador: ${body.usuario}</h4><br><h4>Documentos</h4><br><ul>${itemsHtml}</ul>`
@@ -2299,8 +2299,8 @@ module.exports = app => {
                         port: 587,
                         secure: false,
                         auth: {
-                          user: 'Deni.lopez@tlea.com.mx',
-                          pass: 'DLR2849**'
+                            user: process.env.CORREOFLUJO,
+                            pass: process.env.CONTRACORREOFLUJO
                         },
                         tls: {
                           ciphers: 'SSLv3'
@@ -2309,7 +2309,7 @@ module.exports = app => {
 
 
                     let mailOptions = {
-                        from: '"Flujo de Liquidaciones" <Deni.lopez@tlea.com.mx>',
+                        from: '"Flujo de Liquidaciones" <' + process.env.CORREOFLUJO + '>',
                         to: 'david.martinez@tlea.com.mx, jaime.olivares@tlea.com.mx, luz.medina@tlea.com.mx, abraham.rodriguez@tlea.com.mx',
                         subject: 'Diferencia de Diesel',
                         html: `<h3>Folio: ${body.folio}, Operador: ${body.operador}</h3><br><h4>Liquidador: ${body.usuario}</h4>`
