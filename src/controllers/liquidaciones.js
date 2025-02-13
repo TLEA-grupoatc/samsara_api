@@ -3143,10 +3143,6 @@ module.exports = app => {
 
 
 
-
-
-
-
     app.obtenerTotalLocalidadDiario = (req, res) => {
         prenomina.findAll({
             attributes: [
@@ -3174,29 +3170,57 @@ module.exports = app => {
     }
 
     app.obtenerTotalEstatusPrenomina = (req, res) => {
-        prenomina.findAll({
-            attributes: [
-                'estado',
-                [Sequelize.fn('COUNT', Sequelize.col('estado')), 'total']
-            ],
-            where: {
-                estado: {
-                    [Op.ne]: 'COMPLETO'
-                }
-            },
-            group: ['estado'],
-            order: ['estado']
-        }).then(result => {
-            res.json({
-                OK: true,
-                Totales: result
+        if(req.params.localidad === 'Todas') {
+            prenomina.findAll({
+                attributes: [
+                    'estado',
+                    [Sequelize.fn('COUNT', Sequelize.col('estado')), 'total']
+                ],
+                where: {
+                    estado: {
+                        [Op.notIn]: ['COMPLETO', 'CANCELADO'],  
+                    }
+                },
+                group: ['estado'],
+                order: ['estado']
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Totales: result
+                })
             })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
             });
-        });
+        }
+        else {
+            prenomina.findAll({
+                attributes: [
+                    'estado',
+                    [Sequelize.fn('COUNT', Sequelize.col('estado')), 'total']
+                ],
+                where: {
+                    localidad: req.params.localidad,
+                    estado: {
+                        [Op.notIn]: ['COMPLETO', 'CANCELADO'],  
+                    }
+                },
+                group: ['estado'],
+                order: ['estado']
+            }).then(result => {
+                res.json({
+                    OK: true,
+                    Totales: result
+                })
+            })
+            .catch(error => {
+                res.status(412).json({
+                    msg: error.message
+                });
+            }); 
+        }
     }
 
 
@@ -3209,7 +3233,7 @@ module.exports = app => {
             ],
             where: {
                 estado: {
-                    [Op.notIn]: ['OCULTO', 'COMPLETO'],  
+                    [Op.notIn]: ['OCULTO', 'COMPLETO', 'CANCELADO'],  
                 },
                 fecha: {
                     [Op.between]: [`${req.params.fecha} 00:00:00`, `${req.params.fecha} 23:59:59`]
@@ -3239,7 +3263,7 @@ module.exports = app => {
             where: {
                 terminal: req.params.terminal,
                 estado: {
-                    [Op.notIn]: ['OCULTO', 'COMPLETO'],  
+                    [Op.notIn]: ['OCULTO', 'COMPLETO', 'CANCELADO'],  
                 }
             },
             group: ['estado'],

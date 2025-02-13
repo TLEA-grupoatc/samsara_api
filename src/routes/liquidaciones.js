@@ -179,7 +179,7 @@ module.exports = app => {
 
     app.get('/obtenerTotalLocalidadDiario/:fecha', verificarToken, Liq.obtenerTotalLocalidadDiario);
 
-    app.get('/obtenerTotalEstatusPrenomina', verificarToken, Liq.obtenerTotalEstatusPrenomina);
+    app.get('/obtenerTotalEstatusPrenomina/:localidad', verificarToken, Liq.obtenerTotalEstatusPrenomina);
 
 
     app.get('/obtenerTotalEstatusLiquidacion/:fecha', verificarToken, Liq.obtenerTotalEstatusLiquidacion);
