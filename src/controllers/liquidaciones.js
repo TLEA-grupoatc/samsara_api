@@ -3179,6 +3179,11 @@ module.exports = app => {
                 'estado',
                 [Sequelize.fn('COUNT', Sequelize.col('estado')), 'total']
             ],
+            where: {
+                estado: {
+                    [Op.ne]: 'COMPLETO'
+                }
+            },
             group: ['estado'],
             order: ['estado']
         }).then(result => {
@@ -3204,7 +3209,10 @@ module.exports = app => {
             ],
             where: {
                 estado: {
-                    [Op.ne]: 'OCULTO'
+                    [Op.notIn]: ['OCULTO', 'COMPLETO'],  
+                },
+                fecha: {
+                    [Op.between]: [`${req.params.fecha} 00:00:00`, `${req.params.fecha} 23:59:59`]
                 }
             },
             group: ['estado'],
@@ -3231,7 +3239,7 @@ module.exports = app => {
             where: {
                 terminal: req.params.terminal,
                 estado: {
-                    [Op.ne]: 'OCULTO'
+                    [Op.notIn]: ['OCULTO', 'COMPLETO'],  
                 }
             },
             group: ['estado'],

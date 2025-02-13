@@ -182,7 +182,7 @@ module.exports = app => {
     app.get('/obtenerTotalEstatusPrenomina', verificarToken, Liq.obtenerTotalEstatusPrenomina);
 
 
-    app.get('/obtenerTotalEstatusLiquidacion', verificarToken, Liq.obtenerTotalEstatusLiquidacion);
+    app.get('/obtenerTotalEstatusLiquidacion/:fecha', verificarToken, Liq.obtenerTotalEstatusLiquidacion);
 
     app.get('/obtenerTotalEstatusLiquidacionXUnidad/:terminal', verificarToken, Liq.obtenerTotalEstatusLiquidacionXUnidad);
 
