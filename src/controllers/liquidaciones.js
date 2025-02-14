@@ -2532,7 +2532,7 @@ module.exports = app => {
                 }).catch(error => {
                     res.status(412).json({
                         OK: false,
-                        msg: err
+                        msg: error
                     });
                 });
             }
@@ -2565,7 +2565,7 @@ module.exports = app => {
                 }).catch(error => {
                     res.status(412).json({
                         OK: false,
-                        msg: err
+                        msg: error
                     });
                 });
             }
@@ -2630,6 +2630,7 @@ module.exports = app => {
             where: {
                 id_liquidacion: req.params.id_liquidacion
             },
+            individualHooks: true,
             fields: ['diferenciakilometros']
         }).then(result => {
             res.json({
@@ -2653,6 +2654,7 @@ module.exports = app => {
             where: {
                 id_prenomina: req.params.id_prenomina
             },
+            individualHooks: true,
             fields: ['diferenciakilometros']
         }).then(result => {
             res.json({

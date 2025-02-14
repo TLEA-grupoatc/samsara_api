@@ -5,5 +5,7 @@ module.exports = app => {
 
     app.get('/reporteDiesel/:fechaInicio/:fechaFin', verificarToken, repo.reporteDiesel);
 
+    app.get('/obtenerReporteSamsara', repo.obtenerReporteSamsara);
+
     app.get('/obtenerGeoGasolineras', verificarToken, repo.obtenerGeoGasolineras);
 }

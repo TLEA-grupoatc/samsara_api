@@ -57,7 +57,45 @@ module.exports = app => {
     }
 
 
+    app.obtenerReporteSamsara = (req, res) => {
+        var fecha = moment(new Date()).format('YYYY-MM-DD');
+        var paraValidadfecha = moment(new Date()).format('YYYY-MM-DD');
 
+        Samsara.getFuelEnergyVehicleReports({
+            startDate: fecha + 'T00:00:00.00-06:00',
+            endDate: fecha + 'T23:59:59.59-06:00',
+            tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
+            energyType: 'fuel',
+        }).then(result => {
+            console.log(result);
+            
+            var datos = [];
+            result['data']['data']['vehicleReports'].forEach(async (element) => {
+                var validarfecha = element['ecuSpeedMph'].time.split('T')[0];
+             
+                
+
+                if(paraValidadfecha == validarfecha) {
+                    datos.push({
+                        activo: element.id,
+                        diesel: result['data']['data'][0]['fuelConsumedMl'],
+                        kilometros: result['data']['data'][0]['distanceTraveledMeters'],
+                        eficiencia: result['data']['data'][0]['efficiencyMpge']
+                    });
+                }
+            });
+
+            res.json({
+                OK: true,
+                Reporte: datos
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 
@@ -72,6 +110,40 @@ module.exports = app => {
       
         return dates;
     }
+
+    async function getDiesel(day, idtracto) {
+        try {
+            const result =  await Samsara.getFuelEnergyVehicleReports({
+                startDate: day + 'T00:00:00.00-06:00',
+                endDate: day + 'T23:59:59.59-06:00',
+                vehicleIds: idtracto,
+                energyType: 'fuel'
+            });
+
+            let data = ({
+                diesel: result['data']['data'][0]['fuelConsumedMl'],
+                kilometros: result['data']['data'][0]['distanceTraveledMeters'],
+                eficiencia: result['data']['data'][0]['efficiencyMpge']
+            })
+              
+            console.log(data);
+            
+            return data;
+        } 
+        catch(error) {
+            console.log(error.message);
+            return 0;
+        }
+    }
+
+
+
+
+
+
+
+
+
 
     async function getPercent(day, idtracto) {
         try {

@@ -969,7 +969,6 @@ module.exports = app => {
 
 
 
-
     app.obtenerReporteGeneral = (req, res) => {
         alerta.findAll({
             include: {
@@ -1105,7 +1104,6 @@ module.exports = app => {
         }
     }
 
-
     app.obtenerTiempoDeRespuesta = async (req, res) => {
         if(req.params.division == 'Todas') {
             alerta.findAll({
@@ -1190,6 +1188,11 @@ module.exports = app => {
             });
         }
     }
+
+
+
+
+
 
     async function getUnidadesDivision(uni) {
         try {
