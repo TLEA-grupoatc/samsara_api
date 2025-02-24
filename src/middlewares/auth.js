@@ -6,9 +6,9 @@ module.exports = app => {
    app.verificarToken = (req, res, next) => {
         let token = req.cookies.token || req.get('token');
         
-        jwt.verify(token, app.libs.config.SEED_TOKEN, { ignoreExpiration: true},(err, decode) => {
+        jwt.verify(token, process.env.SEED_TOKEN, { ignoreExpiration: false }, (err, decode) => {
     
-            if(err){
+            if(err) {
                 return res.status(401).json({
                     OK: false,
                     msg: 'Token no valido'
@@ -18,12 +18,11 @@ module.exports = app => {
             req.usuario = decode.usuario;
     
             next();
-
-        })
+        });
     }
 
     app.verificarAdmin_Role = (req, res, next) => {        
-        if(req.usuario.role !== 'admin'){
+        if(req.usuario.role !== 'admin') {
             return res.status(401).json({
                 OK: true,
                 err:{
@@ -33,7 +32,6 @@ module.exports = app => {
         }  
             
         next();
-    
     }
 
     return app;

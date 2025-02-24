@@ -2744,7 +2744,7 @@ module.exports = app => {
             fs.mkdirSync(directorio, {recursive: true});
         }
 
-        for(let bd of body.docs) { 
+        for(let bd of body.docs) {
             const [, base64Content] = bd.archivo.split(',');
             var big1 = Buffer.from(base64Content, 'base64');
     
@@ -2786,18 +2786,22 @@ module.exports = app => {
                 ]
             })
             .then(result => {
-                res.json({
-                    OK: true,
-                    DocumentosExtras: result
-                })
+                console.log('Success');
             })
             .catch(error => {
-                res.status(412).json({
-                    OK: false,
-                    msg: error.message
-                });
+                console.log(error);
+                
+                // res.status(412).json({
+                //     OK: false,
+                //     msg: error.message
+                // });
             });
         }
+
+        res.json({
+            OK: true,
+            // DocumentosExtras: result
+        });
     }
 
 

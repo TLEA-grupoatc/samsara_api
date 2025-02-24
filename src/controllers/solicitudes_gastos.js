@@ -115,7 +115,6 @@ module.exports = app => {
         });
     }
 
-
     app.obtenerOrigenesGastos = (req, res) => {  
         origen.findAll().then(result => {
             res.json({
