@@ -28,4 +28,20 @@ module.exports = app => {
     app.post('/crearDestinoGastos', verificarToken, cu.crearDestinoGastos);
     
     app.put('/actualizarDestinoGastos', verificarToken, cu.actualizarDestinoGastos);
+    
+    
+    
+
+    
+    app.get('/obtenerSolicitudesDeGastos', verificarToken, cu.obtenerSolicitudesDeGastos);
+    
+    app.post('/crearSolicitudGastos', verificarToken, cu.crearSolicitudGastos);
+
+    app.post('/cargarDocDeposito', verificarToken, cu.cargarDocDeposito);
+
+    app.get('/obtenerDeposito/:folio', verificarToken, cu.obtenerDeposito);
+
+    app.get('/verificarExistenciaGasto/:operador/:origen/:destino/:fecha_creacion', verificarToken, cu.verificarExistenciaGasto);
+    
+    app.delete('/solicitudDeGastosAceptarRechazar/:id_gastos/:aprobado_por/:estado', verificarToken, cu.solicitudDeGastosAceptarRechazar);
 }

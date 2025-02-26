@@ -1,11 +1,14 @@
-const cron = require('node-cron');
-const moment = require('moment');
+const fs = require("fs");
 
 module.exports = app => {
     // const cliente = app.database.models.Clientes;
     const origendestino = app.database.models.OrigenesDestinosGastos;
     const origen = app.database.models.OrigenesGastos;
     const destino = app.database.models.DestinosGastos;
+
+    const gasto = app.database.models.SolicitudGastos;
+
+    const docgasto = app.database.models.DocGastos;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -80,7 +83,10 @@ module.exports = app => {
 
     app.obtenerOrigenesDestinoGastos = (req, res) => {  
         origendestino.findAll({
-
+            where: {
+                estado: 'A'
+            },
+            order: [['terminal', 'DESC']],
         }).then(result => {
             res.json({
                 OK: true,
@@ -116,7 +122,9 @@ module.exports = app => {
     }
 
     app.obtenerOrigenesGastos = (req, res) => {  
-        origen.findAll().then(result => {
+        origen.findAll({
+
+        }).then(result => {
             res.json({
                 OK: true,
                 Origenes: result
@@ -211,7 +219,9 @@ module.exports = app => {
     }
 
     app.obtenerDestinosGastos = (req, res) => {  
-        destino.findAll().then(result => {
+        destino.findAll({
+    
+        }).then(result => {
             res.json({
                 OK: true,
                 Destinos: result
@@ -293,6 +303,224 @@ module.exports = app => {
                 'estado'
             ]
         }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
+    app.cargarDocDeposito = (req, res) => {
+        let body = req.body;
+        var gastos = body.datosgastos;
+
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.archivo.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre, big1);
+        
+        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre;
+
+        let nuevoDocumento = new docgasto({
+            folio: body.folio,
+            operador: body.operador,
+            nombre: body.nombre,
+            descripcion: body.descripcion,
+            tipo: body.tipo,
+            archivo: doc,
+            fecha_creacion: body.fecha_creacion,
+            usuario: body.usuario
+        });
+
+        docgasto.create(nuevoDocumento.dataValues, {
+            fields: [
+                'folio', 
+                'operador', 
+                'nombre', 
+                'descripcion', 
+                'tipo', 
+                'archivo',
+                'fecha_creacion',
+                'usuario'
+            ]
+        })
+        .then(result => {
+            gastos.forEach(element => {
+                let data = new gasto({
+                    estatus: 'Depositado'
+                });
+        
+                gasto.update(data.dataValues, {
+                    where: {
+                        id_gastos: element
+                    },
+                    individualHooks: true, 
+                    fields: ['estatus']
+                }).then(result => {
+                    console.log('success');
+                }).catch(err => {
+                  console.log(err);
+                  
+                });
+            });
+
+            res.json({
+                OK: true,
+                Documento: result
+            });
+        }).catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });    
+    }
+
+    app.obtenerDeposito = (req, res) => {
+        docgasto.findAll({
+            where: {
+                folio: req.params.folio
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Docs: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerSolicitudesDeGastos = (req, res) => {  
+        gasto.findAll({
+            order: [['fecha_solicitud', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.verificarExistenciaGasto = (req, res) => {  
+        gasto.findAll({
+            where: {
+                operador: req.params.operador,
+                origen: req.params.origen,
+                destino: req.params.destino,
+                fecha_creacion: req.params.fecha_creacion
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearSolicitudGastos = (req, res) => {
+        let body = req.body;
+
+        for(let inf of body.info) {
+            let nuevoRegistro = new gasto({
+                fecha_solicitud: inf.fecha_solicitud, 
+                solicitante: inf.solicitante, 
+                unidad_negocio: inf.unidad_negocio, 
+                folio: inf.folio, 
+                operador: inf.operador, 
+                economico: inf.economico, 
+                origen: inf.origen, 
+                destino: inf.destino, 
+                cliente: inf.cliente, 
+                tipo_gasto: inf.tipo_gasto, 
+                concepto: inf.concepto, 
+                monto: inf.monto, 
+                aprobado_por: inf.aprobado_por, 
+                estatus: inf.estatus,
+                fecha_creacion: inf.fecha_creacion
+            });
+
+            gasto.create(nuevoRegistro.dataValues, {
+                individualHooks: true, 
+                fields: [
+                    'fecha_solicitud', 
+                    'solicitante', 
+                    'unidad_negocio', 
+                    'folio', 
+                    'operador', 
+                    'economico', 
+                    'origen', 
+                    'destino', 
+                    'cliente', 
+                    'tipo_gasto', 
+                    'concepto', 
+                    'monto', 
+                    'aprobado_por', 
+                    'estatus',
+                    'fecha_creacion'
+                ]
+            })
+            .then(async result => {
+                console.log('success');
+                
+            })
+            .catch(error => {
+
+                console.log(error);
+                
+                // res.status(412).json({
+                //     OK: false,
+                //     msg: error.message
+                // });
+            });
+        }
+
+        res.json({
+            OK: true
+        })
+    }
+
+    app.solicitudDeGastosAceptarRechazar = (req, res) => {
+        let data = new gasto({
+            aprobado_por: req.params.aprobado_por,
+            estatus: req.params.estado
+        });
+
+        gasto.update(data.dataValues, {
+            where: {
+                id_gastos: req.params.id_gastos
+            },
+            individualHooks: true, 
+            fields: ['aprobado_por', 'estatus']
+        }).then(result => {
             res.json({
                 OK: true,
                 rows_affected: result[0]

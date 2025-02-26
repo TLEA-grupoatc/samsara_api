@@ -17,6 +17,10 @@ module.exports = app => {
         client.on('SHOW_LIQUIDACIONES', (data, callback)=> {            
             client.broadcast.emit('SHOW_LIQUIDACIONES', data);
         });
+
+        client.on('SHOW_GASTOS', (data, callback)=> {            
+            client.broadcast.emit('SHOW_GASTOS', data);
+        });
     });   
 
     return app;
