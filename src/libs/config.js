@@ -9,11 +9,11 @@ module.exports = {
         host: process.env.HOST_DATABASE ||'localhost',
         dialect: process.env.DIALECT || 'mysql',
         port: process.env.PORT_DATABASE || '3306',
+        timezone: '-06:00',
         dialectOptions: {
             dateStrings: true,
             typeCast: true
         },
-        timezone: '-06:00',
         pool: {
             max: 20,
             idle: 30000

@@ -533,5 +533,145 @@ module.exports = app => {
         });
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    app.crearOrigenDestino = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new origendestino({
+            id_origen_gasto: body.id_origen_gasto, 
+            id_destino_gasto: body.id_destino_gasto, 
+            terminal: body.terminal, 
+            caseta: body.caseta, 
+            guia: body.guia, 
+            gratificacion: body.gratificacion, 
+            pension: body.pension, 
+            taxi: body.taxi, 
+            permiso: body.permiso, 
+            gasolina: body.gasolina, 
+            fitosanitaria: body.fitosanitaria, 
+            registrado_por: body.registrado_por, 
+            modificado_por: body.modificado_por, 
+            fecha_creacion: body.fecha_creacion, 
+            fecha_modificacion: body.fecha_modificacion, 
+            estado: body.estado
+        });
+
+        origendestino.create(nuevoRegistro.dataValues, {
+            // individualHooks: true, 
+            fields: [
+                'id_origen_gasto', 
+                'id_destino_gasto', 
+                'terminal', 
+                'caseta', 
+                'guia', 
+                'gratificacion', 
+                'pension', 
+                'taxi', 
+                'permiso', 
+                'gasolina', 
+                'fitosanitaria', 
+                'registrado_por', 
+                'modificado_por', 
+                'fecha_creacion', 
+                'fecha_modificacion', 
+                'estado'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                OrigenDestino: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.actualizarOrigenDestino = (req, res) => {
+        let body = req.body;
+
+        let editarPre = new origendestino({
+            id_origen_gasto: body.id_origen_gasto, 
+            id_destino_gasto: body.id_destino_gasto, 
+            terminal: body.terminal, 
+            caseta: body.caseta, 
+            guia: body.guia, 
+            gratificacion: body.gratificacion, 
+            pension: body.pension, 
+            taxi: body.taxi, 
+            permiso: body.permiso, 
+            gasolina: body.gasolina, 
+            fitosanitaria: body.fitosanitaria, 
+            registrado_por: body.registrado_por, 
+            modificado_por: body.modificado_por, 
+            fecha_creacion: body.fecha_creacion, 
+            fecha_modificacion: body.fecha_modificacion, 
+            estado: body.estado
+        });
+
+        origendestino.update(editarPre.dataValues, {
+            where: {
+                id_origen_destino: req.params.id_origen_destino
+            },
+            // individualHooks: true,
+            fields: [
+                'id_origen_gasto', 
+                'id_destino_gasto', 
+                'terminal', 
+                'caseta', 
+                'guia', 
+                'gratificacion', 
+                'pension', 
+                'taxi', 
+                'permiso', 
+                'gasolina', 
+                'fitosanitaria', 
+                'registrado_por', 
+                'modificado_por', 
+                'fecha_creacion', 
+                'fecha_modificacion', 
+                'estado'
+            ]
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            })
+        }).catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
     return app;
 }

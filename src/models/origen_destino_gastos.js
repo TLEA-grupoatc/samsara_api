@@ -40,6 +40,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        gasolina:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        fitosanitaria:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         registrado_por:{
             type: DataType.STRING,
             allowNull: false

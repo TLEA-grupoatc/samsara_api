@@ -4,7 +4,7 @@ module.exports = app => {
 
     // app.get('/obtenerClientesGastos', verificarToken, cu.obtenerClientesGastos);
 
-    // app.post('/crearClienteGastos', verificarToken, cu.crearClienteGastos);
+    // app.put('/crearClienteGastos', verificarToken, cu.crearClienteGastos);
     
     // app.put('/actualizarClienteGastos', verificarToken, cu.actualizarClienteGastos);
     
@@ -38,10 +38,17 @@ module.exports = app => {
     app.post('/crearSolicitudGastos', verificarToken, cu.crearSolicitudGastos);
 
     app.post('/cargarDocDeposito', verificarToken, cu.cargarDocDeposito);
-
+    
     app.get('/obtenerDeposito/:folio', verificarToken, cu.obtenerDeposito);
-
+    
     app.get('/verificarExistenciaGasto/:operador/:origen/:destino/:fecha_creacion', verificarToken, cu.verificarExistenciaGasto);
     
     app.delete('/solicitudDeGastosAceptarRechazar/:id_gastos/:aprobado_por/:estado', verificarToken, cu.solicitudDeGastosAceptarRechazar);
+
+
+
+
+    app.post('/crearOrigenDestino', verificarToken, cu.crearOrigenDestino);
+
+    app.put('/actualizarOrigenDestino/:id_origen_destino', verificarToken, cu.actualizarOrigenDestino);
 }
