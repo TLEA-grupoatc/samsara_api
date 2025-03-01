@@ -11,7 +11,7 @@ const ngrok = require("@ngrok/ngrok");
 const dotenv = require('dotenv').config();
 const socketIO = require('socket.io')(http, {
   cors: {
-    origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online/" ,"https://apisamsara.tlea.online/"],
+    origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "https://apisamsara.tlea.online"],
     credentials: true,
     methods: ["GET", "POST"]
   }
