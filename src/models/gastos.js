@@ -57,6 +57,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         }, 
+        aprobado_por_gerente: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         estatus: {
             type: DataType.STRING,
             allowNull: true

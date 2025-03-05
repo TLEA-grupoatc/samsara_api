@@ -48,6 +48,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        comida:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        talacha:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         registrado_por:{
             type: DataType.STRING,
             allowNull: false

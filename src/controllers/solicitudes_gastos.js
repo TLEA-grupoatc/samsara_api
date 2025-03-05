@@ -463,7 +463,8 @@ module.exports = app => {
                 tipo_gasto: inf.tipo_gasto, 
                 concepto: inf.concepto, 
                 monto: inf.monto, 
-                aprobado_por: inf.aprobado_por, 
+                aprobado_por: inf.aprobado_por,
+                aprobado_por_gerente: inf.aprobado_por_gerente,
                 estatus: inf.estatus,
                 fecha_creacion: inf.fecha_creacion
             });
@@ -484,6 +485,7 @@ module.exports = app => {
                     'concepto', 
                     'monto', 
                     'aprobado_por', 
+                    'aprobado_por_gerente', 
                     'estatus',
                     'fecha_creacion'
                 ]
@@ -511,6 +513,7 @@ module.exports = app => {
     app.solicitudDeGastosAceptarRechazar = (req, res) => {
         let data = new gasto({
             aprobado_por: req.params.aprobado_por,
+            aprobado_por_gerente: req.params.aprobado_por_gerente,
             estatus: req.params.estado
         });
 
@@ -519,7 +522,7 @@ module.exports = app => {
                 id_gastos: req.params.id_gastos
             },
             individualHooks: true, 
-            fields: ['aprobado_por', 'estatus']
+            fields: ['aprobado_por', 'aprobado_por_gerente', 'estatus']
         }).then(result => {
             res.json({
                 OK: true,
@@ -573,6 +576,8 @@ module.exports = app => {
             permiso: body.permiso, 
             gasolina: body.gasolina, 
             fitosanitaria: body.fitosanitaria, 
+            comida: body.comida, 
+            talacha: body.talacha, 
             registrado_por: body.registrado_por, 
             modificado_por: body.modificado_por, 
             fecha_creacion: body.fecha_creacion, 
@@ -581,7 +586,7 @@ module.exports = app => {
         });
 
         origendestino.create(nuevoRegistro.dataValues, {
-            // individualHooks: true, 
+            individualHooks: true, 
             fields: [
                 'id_origen_gasto', 
                 'id_destino_gasto', 
@@ -594,6 +599,8 @@ module.exports = app => {
                 'permiso', 
                 'gasolina', 
                 'fitosanitaria', 
+                'comida', 
+                'talacha', 
                 'registrado_por', 
                 'modificado_por', 
                 'fecha_creacion', 
@@ -630,6 +637,8 @@ module.exports = app => {
             permiso: body.permiso, 
             gasolina: body.gasolina, 
             fitosanitaria: body.fitosanitaria, 
+            comida: body.comida, 
+            talacha: body.talacha, 
             registrado_por: body.registrado_por, 
             modificado_por: body.modificado_por, 
             fecha_creacion: body.fecha_creacion, 
@@ -641,7 +650,7 @@ module.exports = app => {
             where: {
                 id_origen_destino: req.params.id_origen_destino
             },
-            // individualHooks: true,
+            individualHooks: true,
             fields: [
                 'id_origen_gasto', 
                 'id_destino_gasto', 
@@ -653,6 +662,9 @@ module.exports = app => {
                 'taxi', 
                 'permiso', 
                 'gasolina', 
+                'fitosanitaria', 
+                'comida', 
+                'talacha', 
                 'fitosanitaria', 
                 'registrado_por', 
                 'modificado_por', 
