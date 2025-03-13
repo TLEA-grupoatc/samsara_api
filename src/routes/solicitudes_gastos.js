@@ -44,9 +44,11 @@ module.exports = app => {
     app.get('/verificarExistenciaGasto/:operador/:origen/:destino/:fecha_creacion', verificarToken, cu.verificarExistenciaGasto);
     
     app.delete('/solicitudDeGastosAceptarRechazar/:id_gastos/:aprobado_por/:aprobado_por_gerente/:estado', verificarToken, cu.solicitudDeGastosAceptarRechazar);
-
-
-
+    
+    
+    app.get('/obtenerOrigenesDestinoGrupo', verificarToken, cu.obtenerOrigenesDestinoGrupo);
+    
+    app.get('/checarOrigenesDestino/:id_origen_gasto/:id_destino_gasto', verificarToken, cu.checarOrigenesDestino);
 
     app.post('/crearOrigenDestino', verificarToken, cu.crearOrigenDestino);
 

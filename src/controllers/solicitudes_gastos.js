@@ -106,6 +106,7 @@ module.exports = app => {
                 terminal: req.params.terminal,
                 id_origen_gasto: req.params.idorigen,
                 id_destino_gasto: req.params.iddestino,
+                tipo_gasto: 'NORMAL',
                 estado: 'A'
             }
         }).then(result => {
@@ -554,11 +555,47 @@ module.exports = app => {
 
 
 
+    app.obtenerOrigenesDestinoGrupo = (req, res) => {  
+        origendestino.findAll({
+            where: {
+                estado: 'A'
+            },
+            group: [['id_origen_gasto']],
+            order: [['id_origen_gasto']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                OriDes: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 
-
-
+    app.checarOrigenesDestino = (req, res) => {  
+        origendestino.findAll({
+            where: {
+                id_origen_gasto: req.params.id_origen_gasto, 
+                id_destino_gasto: req.params.id_destino_gasto, 
+                estado: 'A'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                OriDes: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
     
     app.crearOrigenDestino = (req, res) => {
