@@ -106,7 +106,6 @@ module.exports = app => {
                 terminal: req.params.terminal,
                 id_origen_gasto: req.params.idorigen,
                 id_destino_gasto: req.params.iddestino,
-                tipo_gasto: 'NORMAL',
                 estado: 'A'
             }
         }).then(result => {
