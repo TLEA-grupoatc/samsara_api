@@ -2525,15 +2525,19 @@ module.exports = app => {
                         'folio',
                     ]
                 }).then(result => {
-                    res.json({
-                        OK: true,
-                        rows_affected: result[0]
-                    });
+                    console.log('realizado');
+                    
+                    // res.json({
+                    //     OK: true,
+                    //     rows_affected: result[0]
+                    // });
                 }).catch(error => {
-                    res.status(412).json({
-                        OK: false,
-                        msg: error
-                    });
+                    console.log(error);
+                    
+                    // res.status(412).json({
+                    //     OK: false,
+                    //     msg: error
+                    // });
                 });
             }
         }
