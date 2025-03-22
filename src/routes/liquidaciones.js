@@ -196,12 +196,37 @@ module.exports = app => {
     app.post('/cargarEvidenciaRendimientos', verificarToken, Liq.cargarEvidenciaRendimientos);
 
     app.get('/verEvidenciadeRendimientos/:id', verificarToken, Liq.verEvidenciadeRendimientos);
-
+    
     // Especiales
     
     app.delete('/eliminarPermanentePrenominas/:id_prenomina', verificarToken, Liq.eliminarPermanentePrenominas);
-
+    
     app.delete('/eliminarPermanenteLiquidaciones/:id_liquidacion', verificarToken, Liq.eliminarPermanenteLiquidaciones);
     
     app.delete('/eliminarPermanenteDocumentos/:id_pd', verificarToken, Liq.eliminarPermanenteDocumentos);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // Backups
+    
+    
+    app.get('/obtenerPrenominaDocumentosBackup', Liq.obtenerPrenominaDocumentosBackup);
 }

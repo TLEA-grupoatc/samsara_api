@@ -3026,16 +3026,19 @@ module.exports = app => {
                 ]
             })
             .then(result => {
-                res.json({
-                    OK: true,
-                    DocumentosExtras: result
-                })
+                // res.json({
+                //     OK: true,
+                //     DocumentosExtras: result
+                // })
+                console.log('success')
             })
             .catch(error => {
-                res.status(412).json({
-                    OK: false,
-                    msg: error.message
-                });
+                // res.status(412).json({
+                //     OK: false,
+                //     msg: error.message
+                // });
+
+                console.log(error);
             });
         }
     }
@@ -3360,5 +3363,23 @@ module.exports = app => {
         }
     }
 
+
+
+
+
+    // BACKUPS
+
+    app.obtenerPrenominaDocumentosBackup = (req, res) => {
+        prenominadocs.findAll({}).then(result => {
+            res.json({
+                OK: true,
+                Registros: result
+            })
+        }).catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
     return app;
 }
