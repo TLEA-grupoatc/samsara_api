@@ -17,7 +17,7 @@ module.exports = app => {
             where: {
                 estado: 'A'
             },
-            order: [['terminal', 'DESC']],
+            order: [['terminal', 'ASC']],
         }).then(result => {
             app.io.emit('SHOW_CATALOGOS', {OriDes: result});
         })

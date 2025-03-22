@@ -519,14 +519,10 @@ module.exports = app => {
             //     WHERE VALE_FECHA >= '" + '2024-11-01T00:00:00.000Z' + "' \
             //     AND liquidacion = 's/l' \
             //     GROUP BY BT.TRACTO_NUM_ECO");
-            let result = await pool.request().query("SELECT BT.status_bitacora, FORMAT(BT.FECHA_BITACORA,'yyyy-MM-dd') as FECHA_BITACORA, BT.CLAVE_BITACORA, BT.PREFIJO, BT.FOLIO_BITACORA, BT.DOBLE_OPERADOR, BT.RANGO_BITACORA, BT.TERMINAL_BITACORA, BT.USR_CREA, BT.TRACTO_CLAVE, BT.TRACTO_NUM_ECO, BT.FCH_CREA, BT.FCH_MOD, BT.USR_MOD, FORMAT(BT.FECHA_SALIDA,'yyyy-MM-dd HH:mm:ss') as FECHA_SALIDA, BT.MONTO_ANTICIPO_SALIDA, BT.USR_CIERR, FORMAT(BT.FCH_CIERR,'yyyy-MM-dd HH:mm:ss') as FCH_CIERR, BT.OBSERVACIONES_OPERADOR, BT.INSTRUCCIONES_ESPECIALES, BT.NOTA_SISTEMA, BT.DIAS_SERVICIO, BT.kilometraje_inicial, BT.kilometraje_final, BT.terminal_cierre, BT.LITROS_DBL_OPERADOR, BT.MONTO_DIESEL_DBL_OPERADOR, BT.LIQ_DBL_OPR, BT.STATUS_VIAJE, BT.LECT_LITROS_COMP, BT.LECT_REND_COMP, BT.negocio_clave_bit, BT.LITROS_EXCESO, BT.LITROS_CIERRE, BT.difCombustible, BT.BAN_LIQUIDACION, BT.LIQUIDACION_CLAVE, OP.NEGOCIO_CLAVE, OP.OPERADOR_CLAVE, OP.OPERADOR_NOMBRE, KO.kilometros_carga1, KO.kilometros_vacio1, KO.total_kilometros1, RUT.ruta_min as ruta FROM BITACORAS AS BT\
-                INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
-                INNER JOIN OPERADOR AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
-                INNER JOIN vKilometrosOperador00 AS KO ON KO.FOLIO_BITACORA = BT.FOLIO_BITACORA \
-                WHERE BT.BAN_LIQUIDACION = 0 AND RUT.ruta_min != 'MOEY-MOEY' AND  RUT.ruta_min != 'SACA-SACA'\
-                AND OP.OPERADOR_NOMBRE = '" + 'JIMENEZ CASARRUBIAS ABEL' + "' \
-                AND KO.OPERADOR_NOMBRE = '" + 'JIMENEZ CASARRUBIAS ABEL' + "' \
-                ORDER BY FECHA_BITACORA");
+            let result = await pool.request().query("select CT.CLIENTE_CLAVE, CT.CLIENTE_NOMBRE, CT.NOM_CORTO, CT.ACTIVO, CT.TIPO_CUENTA from CLIENTE CT \
+        where CHARINDEX('C',CT.TIPO_CUENTA,1) > 0 \
+        and CT.ACTIVO = 'S' \
+        order by 1");
 
             // let result = await pool.request().query("SELECT BT.CLAVE_BITACORA, BT.FOLIO_BITACORA, BT.TRACTO_NUM_ECO, BT.BAN_LIQUIDACION, BT.FCH_CIERR, RUT.ruta_min  FROM bitacoras AS BT \
             //     INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
@@ -583,6 +579,50 @@ module.exports = app => {
             // vcons_liq_gastos_viaje
             // voperador_examen
             // deduccion_operador
+
+            sql.close();
+            
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.foliosReparto = async (req, res) => {
+        try {
+            var fecha = moment(new Date()).format('YYYY-MM-DD');
+            let pool = await sql.connect(config);
+
+            let result = await pool.request().query("SELECT BT.*, BRS.*, OP.* FROM bitacoras AS BT \
+                INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
+                INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
+                WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES' \
+                AND BT.FECHA_BITACORA BETWEEN '" + fecha + "T00:00:00.000Z' AND '" + fecha + "T23:59:59.000Z';"
+            );
 
             sql.close();
             

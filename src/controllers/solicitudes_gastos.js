@@ -86,7 +86,7 @@ module.exports = app => {
             where: {
                 estado: 'A'
             },
-            order: [['terminal', 'DESC']],
+            order: [['terminal', 'ASC']],
         }).then(result => {
             res.json({
                 OK: true,

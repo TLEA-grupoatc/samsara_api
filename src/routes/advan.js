@@ -26,5 +26,16 @@ module.exports = app => {
 
 
 
-    app.get('/pruebas', verificarToken, ca.pruebas);
+    app.get('/pruebas', ca.pruebas);
+
+
+
+
+
+
+
+
+
+
+    app.get('/foliosReparto', ca.foliosReparto);
 }
