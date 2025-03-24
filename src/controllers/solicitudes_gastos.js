@@ -721,5 +721,37 @@ module.exports = app => {
         });
     }
 
+
+
+
+    app.enviarProceso = (req, res) => {
+        let data = new gasto({
+            estatus: req.params.estado
+        });
+
+        gasto.update(data.dataValues, {
+            where: {
+                id_gastos: req.params.id_gastos
+            },
+            individualHooks: true, 
+            fields: ['estatus']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
+
+
+
     return app;
 }
