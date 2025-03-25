@@ -431,8 +431,8 @@ module.exports = app => {
                 operador: req.params.operador,
                 origen: req.params.origen,
                 destino: req.params.destino,
-                fecha_creacion: req.params.fecha_creacion,
-                tipo_gasto: 'NORMAL'
+                tipo_gasto: 'NORMAL',
+                fecha_creacion: req.params.fecha_creacion
             }
         }).then(result => {
             res.json({
