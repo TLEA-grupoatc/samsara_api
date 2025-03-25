@@ -503,82 +503,15 @@ module.exports = app => {
         try {
             let pool = await sql.connect(config);
 
-            // let result = await pool.request().query("SELECT * FROM vruta_completa WHERE CLAVE_BITACORA IN (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
-            // let result = await pool.request().query("SELECT * FROM ORDEN_CONCEPTO WHERE CLAVE_BITACORA in (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
-            // let result = await pool.request().query("SELECT TOP(OM bitacoras WHERE BAN_LIQUIDACION = 1 AND OPERADOR_CLAVE = 602 ORDER BY FECHA_BITACORA DESC1) * FROM bitacoras WHERE BAN_LIQUIDACION = 1 AND OPERADOR_CLAVE = 602 ORDER BY FECHA_BITACORA DESC");
-            // let result = await pool.request().query("SELECT * FROM TRACTO");
-
-            // let result = await pool.request().query("SELECT TOP(5) * FROM vKilometrosOperador00");
-            // let result = await pool.request().query("SELECT TOP(100) * FROM BITACORAS");
-            // 
-            // let result = await pool.request().query("SELECT Top(100) BT.TRACTO_NUM_ECO, BT.VALE_FECHA, BT.litros FROM vvalescomb AS BT \
-            //     ORDER BY BT.VALE_FECHA DESC");
 
 
-            // let result = await pool.request().query("SELECT BT.TRACTO_NUM_ECO FROM vvalescomb AS BT \
-            //     WHERE VALE_FECHA >= '" + '2024-11-01T00:00:00.000Z' + "' \
-            //     AND liquidacion = 's/l' \
-            //     GROUP BY BT.TRACTO_NUM_ECO");
-            let result = await pool.request().query("select CT.CLIENTE_CLAVE, CT.CLIENTE_NOMBRE, CT.NOM_CORTO, CT.ACTIVO, CT.TIPO_CUENTA from CLIENTE CT \
-        where CHARINDEX('C',CT.TIPO_CUENTA,1) > 0 \
-        and CT.ACTIVO = 'S' \
-        order by 1");
+            let result = await pool.request().query("SELECT BT.*, BRS.*, OP.* FROM bitacoras AS BT \
+                INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
+                INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
+                WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES' \
+                AND BT.FECHA_BITACORA BETWEEN DATEADD(DAY, -10, GETDATE()) AND GETDATE();"
+            );
 
-            // let result = await pool.request().query("SELECT BT.CLAVE_BITACORA, BT.FOLIO_BITACORA, BT.TRACTO_NUM_ECO, BT.BAN_LIQUIDACION, BT.FCH_CIERR, RUT.ruta_min  FROM bitacoras AS BT \
-            //     INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
-            //     WHERE BT.BAN_LIQUIDACION = 0 AND RUT.ruta_min != 'MOEY-MOEY' AND  RUT.ruta_min != 'SACA-SACA'\
-            //     AND BT.FCH_CIERR >= '2024-01-01T00:00:00.000Z' ORDER BY BT.FCH_CIERR DESC");
-
-                
-
-
-
-            // let result = await pool.request().query("SELECT * FROM LIQUIDACION_GASTOS WHERE CLAVE_BITACORA IN (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
-            // let result = await pool.request().query("SELECT * FROM orden_casetas WHERE CLAVE_BITACORA IN (168375,168826,167987,168140)");
-            // let result = await pool.request().query("SELECT * FROM concepto where concepto_clave = 29;");
-            // let result = await pool.request().query("SELECT CONCEPTO_DESCRIP FROM concepto GROUP BY CONCEPTO_DESCRIP;");
-            // let result = await pool.request().query("SELECT CLAVE_BITACORA, VALE_FOLIO, LITROS, VALE_FECHA FROM ORDEN_VALES WHERE CLAVE_BITACORA IN (168375,168826,167987)");
-            // let result = await pool.request().query("SELECT * FROM BITACORAS WHERE CLAVE_BITACORA = 171830");
-            // let result = await pool.request().query("SELECT CLAVE_BITACORA, IMPORTE, REFERENCIA FROM ORDEN_VALES WHERE CLAVE_BITACORA IN (169438, 169343, 168968, 168888, 168639, 168314, 168073)");
-            // let result = await pool.request().query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'");
-            // let result = await pool.request().query("SELECT * FROM BITACORAS AS BT\
-            //     INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
-            //     INNER JOIN OPERADOR AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
-            //     INNER JOIN vKilometrosOperador00 AS KO ON KO.FOLIO_BITACORA = BT.FOLIO_BITACORA \
-            //     AND OP.OPERADOR_NOMBRE = '" + 'GONZALEZ CORTES JORGE ISMAEL' + "' \
-            //     AND KO.OPERADOR_NOMBRE = '" + 'GONZALEZ CORTES JORGE ISMAEL' + "';");
-
-
-            
-            // let claves = await pool.request().query("SELECT CLAVE_BITACORA FROM BITACORAS WHERE FCH_CREA BETWEEN '2024-01-01T00:00:00.000Z' AND '2024-11-03T23:59:59.000Z'");
-                
-            //     var clave = []
-                
-            //     claves['recordsets'][0].forEach(element => {
-            //         clave.push(element.CLAVE_BITACORA);
-            //     });
-
- 
-                
-                // let result = await pool.request().query("SELECT OC.CLAVE_BITACORA, BT.FOLIO_BITACORA, OC.IMPORTE, OC.REFERENCIA, CON.CONCEPTO_DESCRIP, OC.VALE_TERMINAL, OC.VALE_FOLIO, FORMAT(OC.VALE_FECHA,'yyyy-MM-dd') as VALE_FECHA, FORMAT(OC.FCH_CREA,'yyyy-MM-dd HH:mm:ss') as FCH_CREA, OP.OPERADOR_CLAVE, OP.OPERADOR_NOMBRE, OC.PREFIJO FROM ORDEN_CONCEPTO AS OC \
-                // let result = await pool.request().query("SELECT OC.CLAVE_BITACORA, OC.FOLIO_BITACORA, OP.OPERADOR_CLAVE, OP.OPERADOR_NOMBRE, OC.VALE_TERMINAL, OC.VALE_FOLIO, OC.VALE_FECHA, OC.CONCEPTO_DESCRIP, OC.IMPORTE  FROM liquidacion_anticipos AS OC \
-                // INNER JOIN OPERADOR AS OP ON OP.OPERADOR_CLAVE = OC.OPERADOR_CLAVE \
-                // WHERE OC.CLAVE_BITACORA IN (" + clave.toString().replace('[', '').replace(']', '') + ")");
-                // INNER JOIN CONCEPTO AS CON ON CON.CONCEPTO_CLAVE = OC.CONCEPTO_CLAVE \
-                // INNER JOIN BITACORAS AS BT ON BT.CLAVE_BITACORA = OC.CLAVE_BITACORA \
-
-
-            
-            // Checar
-            // let result = await pool.request().query("SELECT * FROM bitacora_recorridos WHERE CLAVE_BITACORA IN (168375,168826,167987,168140)");
-
-            // vorden_casetas_km
-            // orden_casetas
-            // vruta_completa
-            // ruta
-            // vcons_liq_gastos_viaje
-            // voperador_examen
-            // deduccion_operador
 
             sql.close();
             
