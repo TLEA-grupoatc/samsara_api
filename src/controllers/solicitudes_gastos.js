@@ -106,8 +106,7 @@ module.exports = app => {
                 terminal: req.params.terminal,
                 id_origen_gasto: req.params.idorigen,
                 id_destino_gasto: req.params.iddestino,
-                estado: 'A',
-                tipogasto: 'NORMAL'
+                estado: 'A'
             }
         }).then(result => {
             res.json({
@@ -432,7 +431,8 @@ module.exports = app => {
                 operador: req.params.operador,
                 origen: req.params.origen,
                 destino: req.params.destino,
-                fecha_creacion: req.params.fecha_creacion
+                fecha_creacion: req.params.fecha_creacion,
+                tipo_gasto: 'NORMAL',
             }
         }).then(result => {
             res.json({
