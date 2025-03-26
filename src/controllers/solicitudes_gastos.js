@@ -625,6 +625,7 @@ module.exports = app => {
     app.checarOrigenesDestino = (req, res) => {  
         origendestino.findAll({
             where: {
+                terminal: req.params.terminal, 
                 id_origen_gasto: req.params.id_origen_gasto, 
                 id_destino_gasto: req.params.id_destino_gasto, 
                 estado: 'A'
