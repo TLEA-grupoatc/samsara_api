@@ -53,7 +53,7 @@ module.exports = app => {
     
     app.get('/obtenerOrigenesDestinoGrupo', verificarToken, cu.obtenerOrigenesDestinoGrupo);
     
-    app.get('/checarOrigenesDestino/:id_origen_gasto/:id_destino_gasto', verificarToken, cu.checarOrigenesDestino);
+    app.get('/checarOrigenesDestino/:terminal/:id_origen_gasto/:id_destino_gasto', verificarToken, cu.checarOrigenesDestino);
     
     app.post('/crearOrigenDestino', verificarToken, cu.crearOrigenDestino);
     
