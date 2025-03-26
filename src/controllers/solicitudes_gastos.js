@@ -332,9 +332,9 @@ module.exports = app => {
 
         var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
 
-        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre, big1);
+        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcion, big1);
         
-        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre;
+        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcion;
 
         let nuevoDocumento = new docgasto({
             folio: body.folio,
@@ -449,7 +449,8 @@ module.exports = app => {
 
     app.crearSolicitudGastos = (req, res) => {
         let body = req.body;
-
+        var archi = body.docs;
+        
         for(let inf of body.info) {
             let nuevoRegistro = new gasto({
                 fecha_solicitud: inf.fecha_solicitud, 
@@ -464,6 +465,7 @@ module.exports = app => {
                 tipo_gasto: inf.tipo_gasto, 
                 concepto: inf.concepto, 
                 monto: inf.monto, 
+                comentarios: inf.comentarios, 
                 aprobado_por: inf.aprobado_por,
                 aprobado_por_gerente: inf.aprobado_por_gerente,
                 estatus: inf.estatus,
@@ -485,6 +487,7 @@ module.exports = app => {
                     'tipo_gasto', 
                     'concepto', 
                     'monto', 
+                    'comentarios', 
                     'aprobado_por', 
                     'aprobado_por_gerente', 
                     'estatus',
@@ -493,16 +496,58 @@ module.exports = app => {
             })
             .then(async result => {
                 console.log('success');
-                
+
+                if(archi.length > 0) {
+                    for(let tabla of archi) {
+                        var directorio = 'documentos/';
+                        if(!fs.existsSync(directorio)) {
+                            fs.mkdirSync(directorio, {recursive: true});
+                        }
+
+                        const [, base64Content] = tabla.archivo.split(',');
+                        var big1 = Buffer.from(base64Content, 'base64');
+
+                        var fechacorta = tabla.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+                        fs.writeFileSync(directorio + tabla.usuario + '_' + fechacorta + '_' + tabla.nombre + '_' + tabla.descripcion, big1);
+                        
+                        doc = directorio + tabla.usuario + '_' + fechacorta + '_' + tabla.nombre + '_' + tabla.descripcion;
+
+                        let nuevoDocumento = new docgasto({
+                            folio: tabla.folio,
+                            operador: tabla.operador,
+                            nombre: tabla.nombre,
+                            descripcion: tabla.descripcion,
+                            tipo: tabla.tipo,
+                            archivo: doc,
+                            usuario: tabla.usuario,
+                            fecha_creacion: tabla.fecha_creacion
+                        });
+
+                        docgasto.create(nuevoDocumento.dataValues, {
+                            fields: [
+                                'folio', 
+                                'operador', 
+                                'nombre', 
+                                'descripcion', 
+                                'tipo', 
+                                'archivo',
+                                'usuario',
+                                'fecha_creacion'
+                            ]
+                        })
+                        .then(result => {
+                            console.log('insertado');
+                            
+                        }).catch(error => {
+                            console.log(error);
+                    
+                        });   
+                    }
+                }
             })
             .catch(error => {
-
                 console.log(error);
-                
-                // res.status(412).json({
-                //     OK: false,
-                //     msg: error.message
-                // });
             });
         }
 
@@ -751,6 +796,25 @@ module.exports = app => {
 
 
 
+
+    app.verTablaAnticiposXOperador = (req, res) => {  
+        docgasto.findAll({
+            where: {
+                folio: req.params.folio,
+                nombre: 'Tabla de Anticipos'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 

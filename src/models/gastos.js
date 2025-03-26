@@ -53,6 +53,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.FLOAT,
             allowNull: true
         }, 
+        comentarios: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         aprobado_por: {
             type: DataType.STRING,
             allowNull: true

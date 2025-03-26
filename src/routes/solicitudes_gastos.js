@@ -54,8 +54,19 @@ module.exports = app => {
     app.get('/obtenerOrigenesDestinoGrupo', verificarToken, cu.obtenerOrigenesDestinoGrupo);
     
     app.get('/checarOrigenesDestino/:id_origen_gasto/:id_destino_gasto', verificarToken, cu.checarOrigenesDestino);
-
+    
     app.post('/crearOrigenDestino', verificarToken, cu.crearOrigenDestino);
-
+    
     app.put('/actualizarOrigenDestino/:id_origen_destino', verificarToken, cu.actualizarOrigenDestino);
+
+
+
+
+
+
+
+
+
+
+    app.get('/verTablaAnticiposXOperador/:folio', verificarToken, cu.verTablaAnticiposXOperador);
 }
