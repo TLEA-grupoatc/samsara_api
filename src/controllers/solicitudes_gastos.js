@@ -662,7 +662,25 @@ module.exports = app => {
 
 
 
-
+    app.verificarExistenciaGastoComida = (req, res) => {  
+        gasto.findAll({
+            where: {
+                operador: req.params.operador,
+                concepto: 'Comida',
+                fecha_creacion: req.params.fecha_creacion
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 

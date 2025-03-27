@@ -46,7 +46,8 @@ module.exports = app => {
     app.get('/verificarExistenciaGasto/:operador/:origen/:destino/:fecha_creacion', verificarToken, cu.verificarExistenciaGasto);
     
     app.delete('/solicitudDeGastosAceptarRechazar/:id_gastos/:aprobado_por/:aprobado_por_gerente/:estado', verificarToken, cu.solicitudDeGastosAceptarRechazar);
-
+    
+    app.get('/verificarExistenciaGastoComida/:operador/:fecha_creacion', verificarToken, cu.verificarExistenciaGastoComida);
 
 
 
