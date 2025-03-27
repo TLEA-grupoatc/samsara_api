@@ -432,6 +432,9 @@ module.exports = app => {
                 origen: req.params.origen,
                 destino: req.params.destino,
                 tipo_gasto: 'NORMAL',
+                concepto:{
+                    [Op.ne]: 'Comida'
+                },
                 fecha_creacion: req.params.fecha_creacion
             }
         }).then(result => {
@@ -555,6 +558,75 @@ module.exports = app => {
             OK: true
         })
     }
+
+
+
+
+    app.crearSolicitudGastosComida = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new gasto({
+            fecha_solicitud: body.fecha_solicitud, 
+            solicitante: body.solicitante, 
+            unidad_negocio: body.unidad_negocio, 
+            folio: body.folio, 
+            operador: body.operador, 
+            economico: body.economico, 
+            origen: body.origen, 
+            destino: body.destino, 
+            cliente: body.cliente, 
+            tipo_gasto: body.tipo_gasto, 
+            concepto: body.concepto, 
+            monto: body.monto, 
+            comentarios: body.comentarios, 
+            aprobado_por: body.aprobado_por,
+            aprobado_por_gerente: body.aprobado_por_gerente,
+            estatus: body.estatus,
+            fecha_creacion: body.fecha_creacion
+        });
+
+        gasto.create(nuevoRegistro.dataValues, {
+            individualHooks: true, 
+            fields: [
+                'fecha_solicitud', 
+                'solicitante', 
+                'unidad_negocio', 
+                'folio', 
+                'operador', 
+                'economico', 
+                'origen', 
+                'destino', 
+                'cliente', 
+                'tipo_gasto', 
+                'concepto', 
+                'monto', 
+                'comentarios', 
+                'aprobado_por', 
+                'aprobado_por_gerente', 
+                'estatus',
+                'fecha_creacion'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Gasto: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
 
     app.solicitudDeGastosAceptarRechazar = (req, res) => {
         let data = new gasto({
