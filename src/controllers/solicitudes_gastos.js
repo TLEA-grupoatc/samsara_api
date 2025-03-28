@@ -889,10 +889,10 @@ module.exports = app => {
 
         liquidacion.findAll({
             where: {
-            estado: 'COMPLETO',
-            fecha_pago: {
-                [Op.between]: [startOfWeek, endOfWeek]
-            }
+                estado: 'COMPLETO',
+                fecha_pago: {
+                    [Op.between]: [startOfWeek, endOfWeek]
+                }
             },
             order: [['fecha_pago', 'DESC']],
         }).then(result => {
