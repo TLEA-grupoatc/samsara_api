@@ -8,13 +8,9 @@ module.exports = app => {
     
     // app.put('/actualizarClienteGastos', verificarToken, cu.actualizarClienteGastos);
     
-    
     app.get('/obtenerOrigenesDestinoGastos', verificarToken, cu.obtenerOrigenesDestinoGastos);
 
     app.get('/obtenerOrigenesDestinoGastosXOD/:terminal/:idorigen/:iddestino', verificarToken, cu.obtenerOrigenesDestinoGastosXOD);
-
-
-
 
     app.get('/obtenerOrigenesGastos', verificarToken, cu.obtenerOrigenesGastos);
     
@@ -22,16 +18,12 @@ module.exports = app => {
     
     app.put('/actualizarOrigenGastos', verificarToken, cu.actualizarOrigenGastos);
     
-    
     app.get('/obtenerDestinosGastos', verificarToken, cu.obtenerDestinosGastos);
     
     app.post('/crearDestinoGastos', verificarToken, cu.crearDestinoGastos);
     
     app.put('/actualizarDestinoGastos', verificarToken, cu.actualizarDestinoGastos);
     
-    
-    
-
     
     app.get('/obtenerSolicitudesDeGastos', verificarToken, cu.obtenerSolicitudesDeGastos);
     
@@ -49,10 +41,7 @@ module.exports = app => {
     
     app.get('/verificarExistenciaGastoComida/:operador/:fecha_creacion', verificarToken, cu.verificarExistenciaGastoComida);
 
-
-
     app.delete('/enviarProceso/:id_gastos/:estado', verificarToken, cu.enviarProceso);
-    
     
     app.get('/obtenerOrigenesDestinoGrupo', verificarToken, cu.obtenerOrigenesDestinoGrupo);
     
@@ -63,13 +52,10 @@ module.exports = app => {
     app.put('/actualizarOrigenDestino/:id_origen_destino', verificarToken, cu.actualizarOrigenDestino);
 
 
-
-
-
-
-
-
-
-
     app.get('/verTablaAnticiposXOperador/:folio', verificarToken, cu.verTablaAnticiposXOperador);
+
+
+
+
+    app.get('/obtenerUltimaLiquidacionPagada', cu.obtenerUltimaLiquidacionPagada);
 }

@@ -7,8 +7,9 @@ module.exports = app => {
     const destino = app.database.models.DestinosGastos;
 
     const gasto = app.database.models.SolicitudGastos;
-
     const docgasto = app.database.models.DocGastos;
+
+    const liquidacion = app.database.models.Liquidaciones;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -315,8 +316,6 @@ module.exports = app => {
         });
     }
 
-
-
     app.cargarDocDeposito = (req, res) => {
         let body = req.body;
         var gastos = body.datosgastos;
@@ -469,6 +468,7 @@ module.exports = app => {
                 concepto: inf.concepto, 
                 monto: inf.monto, 
                 comentarios: inf.comentarios, 
+                conceptos_agrupados: inf.conceptos_agrupados, 
                 aprobado_por: inf.aprobado_por,
                 aprobado_por_gerente: inf.aprobado_por_gerente,
                 estatus: inf.estatus,
@@ -491,6 +491,7 @@ module.exports = app => {
                     'concepto', 
                     'monto', 
                     'comentarios', 
+                    'conceptos_agrupados', 
                     'aprobado_por', 
                     'aprobado_por_gerente', 
                     'estatus',
@@ -559,9 +560,6 @@ module.exports = app => {
         })
     }
 
-
-
-
     app.crearSolicitudGastosComida = (req, res) => {
         let body = req.body;
 
@@ -579,6 +577,7 @@ module.exports = app => {
             concepto: body.concepto, 
             monto: body.monto, 
             comentarios: body.comentarios, 
+            conceptos_agrupados: body.conceptos_agrupados, 
             aprobado_por: body.aprobado_por,
             aprobado_por_gerente: body.aprobado_por_gerente,
             estatus: body.estatus,
@@ -601,6 +600,7 @@ module.exports = app => {
                 'concepto', 
                 'monto', 
                 'comentarios', 
+                'conceptos_agrupados', 
                 'aprobado_por', 
                 'aprobado_por_gerente', 
                 'estatus',
@@ -620,13 +620,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
 
     app.solicitudDeGastosAceptarRechazar = (req, res) => {
         let data = new gasto({
@@ -654,14 +647,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
     app.verificarExistenciaGastoComida = (req, res) => {  
         gasto.findAll({
             where: {
@@ -682,14 +667,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
     app.obtenerOrigenesDestinoGrupo = (req, res) => {  
         origendestino.findAll({
             where: {
@@ -709,8 +686,6 @@ module.exports = app => {
             });
         });
     }
-
-
 
     app.checarOrigenesDestino = (req, res) => {  
         origendestino.findAll({
@@ -733,7 +708,6 @@ module.exports = app => {
         });
     }
 
-    
     app.crearOrigenDestino = (req, res) => {
         let body = req.body;
 
@@ -858,9 +832,6 @@ module.exports = app => {
         });
     }
 
-
-
-
     app.enviarProceso = (req, res) => {
         let data = new gasto({
             estatus: req.params.estado
@@ -885,9 +856,6 @@ module.exports = app => {
         });
     }
 
-
-
-
     app.verTablaAnticiposXOperador = (req, res) => {  
         docgasto.findAll({
             where: {
@@ -908,6 +876,37 @@ module.exports = app => {
     }
 
 
+
+
+    app.obtenerUltimaLiquidacionPagada = (req, res) => {
+        const startOfWeek = new Date();
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        liquidacion.findAll({
+            where: {
+            estado: 'COMPLETO',
+            fecha_pago: {
+                [Op.between]: [startOfWeek, endOfWeek]
+            }
+            },
+            order: [['fecha_pago', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Liquidaciones: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
     return app;
 }
