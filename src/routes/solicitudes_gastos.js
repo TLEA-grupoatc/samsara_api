@@ -31,7 +31,7 @@ module.exports = app => {
 
     app.post('/crearSolicitudGastosComida', verificarToken, cu.crearSolicitudGastosComida);
 
-    app.get('/verificarExistenciaGastoCasa', verificarToken, cu.verificarExistenciaGastoCasa);
+    app.get('/verificarExistenciaGastoCasa/:operador/:fecha_creacion', verificarToken, cu.verificarExistenciaGastoCasa);
 
     app.post('/cargarDocDeposito', verificarToken, cu.cargarDocDeposito);
     
