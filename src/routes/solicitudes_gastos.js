@@ -57,5 +57,5 @@ module.exports = app => {
 
 
 
-    app.get('/obtenerUltimaLiquidacionPagada', cu.obtenerUltimaLiquidacionPagada);
+    app.get('/obtenerUltimaLiquidacionPagada', verificarToken, cu.obtenerUltimaLiquidacionPagada);
 }
