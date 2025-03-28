@@ -503,14 +503,29 @@ module.exports = app => {
         try {
             let pool = await sql.connect(config);
 
+            const startOfWeek = new Date();
+            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+    
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(endOfWeek.getDate() + 6);
+            endOfWeek.setHours(23, 59, 59, 999);
+
+            console.log(startOfWeek)
+            console.log(endOfWeek)
 
 
-            let result = await pool.request().query("SELECT BT.*, BRS.*, OP.* FROM bitacoras AS BT \
-                INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
-                INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
-                WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES' \
-                AND BT.FECHA_BITACORA BETWEEN DATEADD(DAY, -10, GETDATE()) AND GETDATE();"
-            );
+            let result = await pool.request().query("SELECT BT.* FROM BITACORAS AS BT \
+                INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
+                WHERE BT.STATUS_BITACORA IN (0, 1) AND RUT.ruta_min != 'MOEY-MOEY' AND  RUT.ruta_min != 'SACA-SACA' \
+                AND BT.FECHA_BITACORA BETWEEN " + startOfWeek + " AND " + endOfWeek + " ORDER BY BT.FECHA_BITACORA DESC");
+
+            // let result = await pool.request().query("SELECT BT.*, BRS.*, OP.* FROM bitacoras AS BT \
+            //     INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
+            //     INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
+            //     WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES' \
+            //     AND BT.FECHA_BITACORA BETWEEN DATEADD(DAY, -10, GETDATE()) AND GETDATE();"
+            // );
 
 
             sql.close();

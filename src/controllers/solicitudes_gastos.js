@@ -667,6 +667,26 @@ module.exports = app => {
         });
     }
 
+    app.verificarExistenciaGastoCasa = (req, res) => {  
+        gasto.findAll({
+            where: {
+                operador: req.params.operador,
+                concepto: 'Casa',
+                fecha_creacion: req.params.fecha_creacion
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.obtenerOrigenesDestinoGrupo = (req, res) => {  
         origendestino.findAll({
             where: {
