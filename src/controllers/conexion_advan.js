@@ -515,10 +515,30 @@ module.exports = app => {
             console.log(endOfWeek)
 
 
-            let result = await pool.request().query("SELECT BT.* FROM BITACORAS AS BT \
-                INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA \
-                WHERE BT.STATUS_BITACORA IN (0, 1) AND RUT.ruta_min != 'MOEY-MOEY' AND  RUT.ruta_min != 'SACA-SACA' \
-                AND BT.FECHA_BITACORA BETWEEN " + startOfWeek + " AND " + endOfWeek + " ORDER BY BT.FECHA_BITACORA DESC");
+
+                let result = await pool.request().input('startOfWeek', startOfWeek).input('endOfWeek', endOfWeek).query(`
+                    SELECT BT.*, OP.* FROM BITACORAS AS BT
+                    INNER JOIN bitacora_recorridos AS RUT ON RUT.CLAVE_BITACORA = BT.CLAVE_BITACORA
+                    INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE 
+                    WHERE BT.STATUS_BITACORA IN (0, 1) 
+                    AND RUT.ruta_min != 'MOEY-MOEY' AND RUT.ruta_min != 'SACA-SACA'
+                    AND BT.FECHA_BITACORA BETWEEN @startOfWeek AND @endOfWeek
+                    ORDER BY BT.FECHA_BITACORA DESC
+                `);
+
+
+
+                    
+
+
+
+                const groupedByOperador = _.groupBy(result['recordsets'][0], 'OPERADOR_NOMBRE');
+                console.log(groupedByOperador);
+
+
+
+
+
 
             // let result = await pool.request().query("SELECT BT.*, BRS.*, OP.* FROM bitacoras AS BT \
             //     INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
@@ -532,8 +552,8 @@ module.exports = app => {
             
             res.json({
                 OK: true,
-                total: result['recordsets'][0].length,
-                Registros: result['recordsets'][0]
+                total: groupedByOperador.length,
+                Registros: groupedByOperador
             });
         }
         catch (err) {

@@ -361,7 +361,8 @@ module.exports = app => {
         .then(result => {
             gastos.forEach(element => {
                 let data = new gasto({
-                    estatus: 'Depositado'
+                    estatus: 'Depositado',
+                    id_doc_gastos: result.dataValues.id_doc_gastos
                 });
         
                 gasto.update(data.dataValues, {
@@ -369,7 +370,7 @@ module.exports = app => {
                         id_gastos: element
                     },
                     individualHooks: true, 
-                    fields: ['estatus']
+                    fields: ['estatus', 'id_doc_gastos']
                 }).then(result => {
                     console.log('success');
                 }).catch(err => {
@@ -393,7 +394,7 @@ module.exports = app => {
     app.obtenerDeposito = (req, res) => {
         docgasto.findAll({
             where: {
-                folio: req.params.folio
+                id_doc_gastos: req.params.folio
             }
         }).then(result => {
             res.json({
