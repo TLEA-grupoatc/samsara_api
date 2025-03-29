@@ -425,6 +425,30 @@ module.exports = app => {
         });
     }
 
+    app.obtenerSolicitudesDeGastosPorDepositar = (req, res) => {  
+        gasto.findAll({
+            where: {
+                estatus: 'Por Depositar',
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
     app.verificarExistenciaGasto = (req, res) => {  
         gasto.findAll({
             where: {

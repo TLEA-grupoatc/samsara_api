@@ -60,4 +60,10 @@ module.exports = app => {
 
 
     app.get('/obtenerUltimaLiquidacionPagada', verificarToken, cu.obtenerUltimaLiquidacionPagada);
+
+
+
+
+
+    app.get('/obtenerSolicitudesDeGastosPorDepositar', verificarToken, cu.obtenerSolicitudesDeGastosPorDepositar);
 }
