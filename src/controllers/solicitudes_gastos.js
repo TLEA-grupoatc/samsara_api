@@ -920,9 +920,6 @@ module.exports = app => {
         });
     }
 
-
-
-
     app.obtenerUltimaLiquidacionPagada = (req, res) => {
         const startOfWeek = new Date();
         startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
@@ -948,6 +945,113 @@ module.exports = app => {
         })
         .catch(error => {
             res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+    app.actualizarSolicitudGastos = (req, res) => {
+        let body = req.body;
+
+        let data = new gasto({
+            fecha_solicitud: body.fecha_solicitud, 
+            solicitante: body.solicitante, 
+            unidad_negocio: body.unidad_negocio, 
+            folio: body.folio, 
+            operador: body.operador, 
+            economico: body.economico, 
+            origen: body.origen, 
+            destino: body.destino, 
+            cliente: body.cliente, 
+            tipo_gasto: body.tipo_gasto, 
+            concepto: body.concepto, 
+            monto: body.monto, 
+            comentarios: body.comentarios, 
+            conceptos_agrupados: body.conceptos_agrupados, 
+            aprobado_por: body.aprobado_por,
+            aprobado_por_gerente: body.aprobado_por_gerente,
+            id_doc_gastos: body.id_doc_gastos,
+            estatus: body.estatus,
+            fecha_creacion: body.fecha_creacion
+        });
+
+        gasto.update(data.dataValues, {
+            where: {
+                id_gastos: req.params.id_gastos
+            },
+            individualHooks: true, 
+            fields: [
+                'fecha_solicitud', 
+                'solicitante', 
+                'unidad_negocio', 
+                'folio', 
+                'operador', 
+                'economico', 
+                'origen', 
+                'destino', 
+                'cliente', 
+                'tipo_gasto', 
+                'concepto', 
+                'monto', 
+                'comentarios', 
+                'conceptos_agrupados', 
+                'aprobado_por', 
+                'aprobado_por_gerente', 
+                'id_doc_gastos', 
+                'estatus',
+                'fecha_creacion'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        })
+        .catch(error => {
+            console.log(error);
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    // ESPECIALES
+
+    app.eliminarPermanenteGasto = (req, res) => {
+        gasto.findByPk(req.params.id_gastos).then(result => {
+            if(!result) {
+                return res.status(404).json({
+                    OK: false,
+                    msg: 'Gasto not found'
+                });
+            }
+
+            return result.destroy();
+        })
+        .then(result => {     
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
                 msg: error.message
             });
         });

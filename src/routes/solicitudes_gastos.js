@@ -66,4 +66,12 @@ module.exports = app => {
 
 
     app.get('/obtenerSolicitudesDeGastosPorDepositar', verificarToken, cu.obtenerSolicitudesDeGastosPorDepositar);
+
+
+    app.put('/actualizarSolicitudGastos/:id_gastos', verificarToken, cu.actualizarSolicitudGastos);
+
+
+
+
+    app.delete('/eliminarPermanenteGasto/:id_gastos', verificarToken, cu.eliminarPermanenteGasto);
 }
