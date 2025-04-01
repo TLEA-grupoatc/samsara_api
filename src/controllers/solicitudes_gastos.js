@@ -673,11 +673,25 @@ module.exports = app => {
     }
 
     app.verificarExistenciaGastoComida = (req, res) => {  
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const startOfWeek = new Date(today);
+        
+        startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+        
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        
+        var fechainicio = startOfWeek.toISOString().split('T')[0];
+        var fechafin = endOfWeek.toISOString().split('T')[0];
+
         gasto.findAll({
             where: {
                 operador: req.params.operador,
                 concepto: 'Comida',
-                fecha_creacion: req.params.fecha_creacion
+                fecha_creacion: {
+                    [Op.between]: [fechainicio, fechafin]
+                }
             }
         }).then(result => {
             res.json({

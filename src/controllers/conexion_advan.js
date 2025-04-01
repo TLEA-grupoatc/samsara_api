@@ -573,7 +573,26 @@ module.exports = app => {
 
 
 
+    app.operadores = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
 
+
+            let result = await pool.request().query("SELECT * FROM operador AS OP;");
+
+            sql.close();
+            
+            res.json({
+                OK: true,
+                total: result.length,
+                Registros: result
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
 
 
 

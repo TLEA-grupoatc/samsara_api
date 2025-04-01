@@ -1,7 +1,7 @@
 module.exports = app => {
     const gasto = app.database.models.SolicitudGastos;
     const origendestino = app.database.models.OrigenesDestinosGastos;
-    
+
     app.getSolicitudesGastos = () => {
         gasto.findAll({
             order: [['fecha_solicitud', 'DESC']]

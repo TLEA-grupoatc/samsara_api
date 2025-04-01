@@ -30,6 +30,10 @@ module.exports = app => {
 
 
 
+    app.get('/operadores', ca.operadores);
+
+
+
 
 
 
