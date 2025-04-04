@@ -2,6 +2,7 @@ const fs = require("fs");
 
 module.exports = app => {
     const ruta = app.database.models.Rutas;
+    const doccertificacion = app.database.models.DocCertificacion;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -168,15 +169,11 @@ module.exports = app => {
         });
     }
 
-
     app.certificarPunto = (req, res) => {
-        console.log(req.params.campo);
-        console.log(req.params.valor);
-        
         var campo = req.params.campo;
 
         let data = new ruta({
-            seguridad: req.params.valor
+            [campo]: req.params.valor
         });
 
         ruta.update(data.dataValues, {
@@ -184,7 +181,7 @@ module.exports = app => {
                 id_certificacion: req.params.id_certificacion
             },
             individualHooks: true, 
-            fields: ['seguridad']
+            fields: ['seguridad', 'condicion_carretera', 'tipo_carretera', 'permisos']
         }).then(result => {
             res.json({
                 OK: true,
@@ -201,6 +198,59 @@ module.exports = app => {
 
 
 
+
+    app.agregarEvidencia = (req, res) => {
+        let body = req.body;
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.archivo.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcion, big1);
+        
+        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcion;
+
+        let nuevoDocumento = new doccertificacion({
+            id_certificacion: body.id_certificacion,
+            via: body.via,
+            nombre: body.nombre,
+            descripcion: body.descripcion,
+            tipo: body.tipo,
+            archivo: doc,
+            usuario: body.usuario,
+            fecha_creacion: body.fecha_creacion
+        });
+
+        doccertificacion.create(nuevoDocumento.dataValues, {
+            fields: [
+                'id_certificacion', 
+                'via', 
+                'nombre', 
+                'descripcion', 
+                'tipo', 
+                'archivo',
+                'usuario',
+                'fecha_creacion'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Evidencia: result
+            })
+        }).catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error
+            });
+        });   
+    }
 
 
 
