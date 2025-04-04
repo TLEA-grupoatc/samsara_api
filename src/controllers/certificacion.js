@@ -169,7 +169,34 @@ module.exports = app => {
     }
 
 
+    app.certificarPunto = (req, res) => {
+        console.log(req.params.campo);
+        console.log(req.params.valor);
+        
+        var campo = req.params.campo;
 
+        let data = new ruta({
+            seguridad: req.params.valor
+        });
+
+        ruta.update(data.dataValues, {
+            where: {
+                id_certificacion: req.params.id_certificacion
+            },
+            individualHooks: true, 
+            fields: ['seguridad']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
 
 
 

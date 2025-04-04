@@ -8,6 +8,10 @@ module.exports = app => {
 
     app.put('/actualizarRuta/id_certificacion', verificarToken, cert.actualizarRuta);
 
+    app.delete('/certificarPunto/:id_certificacion/:campo/:valor', verificarToken, cert.certificarPunto);
+
+
+
 
     app.delete('/eliminarPermanenteRuta/:id_certificacion', verificarToken, cert.eliminarPermanenteRuta);
 }

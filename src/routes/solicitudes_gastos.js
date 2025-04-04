@@ -39,11 +39,15 @@ module.exports = app => {
     
     app.get('/verificarExistenciaGasto/:operador/:origen/:destino/:fecha_creacion', verificarToken, cu.verificarExistenciaGasto);
     
-    app.delete('/solicitudDeGastosAceptarRechazar/:id_gastos/:aprobado_por/:aprobado_por_gerente/:estado', verificarToken, cu.solicitudDeGastosAceptarRechazar);
+    app.delete('/solicitudDeGastosAceptarRechazar/:id_gastos/:aprobado_por/:estado', verificarToken, cu.solicitudDeGastosAceptarRechazar);
+
+    app.delete('/solicitudDeGastosAceptarRechazarGerente/:id_gastos/:aprobado_por_gerente/:estado', verificarToken, cu.solicitudDeGastosAceptarRechazarGerente);
     
     app.get('/verificarExistenciaGastoComida/:operador/:fecha_creacion', cu.verificarExistenciaGastoComida);
 
     app.delete('/enviarProceso/:id_gastos/:estado', verificarToken, cu.enviarProceso);
+
+    app.delete('/cancelarRechazar/:id_gastos/:estado', verificarToken, cu.cancelarRechazar);
     
     app.get('/obtenerOrigenesDestinoGrupo', verificarToken, cu.obtenerOrigenesDestinoGrupo);
     
@@ -55,6 +59,20 @@ module.exports = app => {
 
 
     app.get('/verTablaAnticiposXOperador/:folio', verificarToken, cu.verTablaAnticiposXOperador);
+
+
+
+
+
+
+    app.get('/obtenerSolicitudesDeGastosXEstatus/:estatus', verificarToken, cu.obtenerSolicitudesDeGastosXEstatus);
+
+
+
+
+
+
+
 
 
 

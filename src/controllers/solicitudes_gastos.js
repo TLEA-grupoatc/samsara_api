@@ -1,3 +1,4 @@
+const moment = require('moment');
 const fs = require("fs");
 
 module.exports = app => {
@@ -445,6 +446,25 @@ module.exports = app => {
 
 
 
+    app.obtenerSolicitudesDeGastosXEstatus = (req, res) => {  
+        gasto.findAll({
+            where: {
+                estatus: req.params.estatus
+            },
+            order: [['fecha_solicitud', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
 
 
 
@@ -647,9 +667,13 @@ module.exports = app => {
     }
 
     app.solicitudDeGastosAceptarRechazar = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
+
         let data = new gasto({
             aprobado_por: req.params.aprobado_por,
-            aprobado_por_gerente: req.params.aprobado_por_gerente,
+            aprobado_por_gerente: req.params.estado === 'Por Aprobar Gerente' ? null : 'No Aplica',
+            fecha_jun: hoy,
             estatus: req.params.estado
         });
 
@@ -658,7 +682,36 @@ module.exports = app => {
                 id_gastos: req.params.id_gastos
             },
             individualHooks: true, 
-            fields: ['aprobado_por', 'aprobado_por_gerente', 'estatus']
+            fields: ['aprobado_por', 'aprobado_por_gerente' ,'fecha_jun', 'estatus']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.solicitudDeGastosAceptarRechazarGerente = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
+
+        let data = new gasto({
+            aprobado_por_gerente: req.params.aprobado_por_gerente,
+            fecha_gerente: hoy,
+            estatus: req.params.estado,
+        });
+
+        gasto.update(data.dataValues, {
+            where: {
+                id_gastos: req.params.id_gastos
+            },
+            individualHooks: true, 
+            fields: ['aprobado_por_gerente', 'fecha_gerente', 'estatus']
         }).then(result => {
             res.json({
                 OK: true,
@@ -892,6 +945,36 @@ module.exports = app => {
     }
 
     app.enviarProceso = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
+
+        let data = new gasto({
+            estatus: req.params.estado,
+            fecha_envio: hoy
+        });
+
+        gasto.update(data.dataValues, {
+            where: {
+                id_gastos: req.params.id_gastos
+            },
+            individualHooks: true, 
+            fields: ['fecha_envio', 'estatus']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+    app.cancelarRechazar = (req, res) => {
+
         let data = new gasto({
             estatus: req.params.estado
         });

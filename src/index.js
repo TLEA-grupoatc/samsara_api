@@ -443,7 +443,10 @@ http.listen(app.get('port'), () => {
 // http.listen(app.get('port'), async () => {
 //   try {
 //     await ngrok.authtoken(process.env.TOKENNGROK);
-//     const url = await ngrok.forward(app.get('port'));
+//     const url = await ngrok.connect({
+//       addr: app.get('port'),
+//       domain: process.env.NGROK_DOMAIN
+//     });
 
 //     console.log(`Server on port ${app.get('port')}`.random);
 //     console.log(url.url());
