@@ -5,7 +5,7 @@ module.exports = (sequelize, DataType) => {
             autoIncrement: true,
             primaryKey: true
         },
-        id_cerficacion:{
+        id_certificacion:{
             type: DataType.INTEGER,
             allowNull: true
         },

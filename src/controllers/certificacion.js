@@ -24,6 +24,24 @@ module.exports = app => {
         });
     }
 
+    app.obtenerRutasXID = (req, res) => {  
+        ruta.findAll({
+            where: {
+                id_certificacion: req.params.id_certificacion
+            },
+        }).then(result => {
+            res.json({
+                OK: true,
+                Rutas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.crearRuta = (req, res) => {
         let body = req.body;
 
@@ -199,57 +217,80 @@ module.exports = app => {
 
 
 
-    app.agregarEvidencia = (req, res) => {
-        let body = req.body;
-        var directorio = 'documentos/';
-
-        if(!fs.existsSync(directorio)) {
-            fs.mkdirSync(directorio, {recursive: true});
-        }
-
-        const [, base64Content] = body.archivo.split(',');
-        var big1 = Buffer.from(base64Content, 'base64');
-
-        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
-
-        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcion, big1);
-        
-        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcion;
-
-        let nuevoDocumento = new doccertificacion({
-            id_certificacion: body.id_certificacion,
-            via: body.via,
-            nombre: body.nombre,
-            descripcion: body.descripcion,
-            tipo: body.tipo,
-            archivo: doc,
-            usuario: body.usuario,
-            fecha_creacion: body.fecha_creacion
-        });
-
-        doccertificacion.create(nuevoDocumento.dataValues, {
-            fields: [
-                'id_certificacion', 
-                'via', 
-                'nombre', 
-                'descripcion', 
-                'tipo', 
-                'archivo',
-                'usuario',
-                'fecha_creacion'
-            ]
-        })
-        .then(result => {
+    app.obtenerEvidenciaRuta = (req, res) => {  
+        doccertificacion.findAll({
+            where: {
+                id_certificacion: req.params.id_certificacion
+            },
+            order: [['fecha_creacion', 'ASC']],
+        }).then(result => {
             res.json({
                 OK: true,
-                Evidencia: result
+                Documentos: result
             })
-        }).catch(error => {
+        })
+        .catch(error => {
             res.status(412).json({
-                OK: false,
-                msg: error
+                msg: error.message
             });
-        });   
+        });
+    }
+
+
+    app.agregarEvidencia = (req, res) => {
+        let body = req.body;
+        let documentos = body.docs;
+        var directorio = 'documentos/';
+
+        documentos.forEach(docu => {
+            if(!fs.existsSync(directorio)) {
+                fs.mkdirSync(directorio, {recursive: true});
+            }
+
+            const [, base64Content] = docu.archivo.split(',');
+            var big1 = Buffer.from(base64Content, 'base64');
+
+            var fechacorta = docu.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+            fs.writeFileSync(directorio + docu.usuario + '_' + fechacorta + '_' + docu.nombre + '_' + docu.descripcion, big1);
+            
+            var doc = directorio + docu.usuario + '_' + fechacorta + '_' + docu.nombre + '_' + docu.descripcion;
+
+            let nuevoDocumento = new doccertificacion({
+                id_certificacion: docu.id_certificacion,
+                via: docu.via,
+                nombre: docu.nombre,
+                descripcion: docu.descripcion,
+                tipo: docu.tipo,
+                archivo: doc,
+                usuario: docu.usuario,
+                fecha_creacion: docu.fecha_creacion
+            });
+
+            doccertificacion.create(nuevoDocumento.dataValues, {
+                fields: [
+                    'id_certificacion', 
+                    'via', 
+                    'nombre', 
+                    'descripcion', 
+                    'tipo', 
+                    'archivo',
+                    'usuario',
+                    'fecha_creacion'
+                ]
+            })
+            .then(result => {
+                res.json({
+                    OK: true,
+                    Evidencia: result
+                })
+            }).catch(error => {
+                res.status(412).json({
+                    OK: false,
+                    msg: error
+                });
+            });   
+        });
     }
 
 
