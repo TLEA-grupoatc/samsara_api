@@ -18,6 +18,8 @@ module.exports = app => {
     
     
     app.get('/obtenerHistoricoCertificaciones/:id_certificacion', verificarToken, cert.obtenerHistoricoCertificaciones);
+    
+    app.post('/crearHistoricoCertificacion', verificarToken, cert.crearHistoricoCertificacion);
 
 
     app.delete('/eliminarPermanenteRuta/:id_certificacion', verificarToken, cert.eliminarPermanenteRuta);
