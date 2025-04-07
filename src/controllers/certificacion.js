@@ -3,6 +3,7 @@ const fs = require("fs");
 module.exports = app => {
     const ruta = app.database.models.Rutas;
     const doccertificacion = app.database.models.DocCertificacion;
+    const certificacionhistorico = app.database.models.CertificacionHistorico;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -213,10 +214,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
     app.obtenerEvidenciaRuta = (req, res) => {  
         doccertificacion.findAll({
             where: {
@@ -235,7 +232,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.agregarEvidencia = (req, res) => {
         let body = req.body;
@@ -294,6 +290,23 @@ module.exports = app => {
     }
 
 
+    app.obtenerHistoricoCertificaciones = (req, res) => {  
+        certificacionhistorico.findAll({
+            where: {
+                id_certificacion: req.params.id_certificacion
+            },
+        }).then(result => {
+            res.json({
+                OK: true,
+                Historico: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 

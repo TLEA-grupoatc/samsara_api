@@ -12,12 +12,12 @@ module.exports = app => {
     
     app.delete('/certificarPunto/:id_certificacion/:campo/:valor', verificarToken, cert.certificarPunto);
     
-    
-    
     app.get('/obtenerEvidenciaRuta/:id_certificacion', verificarToken, cert.obtenerEvidenciaRuta);
     
     app.post('/agregarEvidencia', verificarToken, cert.agregarEvidencia);
-
+    
+    
+    app.get('/obtenerHistoricoCertificaciones/:id_certificacion', verificarToken, cert.obtenerHistoricoCertificaciones);
 
 
     app.delete('/eliminarPermanenteRuta/:id_certificacion', verificarToken, cert.eliminarPermanenteRuta);

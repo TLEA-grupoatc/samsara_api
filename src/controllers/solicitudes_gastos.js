@@ -738,13 +738,16 @@ module.exports = app => {
         var fechainicio = startOfWeek.toISOString().split('T')[0];
         var fechafin = endOfWeek.toISOString().split('T')[0];
 
+        const formato = moment(today).format('YYYY-MM-DD');
+
         gasto.findAll({
             where: {
                 operador: req.params.operador,
                 concepto: 'Comida',
-                fecha_creacion: {
-                    [Op.between]: [fechainicio, fechafin]
-                }
+                fecha_creacion: formato
+                // fecha_creacion: {
+                //     [Op.between]: [fechainicio, fechafin]
+                // }
             }
         }).then(result => {
             res.json({
