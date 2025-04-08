@@ -1056,6 +1056,50 @@ module.exports = app => {
 
 
 
+
+
+    app.rechazarValeNomina = (req, res) => {
+
+        let data = new gasto({
+            comentarios_nomina: req.params.comentarios_nomina,
+            estatus: req.params.estatus
+        });
+
+        gasto.update(data.dataValues, {
+            where: {
+                id_gastos: req.params.id_gastos
+            },
+            individualHooks: true, 
+            fields: ['comentarios_nomina', 'estatus']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.actualizarSolicitudGastos = (req, res) => {
         let body = req.body;
 

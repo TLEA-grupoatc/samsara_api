@@ -366,7 +366,6 @@ module.exports = app => {
         });
     }
 
-
     app.actualizarRuta = (req, res) => {
         let body = req.body;
 

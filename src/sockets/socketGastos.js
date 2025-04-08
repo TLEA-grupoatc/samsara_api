@@ -11,6 +11,23 @@ module.exports = app => {
             console.log(error);
         });
     };
+
+
+
+    app.getSolicitudesGastosPorDepositar = () => {
+        gasto.findAll({
+            where: {
+                estatus: 'Por Depositar'
+            },
+            order: [['fecha_solicitud', 'DESC']]
+        }).then(result => {
+            app.io.emit('SHOW_GASTOS_PORDEPOSITAR', { Gastos: result });
+        }).catch(error => {
+            console.log(error);
+        });
+    };
+
+
     
     app.obtenerOrigenesDestinoGastosNow = () => {  
         origendestino.findAll({
@@ -28,6 +45,9 @@ module.exports = app => {
 
     gasto.addHook('afterCreate', app.getSolicitudesGastos);
     gasto.addHook('afterUpdate', app.getSolicitudesGastos);   
+
+    gasto.addHook('afterCreate', app.getSolicitudesGastosPorDepositar);
+    gasto.addHook('afterUpdate', app.getSolicitudesGastosPorDepositar);   
 
     origendestino.addHook('afterCreate', app.obtenerOrigenesDestinoGastosNow);
     origendestino.addHook('afterUpdate', app.obtenerOrigenesDestinoGastosNow);    

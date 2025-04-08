@@ -85,6 +85,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         }, 
+        comentarios_nomina: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         estatus: {
             type: DataType.STRING,
             allowNull: true

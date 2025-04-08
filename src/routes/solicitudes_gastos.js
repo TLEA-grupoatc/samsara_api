@@ -56,37 +56,47 @@ module.exports = app => {
     app.post('/crearOrigenDestino', verificarToken, cu.crearOrigenDestino);
     
     app.put('/actualizarOrigenDestino/:id_origen_destino', verificarToken, cu.actualizarOrigenDestino);
-
-
+    
+    
     app.get('/verTablaAnticiposXOperador/:folio', verificarToken, cu.verTablaAnticiposXOperador);
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    
     app.get('/obtenerSolicitudesDeGastosXEstatus/:estatus', verificarToken, cu.obtenerSolicitudesDeGastosXEstatus);
-
-
-
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     app.get('/obtenerUltimaLiquidacionPagada', verificarToken, cu.obtenerUltimaLiquidacionPagada);
-
-
-
-
-
+    
+    
+    
+    
+    
     app.get('/obtenerSolicitudesDeGastosPorDepositar', verificarToken, cu.obtenerSolicitudesDeGastosPorDepositar);
-
-
+    
+    
     app.put('/actualizarSolicitudGastos/:id_gastos', verificarToken, cu.actualizarSolicitudGastos);
+    
+    
+    
+    app.delete('/rechazarValeNomina/:id_gastos/:estatus/:comentarios_nomina', verificarToken, cu.rechazarValeNomina);
+
+
+
+
+
+
 
 
 
