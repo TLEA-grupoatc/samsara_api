@@ -12,9 +12,26 @@ module.exports = app => {
     const origen = app.database.models.Origenes;
     const unidad = app.database.models.Unidades;
 
+    const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
+
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
+
+
+    app.getUbicacionPorEconomico = (req, res) => {  
+        ubiporeco.findAll().then(result => {
+            res.json({
+                OK: true,
+                Registros: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
     app.obtenerClientes = (req, res) => {
         cliente.findAll().then(result => {

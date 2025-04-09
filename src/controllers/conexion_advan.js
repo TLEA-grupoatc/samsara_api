@@ -599,19 +599,15 @@ module.exports = app => {
     
     app.folios = async (req, res) => {
         try {
-            var today = new Date();
-            var year = today.getFullYear();
-            var fecha = moment(new Date()).format('YYYY-MM-DD');
             let pool = await sql.connect(config);
 
-            let result = await pool.request().query("SELECT BT.*, BRS.*, OP.* FROM bitacoras AS BT \
+            let result = await pool.request().query("SELECT BT.BAN_LIQUIDACION, BT.FECHA_BITACORA, BT.TERMINAL_BITACORA, BT.TRACTO_NUM_ECO, BRS.NUM_ORDEN, BRS.BITACORA, BRS.ORIGEN_DESC, BRS.cliente_nombre, BRS.DESTINO_DESC, OP.OPERADOR_NOMBRE FROM bitacoras AS BT \
                 INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
                 INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
                 WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES' \
-                AND BT.FECHA_BITACORA BETWEEN DATEADD(DAY, -10, GETDATE()) AND GETDATE()\
                 AND BRS.NUM_ORDEN = (SELECT MAX(BRS2.NUM_ORDEN) FROM vBitacora_ruta_sld AS BRS2 WHERE BRS2.clave_bitacora = BT.clave_bitacora);"
             );
-
+            
             sql.close();
             
             res.json({
@@ -635,11 +631,11 @@ module.exports = app => {
             var fecha = moment(new Date()).format('YYYY-MM-DD');
             let pool = await sql.connect(config);
 
-            let result = await pool.request().query("SELECT BT.*, BRS.*, OP.* FROM bitacoras AS BT \
+
+            let result = await pool.request().query("SELECT BT.BAN_LIQUIDACION, BT.FECHA_BITACORA, BT.TERMINAL_BITACORA, BT.TRACTO_NUM_ECO, BRS.NUM_ORDEN, BRS.BITACORA, BRS.ORIGEN_DESC, BRS.cliente_nombre, BRS.DESTINO_DESC, OP.OPERADOR_NOMBRE FROM bitacoras AS BT \
                 INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
                 INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
-                WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES' \
-                AND BT.FECHA_BITACORA BETWEEN '" + fecha + "T00:00:00.000Z' AND '" + fecha + "T23:59:59.000Z';"
+                WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES';"
             );
 
             sql.close();

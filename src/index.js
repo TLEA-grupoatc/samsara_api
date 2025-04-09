@@ -32,6 +32,7 @@ consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('midd
 
 const alerta = app.database.models.Alertas;
 const geogaso = app.database.models.GeoGaso;
+const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
 const Samsara = require("@api/samsara-dev-rel");
 Samsara.auth(process.env.KEYSAM);
 
@@ -43,25 +44,6 @@ setInterval(() => {
     })
   });
 }, 60000);
-
-// setInterval(() => {
-//   app.connectToDatabase({unidad: 'TLEA-146'}, {
-//     json: (data) => {
-//       console.log(data);
-//     },
-//     status: (statusCode) => ({
-//       json: (data) => console.log(statusCode, data)
-//     })
-//   });
-// }, 30000);
-
-
-
-
-
-
-
-
 
 
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
@@ -291,10 +273,6 @@ app.post('/slack/events',  async (req, res) => {
   res.status(200).send('OK');
 });
 
-
-
-
-
 app.post('/webhookGeoGaso', async (req, res) => {
   const payload = req.body;
   
@@ -360,13 +338,7 @@ app.post('/webhookGeoGaso', async (req, res) => {
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-}); 
-
-
-
-
-
-
+});
 
 app.post('/webhookSalidaGeoGaso', async (req, res) => {
   const payload = req.body;
@@ -432,7 +404,192 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
 
 
 
+app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+  const payload = req.body;
+  var datos = [];
 
+  if(payload.data.conditions[0].description === 'Asset starts moving') {
+    
+  let nuevaAlerta = new ubiporeco({
+      id_samsara: payload.data.conditions[0]['details']['deviceMovement']['vehicle']['id'],
+      economico: payload.data.conditions[0]['details']['deviceMovement']['vehicle']['name'],
+      motor: null,
+      geocerca: null,
+      ubicacion: null,
+      ubicacion_snapshot: null,
+      hora_entrada: payload.data.happenedAtTime,
+      movimiento: 'Comienza movimiento',
+      hora_salida: null,
+      evento: payload.data.conditions[0].description
+    });
+
+    await ubiporeco.create(nuevaAlerta.dataValues, {
+      fields: [
+        'id_samsara', 
+        'economico', 
+        'motor', 
+        'geocerca', 
+        'ubicacion', 
+        'ubicacion_snapshot', 
+        'hora_entrada', 
+        'movimiento', 
+        'hora_salida', 
+        'evento'
+      ]
+    }).then(result => {}).catch(error => { console.log(error.message); });
+  }
+  else if(payload.data.conditions[0].description === 'Asset stops moving') {
+    
+  let nuevaAlerta = new ubiporeco({
+      id_samsara: payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['id'],
+      economico: payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['name'],
+      motor: null,
+      geocerca: null,
+      ubicacion: null,
+      ubicacion_snapshot: null,
+      hora_entrada: payload.data.happenedAtTime,
+      movimiento: 'Deteniene movimiento',
+      hora_salida: null,
+      evento: payload.data.conditions[0].description
+    });
+
+    await ubiporeco.create(nuevaAlerta.dataValues, {
+      fields: [
+        'id_samsara', 
+        'economico', 
+        'motor', 
+        'geocerca', 
+        'ubicacion', 
+        'ubicacion_snapshot', 
+        'hora_entrada', 
+        'movimiento', 
+        'hora_salida', 
+        'evento'
+      ]
+    }).then(result => {}).catch(error => { console.log(error.message); });
+  }
+  else if(payload.data.conditions[0].description === 'Asset Engine Off') {
+    
+  let nuevaAlerta = new ubiporeco({
+      id_samsara: payload.data.conditions[0]['details']['engineOff']['vehicle']['id'],
+      economico: payload.data.conditions[0]['details']['engineOff']['vehicle']['name'],
+      motor: 0,
+      geocerca: null,
+      ubicacion: null,
+      ubicacion_snapshot: null,
+      hora_entrada: payload.data.happenedAtTime,
+      movimiento: 'Apago Motor',
+      hora_salida: null,
+      evento: payload.data.conditions[0].description
+    });
+
+    await ubiporeco.create(nuevaAlerta.dataValues, {
+      fields: [
+        'id_samsara', 
+        'economico', 
+        'motor', 
+        'geocerca', 
+        'ubicacion', 
+        'ubicacion_snapshot', 
+        'hora_entrada', 
+        'movimiento', 
+        'hora_salida', 
+        'evento'
+      ]
+    }).then(result => {}).catch(error => { console.log(error.message); });
+  }
+  else if(payload.data.conditions[0].description === 'Asset Engine On') {
+    
+  let nuevaAlerta = new ubiporeco({
+      id_samsara: payload.data.conditions[0]['details']['engineOn']['vehicle']['id'],
+      economico: payload.data.conditions[0]['details']['engineOn']['vehicle']['name'],
+      motor: 1,
+      geocerca: null,
+      ubicacion: null,
+      ubicacion_snapshot: null,
+      hora_entrada: payload.data.happenedAtTime,
+      movimiento: 'Encendio Motor',
+      hora_salida: null,
+      evento: payload.data.conditions[0].description
+    });
+
+    await ubiporeco.create(nuevaAlerta.dataValues, {
+      fields: [
+        'id_samsara', 
+        'economico', 
+        'motor', 
+        'geocerca', 
+        'ubicacion', 
+        'ubicacion_snapshot', 
+        'hora_entrada', 
+        'movimiento', 
+        'hora_salida', 
+        'evento'
+      ]
+    }).then(result => {}).catch(error => { console.log(error.message); });
+  }
+  else if(payload.data.conditions[0].description === 'Geofence Entry') {
+    
+  let nuevaAlerta = new ubiporeco({
+      id_samsara: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id'],
+      economico: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['name'],
+      motor: null,
+      geocerca: payload.data.conditions[0]['details']['geofenceEntry']['address']['name'],
+      ubicacion: payload.data.conditions[0]['details']['geofenceEntry']['address']['formattedAddress'],
+      ubicacion_snapshot: null,
+      hora_entrada: payload.data.happenedAtTime,
+      movimiento: 'Entro a Geocerca',
+      hora_salida: null,
+      evento: payload.data.conditions[0].description
+    });
+
+        await ubiporeco.create(nuevaAlerta.dataValues, {
+      fields: [
+        'id_samsara', 
+        'economico', 
+        'motor', 
+        'geocerca', 
+        'ubicacion', 
+        'ubicacion_snapshot', 
+        'hora_entrada', 
+        'movimiento', 
+        'hora_salida', 
+        'evento'
+      ]
+    }).then(result => {}).catch(error => { console.log(error.message); });
+  }
+  else if(payload.data.conditions[0].description === 'Geofence Exit') {
+    
+  let nuevaAlerta = new ubiporeco({
+      id_samsara: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['id'],
+      economico: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['name'],
+      motor: null,
+      geocerca: payload.data.conditions[0]['details']['geofenceExit']['address']['name'],
+      ubicacion: payload.data.conditions[0]['details']['geofenceExit']['address']['formattedAddress'],
+      ubicacion_snapshot: null,
+      hora_entrada: payload.data.happenedAtTime,
+      movimiento: 'Salio de Geocerca',
+      hora_salida: null,
+      evento: payload.data.conditions[0].description
+    });
+
+        await ubiporeco.create(nuevaAlerta.dataValues, {
+      fields: [
+        'id_samsara', 
+        'economico', 
+        'motor', 
+        'geocerca', 
+        'ubicacion', 
+        'ubicacion_snapshot', 
+        'hora_entrada', 
+        'movimiento', 
+        'hora_salida', 
+        'evento'
+      ]
+    }).then(result => {}).catch(error => { console.log(error.message); });
+  }
+  
+});
 
 
 
@@ -443,10 +600,7 @@ http.listen(app.get('port'), () => {
 // http.listen(app.get('port'), async () => {
 //   try {
 //     await ngrok.authtoken(process.env.TOKENNGROK);
-//     const url = await ngrok.connect({
-//       addr: app.get('port'),
-//       domain: process.env.NGROK_DOMAIN
-//     });
+//     const url = await ngrok.forward(app.get('port'));
 
 //     console.log(`Server on port ${app.get('port')}`.random);
 //     console.log(url.url());
@@ -455,7 +609,6 @@ http.listen(app.get('port'), () => {
 //     console.error('Error al iniciar el túnel Ngrok:', error);
 //   }
 // });
-
 
 
 
