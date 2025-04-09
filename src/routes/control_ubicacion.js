@@ -5,7 +5,7 @@ module.exports = app => {
     app.get('/obtenerClientes', verificarToken, cu.obtenerClientes);
 
 
-    app.get('/getUbicacionPorEconomico', verificarToken, cu.getUbicacionPorEconomico);
+    app.get('/getUbicacionPorEconomico', cu.getUbicacionPorEconomico);
 
     app.post('/crearCliente', verificarToken, cu.crearCliente);
     
