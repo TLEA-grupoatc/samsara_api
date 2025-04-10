@@ -409,14 +409,15 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
 
   if(payload.data.conditions[0].description === 'Asset starts moving') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['deviceMovement']['vehicle']['id']);
+    let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['deviceMovement']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['deviceMovement']['vehicle']['name'],
-      motor: null,
+      motor: 1,
       geocerca: null,
       ubicacion: null,
       ubicacion_snapshot: ubi,
-      hora_entrada: payload.data.happenedAtTime,
+      hora_entrada: fechahora,
       movimiento: 'Comienza movimiento',
       hora_salida: null,
       evento: payload.data.conditions[0].description
@@ -439,14 +440,15 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   }
   else if(payload.data.conditions[0].description === 'Asset stops moving') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['id']);
+    let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['name'],
-      motor: null,
+      motor: 1,
       geocerca: null,
       ubicacion: null,
       ubicacion_snapshot: ubi,
-      hora_entrada: payload.data.happenedAtTime,
+      hora_entrada: fechahora,
       movimiento: 'Deteniene movimiento',
       hora_salida: null,
       evento: payload.data.conditions[0].description
@@ -469,6 +471,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   }
   else if(payload.data.conditions[0].description === 'Asset Engine Off') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['engineOff']['vehicle']['id']);
+    let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['engineOff']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['engineOff']['vehicle']['name'],
@@ -476,7 +479,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       geocerca: null,
       ubicacion: null,
       ubicacion_snapshot: ubi,
-      hora_entrada: payload.data.happenedAtTime,
+      hora_entrada: fechahora,
       movimiento: 'Apago Motor',
       hora_salida: null,
       evento: payload.data.conditions[0].description
@@ -499,6 +502,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   }
   else if(payload.data.conditions[0].description === 'Asset Engine On') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['engineOn']['vehicle']['id']);
+    let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['engineOn']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['engineOn']['vehicle']['name'],
@@ -506,7 +510,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       geocerca: null,
       ubicacion: null,
       ubicacion_snapshot: ubi,
-      hora_entrada: payload.data.happenedAtTime,
+      hora_entrada: fechahora,
       movimiento: 'Encendio Motor',
       hora_salida: null,
       evento: payload.data.conditions[0].description
@@ -529,14 +533,15 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   }
   else if(payload.data.conditions[0].description === 'Geofence Entry') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id']);
+    let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['name'],
-      motor: null,
+      motor: 1,
       geocerca: payload.data.conditions[0]['details']['geofenceEntry']['address']['name'],
       ubicacion: payload.data.conditions[0]['details']['geofenceEntry']['address']['formattedAddress'],
       ubicacion_snapshot: ubi,
-      hora_entrada: payload.data.happenedAtTime,
+      hora_entrada: fechahora,
       movimiento: 'Entro a Geocerca',
       hora_salida: null,
       evento: payload.data.conditions[0].description
@@ -559,14 +564,15 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   }
   else if(payload.data.conditions[0].description === 'Geofence Exit') { 
     var ubi = await ubicacion(payload.data.conditions[0]['details']['geofenceExit']['vehicle']['id']);
+    let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['name'],
-      motor: null,
+      motor: 1,
       geocerca: payload.data.conditions[0]['details']['geofenceExit']['address']['name'],
       ubicacion: payload.data.conditions[0]['details']['geofenceExit']['address']['formattedAddress'],
       ubicacion_snapshot: ubi,
-      hora_entrada: payload.data.happenedAtTime,
+      hora_entrada: fechahora,
       movimiento: 'Salio de Geocerca',
       hora_salida: null,
       evento: payload.data.conditions[0].description

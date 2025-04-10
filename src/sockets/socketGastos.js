@@ -1,9 +1,17 @@
+const moment = require('moment');
+
 module.exports = app => {
     const gasto = app.database.models.SolicitudGastos;
     const origendestino = app.database.models.OrigenesDestinosGastos;
 
     app.getSolicitudesGastos = () => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD');
+        
         gasto.findAll({
+            // where: {
+            //     fecha_creacion: hoy
+            // },
             order: [['fecha_solicitud', 'DESC']]
         }).then(result => {
             app.io.emit('SHOW_GASTOS', {Gastos: result});

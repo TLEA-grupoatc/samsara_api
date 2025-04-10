@@ -411,7 +411,55 @@ module.exports = app => {
     }
 
     app.obtenerSolicitudesDeGastos = (req, res) => {  
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD');
+
         gasto.findAll({
+            // where: {
+            //     fecha_creacion: hoy
+            // },
+            order: [['fecha_solicitud', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerSolicitudesDeGastosXEstatus = (req, res) => {  
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD');
+        
+        gasto.findAll({
+            where: {
+                // fecha_creacion: hoy,
+                estatus: req.params.estatus
+            },
+            order: [['fecha_solicitud', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerSolicitudesDeGastosXAuxiliar = (req, res) => {  
+        gasto.findAll({
+            where: {
+                solicitante: req.params.solicitante
+            },
             order: [['fecha_solicitud', 'DESC']],
         }).then(result => {
             res.json({
@@ -443,29 +491,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-    app.obtenerSolicitudesDeGastosXEstatus = (req, res) => {  
-        gasto.findAll({
-            where: {
-                estatus: req.params.estatus
-            },
-            order: [['fecha_solicitud', 'DESC']],
-        }).then(result => {
-            res.json({
-                OK: true,
-                Gastos: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-
 
 
 
