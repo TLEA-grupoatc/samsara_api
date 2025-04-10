@@ -406,17 +406,16 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
 
 app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
-  var datos = [];
 
   if(payload.data.conditions[0].description === 'Asset starts moving') {
-    
-  let nuevaAlerta = new ubiporeco({
+    var ubi = await ubicacion(payload.data.conditions[0]['details']['deviceMovement']['vehicle']['id']);
+    let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['deviceMovement']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['deviceMovement']['vehicle']['name'],
       motor: null,
       geocerca: null,
       ubicacion: null,
-      ubicacion_snapshot: null,
+      ubicacion_snapshot: ubi,
       hora_entrada: payload.data.happenedAtTime,
       movimiento: 'Comienza movimiento',
       hora_salida: null,
@@ -439,14 +438,14 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
   else if(payload.data.conditions[0].description === 'Asset stops moving') {
-    
-  let nuevaAlerta = new ubiporeco({
+    var ubi = await ubicacion(payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['id']);
+    let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['name'],
       motor: null,
       geocerca: null,
       ubicacion: null,
-      ubicacion_snapshot: null,
+      ubicacion_snapshot: ubi,
       hora_entrada: payload.data.happenedAtTime,
       movimiento: 'Deteniene movimiento',
       hora_salida: null,
@@ -469,14 +468,14 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
   else if(payload.data.conditions[0].description === 'Asset Engine Off') {
-    
-  let nuevaAlerta = new ubiporeco({
+    var ubi = await ubicacion(payload.data.conditions[0]['details']['engineOff']['vehicle']['id']);
+    let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['engineOff']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['engineOff']['vehicle']['name'],
       motor: 0,
       geocerca: null,
       ubicacion: null,
-      ubicacion_snapshot: null,
+      ubicacion_snapshot: ubi,
       hora_entrada: payload.data.happenedAtTime,
       movimiento: 'Apago Motor',
       hora_salida: null,
@@ -499,14 +498,14 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
   else if(payload.data.conditions[0].description === 'Asset Engine On') {
-    
-  let nuevaAlerta = new ubiporeco({
+    var ubi = await ubicacion(payload.data.conditions[0]['details']['engineOn']['vehicle']['id']);
+    let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['engineOn']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['engineOn']['vehicle']['name'],
       motor: 1,
       geocerca: null,
       ubicacion: null,
-      ubicacion_snapshot: null,
+      ubicacion_snapshot: ubi,
       hora_entrada: payload.data.happenedAtTime,
       movimiento: 'Encendio Motor',
       hora_salida: null,
@@ -529,21 +528,21 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
   else if(payload.data.conditions[0].description === 'Geofence Entry') {
-    
-  let nuevaAlerta = new ubiporeco({
+    var ubi = await ubicacion(payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id']);
+    let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['name'],
       motor: null,
       geocerca: payload.data.conditions[0]['details']['geofenceEntry']['address']['name'],
       ubicacion: payload.data.conditions[0]['details']['geofenceEntry']['address']['formattedAddress'],
-      ubicacion_snapshot: null,
+      ubicacion_snapshot: ubi,
       hora_entrada: payload.data.happenedAtTime,
       movimiento: 'Entro a Geocerca',
       hora_salida: null,
       evento: payload.data.conditions[0].description
     });
 
-        await ubiporeco.create(nuevaAlerta.dataValues, {
+    await ubiporeco.create(nuevaAlerta.dataValues, {
       fields: [
         'id_samsara', 
         'economico', 
@@ -558,22 +557,22 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-  else if(payload.data.conditions[0].description === 'Geofence Exit') {
-    
-  let nuevaAlerta = new ubiporeco({
+  else if(payload.data.conditions[0].description === 'Geofence Exit') { 
+    var ubi = await ubicacion(payload.data.conditions[0]['details']['geofenceExit']['vehicle']['id']);
+    let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['name'],
       motor: null,
       geocerca: payload.data.conditions[0]['details']['geofenceExit']['address']['name'],
       ubicacion: payload.data.conditions[0]['details']['geofenceExit']['address']['formattedAddress'],
-      ubicacion_snapshot: null,
+      ubicacion_snapshot: ubi,
       hora_entrada: payload.data.happenedAtTime,
       movimiento: 'Salio de Geocerca',
       hora_salida: null,
       evento: payload.data.conditions[0].description
     });
 
-        await ubiporeco.create(nuevaAlerta.dataValues, {
+    await ubiporeco.create(nuevaAlerta.dataValues, {
       fields: [
         'id_samsara', 
         'economico', 
@@ -588,8 +587,31 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-  
 });
+
+async function ubicacion(idsam) {
+  try {
+    const fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
+    const fechahora = fecha + 'Z';
+
+    const result = await Samsara.getVehicleStats({
+      time: fechahora,
+      vehicleIds: idsam,
+      types: 'gps'
+    });
+
+    if (result && result.data && result.data.data.length > 0) {
+      const gpsData = result.data.data[0].gps;
+      return gpsData.reverseGeo.formattedLocation;
+    } else {
+      console.error('No GPS data found for the given vehicle ID.');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching vehicle stats:', error.message);
+    return null;
+  }
+}
 
 
 
