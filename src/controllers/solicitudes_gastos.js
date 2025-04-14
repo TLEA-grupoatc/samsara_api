@@ -787,12 +787,27 @@ module.exports = app => {
         });
     }
 
-    app.verificarExistenciaGastoCasa = (req, res) => {  
+    app.verificarExistenciaGastoCasa = (req, res) => {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const startOfWeek = new Date(today);
+        
+        startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+        
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        
+        var fechainicio = startOfWeek.toISOString().split('T')[0];
+        var fechafin = endOfWeek.toISOString().split('T')[0];
+        
         gasto.findAll({
             where: {
                 operador: req.params.operador,
                 concepto: 'Casa',
-                fecha_creacion: req.params.fecha_creacion
+                // fecha_creacion: req.params.fecha_creacion,
+                fecha_creacion: {
+                    [Op.between]: [fechainicio, fechafin]
+                }
             }
         }).then(result => {
             res.json({
@@ -1221,6 +1236,56 @@ module.exports = app => {
         .catch(error => {
             res.status(412).json({
                 OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerGastosXEstatusParaLigar = (req, res) => {
+        gasto.findAll({
+            where: {
+                estatus: req.params.estatus,
+                id_liquidacion:{
+                    [Op.is]: null
+                }
+            },
+            order: [['fecha_solicitud', 'DESC']],
+        }).then(result => { 
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
                 msg: error.message
             });
         });

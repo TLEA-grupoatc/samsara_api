@@ -96,6 +96,10 @@ module.exports = (sequelize, DataType) => {
         fecha_creacion: {
             type: DataType.STRING,
             allowNull: true
+        },
+        id_liquidacion: {
+            type: DataType.INTEGER,
+            allowNull: true
         }
     },
     {

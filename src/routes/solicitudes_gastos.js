@@ -91,15 +91,47 @@ module.exports = app => {
     
     
     app.delete('/rechazarValeNomina/:id_gastos/:estatus/:comentarios_nomina', verificarToken, cu.rechazarValeNomina);
-
-
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     app.delete('/eliminarPermanenteGasto/:id_gastos', verificarToken, cu.eliminarPermanenteGasto);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.get('/obtenerSolicitudesDeGastosXAuxiliar/:solicitante', verificarToken, cu.obtenerSolicitudesDeGastosXAuxiliar);
+
+
+
+
+
+
+    app.get('/obtenerGastosXEstatusParaLigar/:estatus', verificarToken, cu.obtenerGastosXEstatusParaLigar);
 }

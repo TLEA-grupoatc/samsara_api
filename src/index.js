@@ -45,7 +45,6 @@ setInterval(() => {
   });
 }, 60000);
 
-
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
@@ -398,9 +397,6 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
     console.log('no encontrado');
   }
 });
-
-
-
 
 
 

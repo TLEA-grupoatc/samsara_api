@@ -12,6 +12,9 @@ module.exports = app => {
     const liquidacion = app.database.models.Liquidaciones;
     const prenominadocs = app.database.models.PrenominasDocumentos;
 
+    
+    const gasto = app.database.models.SolicitudGastos;
+
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
@@ -1245,7 +1248,14 @@ module.exports = app => {
 
     app.registrarLiquidacion = (req, res) => {
         let body = req.body;
+        var directorio = 'documentos/';
         var documentos = body.docs;
+        var pres = body.prenominas;
+        var vales = body.vales;
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
 
         let nuevaLiq = new liquidacion({
             operador: body.operador,
@@ -1304,13 +1314,6 @@ module.exports = app => {
             ]
         })
         .then(async result => {
-            var directorio = 'documentos/';
-            var pres = body.prenominas;
-
-            if(!fs.existsSync(directorio)) {
-                fs.mkdirSync(directorio, {recursive: true});
-            }
-
             for(let index = 0; index < documentos.length; index++) {
                 if(documentos[index].comentario) {
                     let nuevaPre = new prenominadocs({
