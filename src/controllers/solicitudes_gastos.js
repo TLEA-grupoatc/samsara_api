@@ -368,7 +368,7 @@ module.exports = app => {
         
                 gasto.update(data.dataValues, {
                     where: {
-                        id_gastos: element
+                        id_gastos: element.id_gastos
                     },
                     individualHooks: true, 
                     fields: ['estatus', 'id_doc_gastos']
@@ -491,6 +491,26 @@ module.exports = app => {
             });
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -799,7 +819,7 @@ module.exports = app => {
         
         var fechainicio = startOfWeek.toISOString().split('T')[0];
         var fechafin = endOfWeek.toISOString().split('T')[0];
-        
+
         gasto.findAll({
             where: {
                 operador: req.params.operador,
@@ -1015,7 +1035,6 @@ module.exports = app => {
         });
     }
 
-
     app.cancelarRechazar = (req, res) => {
 
         let data = new gasto({
@@ -1090,21 +1109,16 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
     app.rechazarValeNomina = (req, res) => {
+        let body = req.body;
+        let archi = body.archi;
 
         let data = new gasto({
-            comentarios_nomina: req.params.comentarios_nomina,
-            estatus: req.params.estatus
+            comentarios_nomina: body.comentarios_nomina,
+            estatus: body.estado
         });
 
+        
         gasto.update(data.dataValues, {
             where: {
                 id_gastos: req.params.id_gastos
@@ -1112,6 +1126,61 @@ module.exports = app => {
             individualHooks: true, 
             fields: ['comentarios_nomina', 'estatus']
         }).then(result => {
+            console.log('success');
+            
+            
+            // if(archi.length > 0) {
+            //     for(let tabla of archi) {
+                    var directorio = 'documentos/';
+                    if(!fs.existsSync(directorio)) {
+                        fs.mkdirSync(directorio, {recursive: true});
+                    }
+
+                    const [, base64Content] = archi.archivo.split(',');
+                    var big1 = Buffer.from(base64Content, 'base64');
+
+                    var fechacorta = archi.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+                    fs.writeFileSync(directorio + archi.usuario + '_' + fechacorta + '_' + archi.nombre + '_' + archi.descripcion, big1);
+                    
+                    doc = directorio + archi.usuario + '_' + fechacorta + '_' + archi.nombre + '_' + archi.descripcion;
+
+                    let nuevoDocumento = new docgasto({
+                        folio: archi.folio,
+                        operador: archi.operador,
+                        nombre: archi.nombre,
+                        descripcion: archi.descripcion,
+                        tipo: archi.tipo,
+                        archivo: doc,
+                        usuario: archi.usuario,
+                        fecha_creacion: archi.fecha_creacion
+                    });
+
+                    docgasto.create(nuevoDocumento.dataValues, {
+                        fields: [
+                            'folio', 
+                            'operador', 
+                            'nombre', 
+                            'descripcion', 
+                            'tipo', 
+                            'archivo',
+                            'usuario',
+                            'fecha_creacion'
+                        ]
+                    })
+                    .then(result => {
+                        console.log('insertado');
+                        
+                    }).catch(error => {
+                        console.log(error);
+                
+                    });   
+            //     }
+            //     res.json({
+            //         OK: true,
+            //         rows_affected: result[0]
+            //     });
+            // }
             res.json({
                 OK: true,
                 rows_affected: result[0]
@@ -1128,7 +1197,24 @@ module.exports = app => {
 
 
 
-
+    app.obtenerVerArchivo = (req, res) => {
+        docgasto.findAll({
+            where: {
+                nombre: req.params.nombre,
+                id_doc_gastos: req.params.folio
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Docs: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 
@@ -1240,23 +1326,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

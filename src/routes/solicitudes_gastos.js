@@ -90,12 +90,13 @@ module.exports = app => {
     
     
     
-    app.delete('/rechazarValeNomina/:id_gastos/:estatus/:comentarios_nomina', verificarToken, cu.rechazarValeNomina);
+    app.put('/rechazarValeNomina/:id_gastos', verificarToken, cu.rechazarValeNomina);
     
     
     
     
     
+    app.get('/obtenerVerArchivo/:folio/:nombre', verificarToken, cu.obtenerVerArchivo);
     
     
     
