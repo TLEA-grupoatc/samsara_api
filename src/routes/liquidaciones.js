@@ -60,6 +60,13 @@ module.exports = app => {
     
     
     app.get('/obtenerInfoOperador/:operador', verificarToken, Liq.obtenerInfoOperador);
+
+    app.get('/obtenerValesGastosLigados/:id_liquidacion', verificarToken, Liq.obtenerValesGastosLigados);
+
+    app.put('/ligarNuevosValesGastos/:id_liquidacion', verificarToken, Liq.ligarNuevosValesGastos);
+
+    app.put('/quitarValesGastosLigadas/:id_liquidacion', verificarToken, Liq.quitarValesGastosLigadas);
+
     
     
     app.delete('/guardarDiferenciaKM/:id_liquidacion/:diferenciakm', verificarToken, Liq.guardarDiferenciaKM);

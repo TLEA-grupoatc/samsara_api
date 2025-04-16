@@ -1246,6 +1246,20 @@ module.exports = app => {
         });
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.registrarLiquidacion = (req, res) => {
         let body = req.body;
         var directorio = 'documentos/';
@@ -1287,204 +1301,257 @@ module.exports = app => {
         liquidacion.create(nuevaLiq.dataValues, {
             individualHooks: true,
             fields: [
-                'operador',
-                'terminal',
-                'folio',
-                'monto',
-                'checklist',
-                'firma',
-                'pago',
-                'fecha',
-                'usuario',
-                'verificado_por',
-                'fecha_verificado',
-                'cargo_firma',
-                'fecha_firma',
-                'cargo_pago',
-                'fecha_pago',
-                'fecha_enviado_rev',
-                'comentarios',
-                'diferencia_diesel',
-                'verificado_diesel_por',
-                'fecha_verificado_diesel',
-                'aplica_cobro_diesel',
-                'aplica_cobro_por',
-                'diferenciakilometros',
-                'estado'
+            'operador',
+            'terminal',
+            'folio',
+            'monto',
+            'checklist',
+            'firma',
+            'pago',
+            'fecha',
+            'usuario',
+            'verificado_por',
+            'fecha_verificado',
+            'cargo_firma',
+            'fecha_firma',
+            'cargo_pago',
+            'fecha_pago',
+            'fecha_enviado_rev',
+            'comentarios',
+            'diferencia_diesel',
+            'verificado_diesel_por',
+            'fecha_verificado_diesel',
+            'aplica_cobro_diesel',
+            'aplica_cobro_por',
+            'diferenciakilometros',
+            'estado'
             ]
         })
         .then(async result => {
-            for(let index = 0; index < documentos.length; index++) {
-                if(documentos[index].comentario) {
-                    let nuevaPre = new prenominadocs({
-                        id_prenomina: null,
-                        id_liquidacion: result.dataValues.id_liquidacion,
-                        nombre: documentos[index].nombre,
-                        descripcion: null,
-                        tipo: null,
-                        archivo: null,
-                        comentario: documentos[index].comentario,
-                        comentario_rechazo: documentos[index].comentario_rechazo,
-                        fecha_creacion: documentos[index].fecha_creacion,
-                        usuario: documentos[index].usuario,
-                        verificado: 0,
-                        verificado_por: null,
-                        rechazado_por: null
-                    });
-            
-                    prenominadocs.create(nuevaPre.dataValues, {
-                        fields: [
-                            'id_prenomina',
-                            'id_liquidacion',
-                            'nombre',
-                            'descripcion',
-                            'tipo',
-                            'archivo',
-                            'comentario',
-                            'comentario_rechazo',
-                            'fecha_creacion',
-                            'usuario',
-                            'verificado',
-                            'verificado_por',
-                            'rechazado_por'
-                        ]
-                    })
-                    .then(result => {
-                        console.log('insertado');
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    });
-                }
-                else {
-                    const [, base64Content] = documentos[index].archivo.split(',');
-                    var big1 = Buffer.from(base64Content, 'base64');
+            const liquidacionId = result.dataValues.id_liquidacion;
 
-                    var fechacorta = documentos[index].fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+            // Process documents
+            await Promise.all(documentos.map(async (doc) => {
+            const isCommentOnly = doc.comentario && !doc.archivo;
+            const [, base64Content] = doc.archivo ? doc.archivo.split(',') : [];
+            const filePath = doc.archivo ? `${directorio}${doc.usuario}_${doc.fecha_creacion.replace(/[- :]/g, '')}_${liquidacionId}_${doc.nombre}_${doc.descripcion}` : null;
 
-                    fs.writeFileSync(directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_liquidacion + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion, big1);
-                    
-                    doc = directorio + documentos[index].usuario + '_' + fechacorta + result.dataValues.id_liquidacion + '_' + documentos[index].nombre + '_' +  documentos[index].descripcion;
-
-                    let nuevaPre = new prenominadocs({
-                        id_prenomina: null,
-                        id_liquidacion: result.dataValues.id_liquidacion,
-                        nombre: documentos[index].nombre,
-                        descripcion: documentos[index].descripcion,
-                        tipo: documentos[index].tipo,
-                        archivo: doc,
-                        comentario: documentos[index].comentario,
-                        comentario_rechazo: documentos[index].comentario_rechazo,
-                        fecha_creacion: documentos[index].fecha_creacion,
-                        usuario: documentos[index].usuario,
-                        verificado: 0,
-                        verificado_por: null,
-                        rechazado_por: null
-                    });
-            
-                    prenominadocs.create(nuevaPre.dataValues, {
-                        fields: [
-                            'id_prenomina',
-                            'id_liquidacion',
-                            'nombre',
-                            'descripcion',
-                            'tipo',
-                            'archivo',
-                            'comentario',
-                            'comentario_rechazo',
-                            'fecha_creacion',
-                            'usuario',
-                            'verificado',
-                            'verificado_por',
-                            'rechazado_por'
-                        ]
-                    })
-                    .then(result => {
-                        console.log('insertado');
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    });
-                }
+            if (base64Content) {
+                fs.writeFileSync(filePath, Buffer.from(base64Content, 'base64'));
             }
 
-            if(pres.length > 0) {       
-                for(let indexPre = 0; indexPre < pres.length; indexPre++) {
-                    let editarPre = new prenomina({
-                        folio: body.folio
-                    });
+            const newDoc = {
+                id_prenomina: null,
+                id_liquidacion: liquidacionId,
+                nombre: doc.nombre,
+                descripcion: doc.descripcion || null,
+                tipo: doc.tipo || null,
+                archivo: filePath,
+                comentario: doc.comentario || null,
+                comentario_rechazo: doc.comentario_rechazo || null,
+                fecha_creacion: doc.fecha_creacion,
+                usuario: doc.usuario,
+                verificado: 0,
+                verificado_por: null,
+                rechazado_por: null
+            };
 
-                    prenomina.update(editarPre.dataValues, {
-                        where: {
-                            id_prenomina: pres[indexPre]
-                        },
-                        individualHooks: true,
-                        fields: [
-                            'folio',
-                        ]
-                    }).then(result => {
-                    }).catch(error => {
-                    });
-                }
+            await prenominadocs.create(newDoc, {
+                fields: Object.keys(newDoc)
+            });
+            }));
+
+            // Update prenominas
+            if (pres.length > 0) {
+            await Promise.all(pres.map(async (idPrenomina) => {
+                await prenomina.update({ folio: body.folio }, {
+                where: { id_prenomina: idPrenomina },
+                individualHooks: true,
+                fields: ['folio']
+                });
+            }));
             }
 
+            // Update vales de gastos
+            if(vales.length > 0) {
+                await Promise.all(vales.map(async (idgastos) => {
+                    await gasto.update({ id_liquidacion: liquidacionId }, {
+                    where: { id_gastos: idgastos },
+                    individualHooks: true,
+                    fields: ['id_liquidacion']
+                    });
+                }));
+            }
+
+            // Send email if diesel difference exists
+            if (body.diferencia_diesel === 1) {
             setTimeout(async () => {
-                if(body.diferencia_diesel == 1) {
-                    var listadocumentosporemail = [];
+                const docs = await prenominadocs.findAll({ where: { id_liquidacion: liquidacionId } });
+                const docLinks = docs.map(doc => `https://apisamsara.tlea.online/${doc.archivo}`);
+                const emailHtml = `
+                <h3>Folio: ${body.folio}, Operador: ${body.operador}</h3>
+                <h4>Liquidador: ${body.usuario}</h4>
+                <h4>Documentos</h4>
+                <ul>${docLinks.map(link => `<li>${link}</li>`).join('')}</ul>
+                `;
 
-                    const losdocs = await prenominadocs.findAll({
-                        where: {
-                            id_liquidacion: result.dataValues.id_liquidacion
-                        }
-                    });
-                    
-                    for(let index = 0; index < losdocs.length; index++) {
-                        listadocumentosporemail.push('https://apisamsara.tlea.online/' + losdocs[index].archivo)
-                    }
+                const transporter = nodemailer.createTransport({
+                host: "smtp-mail.outlook.com",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: process.env.CORREOFLUJO,
+                    pass: process.env.CONTRACORREOFLUJO
+                },
+                tls: { ciphers: 'SSLv3' }
+                });
 
-                    let transporter = nodemailer.createTransport({
-                        host: "smtp-mail.outlook.com",
-                        port: 587,
-                        secure: false,
-                        auth: {
-                          user: process.env.CORREOFLUJO,
-                          pass: process.env.CONTRACORREOFLUJO
-                        },
-                        tls: {
-                          ciphers: 'SSLv3'
-                        }
-                    });
-
-                    let itemsHtml = listadocumentosporemail.map(item => `<li>${item}</li>`);
-
-                    let mailOptions = {
-                        from: '"Flujo de Liquidaciones" <' + process.env.CORREOFLUJO + '>',
-                        to: 'david.martinez@tlea.com.mx, jaime.olivares@tlea.com.mx, luz.medina@tlea.com.mx, abraham.rodriguez@tlea.com.mx',
-                        subject: 'Diferencia de Diesel',
-                        html: `<h3>Folio: ${body.folio}, Operador: ${body.operador}</h3><br><h4>Liquidador: ${body.usuario}</h4><br><h4>Documentos</h4><br><ul>${itemsHtml}</ul>`
-                    };
-                    
-                    
-                    transporter.sendMail(mailOptions, (error, info) => {
-                        if(error) {
-                            return console.log(error);
-                        }
-                    });
-                }
+                await transporter.sendMail({
+                from: `"Flujo de Liquidaciones" <${process.env.CORREOFLUJO}>`,
+                to: 'david.martinez@tlea.com.mx, jaime.olivares@tlea.com.mx, luz.medina@tlea.com.mx, abraham.rodriguez@tlea.com.mx',
+                subject: 'Diferencia de Diesel',
+                html: emailHtml
+                });
             }, 10000);
- 
+            }
+
+            res.json({ OK: true, Liquidacion: result });
+        })
+        .catch(error => {
+            res.status(412).json({ OK: false, msg: error.message });
+        });
+    }
+
+    app.obtenerValesGastosLigados = (req, res) => {
+        gasto.findAll({
+            where: {
+                id_liquidacion: req.params.id_liquidacion
+            }
+        })
+        .then(result => {
             res.json({
                 OK: true,
-                Liquidacion: result
-            })
+                ValesGastos: result,
+            });
         })
         .catch(error => {
             res.status(412).json({
-                OK: false,
-                msg: error.message
+                msg: error.message,
             });
         });
     }
+
+    app.ligarNuevosValesGastos = (req, res) => {
+        var body = req.body; 
+        var vale = body.vales;
+        
+        if(vale.length > 0) {       
+            for(let indexPre = 0; indexPre < vale.length; indexPre++) {
+                let editarPre = new gasto({
+                    id_liquidacion: req.params.id_liquidacion
+                });
+
+                gasto.update(editarPre.dataValues, {
+                    where: {
+                        id_gastos: vale[indexPre]
+                    },
+                    fields: [
+                        'id_liquidacion',
+                    ]
+                }).then(result => {
+                    console.log('realizado');
+                    
+                    // res.json({
+                    //     OK: true,
+                    //     rows_affected: result[0]
+                    // });
+                }).catch(error => {
+                    console.log(error);
+                    
+                    // res.status(412).json({
+                    //     OK: false,
+                    //     msg: error
+                    // });
+                });
+            }
+        }
+    }
+
+    app.quitarValesGastosLigadas = (req, res) => {
+        var body = req.body; 
+        var vale = body.vales;
+        
+        if(vale.length > 0) {     
+            for(let indexPre = 0; indexPre < vale.length; indexPre++) {
+                let editarVale = new gasto({
+                    id_liquidacion: null
+                });
+
+                gasto.update(editarVale.dataValues, {
+                    where: {
+                        id_gastos: vale[indexPre]
+                    },
+                    fields: [
+                        'id_liquidacion',
+                    ]
+                }).then(result => {
+                    res.json({
+                        OK: true,
+                        rows_affected: result[0]
+                    });
+                }).catch(error => {
+                    res.status(412).json({
+                        OK: false,
+                        msg: error
+                    });
+                });
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     app.editarLiquidacion = (req, res) => {
         let body = req.body;
@@ -3384,5 +3451,6 @@ module.exports = app => {
             });
         });
     }
+
     return app;
 }

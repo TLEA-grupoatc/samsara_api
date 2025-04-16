@@ -395,7 +395,7 @@ module.exports = app => {
     app.obtenerDeposito = (req, res) => {
         docgasto.findAll({
             where: {
-                id_doc_gastos: req.params.folio
+                folio: req.params.folio
             }
         }).then(result => {
             res.json({
