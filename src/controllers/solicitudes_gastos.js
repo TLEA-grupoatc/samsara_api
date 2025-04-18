@@ -1219,19 +1219,20 @@ module.exports = app => {
     app.obtenerVerArchivo = (req, res) => {
         docgasto.findAll({
             where: {
-                // nombre: req.params.nombre,
-                id_doc_gastos: req.params.id_doc_gastos,
-                folio: req.params.folio
+            [Op.or]: [
+                { id_doc_gastos: req.params.id_doc_gastos },
+                { folio: req.params.folio }
+            ]
             }
         }).then(result => {
             res.json({
-                OK: true,
-                Docs: result
+            OK: true,
+            Docs: result
             })
         })
         .catch(error => {
             res.status(412).json({
-                msg: error.message
+            msg: error.message
             });
         });
     }
