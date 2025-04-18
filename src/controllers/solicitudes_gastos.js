@@ -1200,7 +1200,7 @@ module.exports = app => {
         docgasto.findAll({
             where: {
                 estatus: 'Depositado',
-                id_doc_gastos: result.dataValues.folio
+                id_doc_gastos: req.params.folio
             }
         }).then(result => {
             res.json({
