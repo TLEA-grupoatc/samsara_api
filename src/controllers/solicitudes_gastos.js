@@ -1199,7 +1199,7 @@ module.exports = app => {
     app.obtenerDeposito = (req, res) => {
         docgasto.findAll({
             where: {
-                estatus: 'Depositado',
+                nombre: 'Deposito',
                 id_doc_gastos: req.params.folio
             }
         }).then(result => {
