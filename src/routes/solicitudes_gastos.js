@@ -96,7 +96,7 @@ module.exports = app => {
     
     
     
-    app.get('/obtenerVerArchivo/:folio/:nombre', verificarToken, cu.obtenerVerArchivo);
+    app.get('/obtenerVerArchivo/:folio/:id_doc_gastos', verificarToken, cu.obtenerVerArchivo);
     
     
     

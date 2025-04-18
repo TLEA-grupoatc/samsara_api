@@ -1220,7 +1220,8 @@ module.exports = app => {
         docgasto.findAll({
             where: {
                 // nombre: req.params.nombre,
-                id_doc_gastos: req.params.folio
+                id_doc_gastos: req.params.id_doc_gastos,
+                folio: req.params.folio
             }
         }).then(result => {
             res.json({
