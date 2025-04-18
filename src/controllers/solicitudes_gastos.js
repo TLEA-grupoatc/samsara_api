@@ -392,23 +392,7 @@ module.exports = app => {
         });    
     }
 
-    app.obtenerDeposito = (req, res) => {
-        docgasto.findAll({
-            where: {
-                folio: req.params.folio
-            }
-        }).then(result => {
-            res.json({
-                OK: true,
-                Docs: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
+   
 
     app.obtenerSolicitudesDeGastos = (req, res) => {  
         var today = new Date();
@@ -1197,10 +1181,45 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerDeposito = (req, res) => {
+        docgasto.findAll({
+            where: {
+                estatus: 'Depositado',
+                id_doc_gastos: result.dataValues.folio
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Docs: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
     app.obtenerVerArchivo = (req, res) => {
         docgasto.findAll({
             where: {
-                nombre: req.params.nombre,
+                // nombre: req.params.nombre,
                 id_doc_gastos: req.params.folio
             }
         }).then(result => {

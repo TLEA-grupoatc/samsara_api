@@ -514,7 +514,8 @@ module.exports = app => {
                 '15 REPORTE DE EXCEL MANIOBAS EXTRAS',
                 '16 OTROS DOCUMENTOS',
                 '17 ANTICIPOS NO  MAYORES A 30 DÍAS',
-                '18 BITACORAS ANTERIORES A LA LIQUIDACIÓN'
+                '18 BITACORAS ANTERIORES A LA LIQUIDACIÓN',
+                '19 BITACORAS DE VIAJE',
             ];
 
             if(camp === 'id_liquidacion') {
@@ -1474,6 +1475,11 @@ module.exports = app => {
                     // });
                 });
             }
+
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
         }
     }
 
@@ -1495,17 +1501,22 @@ module.exports = app => {
                         'id_liquidacion',
                     ]
                 }).then(result => {
-                    res.json({
-                        OK: true,
-                        rows_affected: result[0]
-                    });
+                    // res.json({
+                    //     OK: true,
+                    //     rows_affected: result[0]
+                    // });
                 }).catch(error => {
-                    res.status(412).json({
-                        OK: false,
-                        msg: error
-                    });
+                    // res.status(412).json({
+                    //     OK: false,
+                    //     msg: error
+                    // });
                 });
             }
+
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
         }
     }
 
@@ -2610,6 +2621,12 @@ module.exports = app => {
                     // });
                 });
             }
+
+
+                    res.json({
+                        OK: true,
+                        rows_affected: result[0]
+                    });
         }
     }
 
@@ -2632,17 +2649,22 @@ module.exports = app => {
                         'folio',
                     ]
                 }).then(result => {
-                    res.json({
-                        OK: true,
-                        rows_affected: result[0]
-                    });
+                    // res.json({
+                    //     OK: true,
+                    //     rows_affected: result[0]
+                    // });
                 }).catch(error => {
-                    res.status(412).json({
-                        OK: false,
-                        msg: error
-                    });
+                    // res.status(412).json({
+                    //     OK: false,
+                    //     msg: error
+                    // });
                 });
             }
+
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
         }
     }
 
