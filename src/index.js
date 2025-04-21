@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const moment = require('moment');
 const http = require('http').createServer(app);
+const cron = require('node-cron');
 const ngrok = require("@ngrok/ngrok");
 const dotenv = require('dotenv').config();
 const socketIO = require('socket.io')(http, {
@@ -36,14 +37,14 @@ const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
 const Samsara = require("@api/samsara-dev-rel");
 Samsara.auth(process.env.KEYSAM);
 
-setInterval(() => {
+cron.schedule('* * * * *', () => {   
   app.obtenerSnapshot({}, {
     json: (data) => console.log(data),
     status: (statusCode) => ({
       json: (data) => console.log(statusCode, data)
     })
-  });
-}, 60000);
+  }); 
+});
 
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
@@ -398,8 +399,6 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
   }
 });
 
-
-
 app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
@@ -614,8 +613,6 @@ async function ubicacion(idsam) {
     return null;
   }
 }
-
-
 
 http.listen(app.get('port'), () => {
   console.log(`Server on port ${app.get('port')}`.random);

@@ -384,6 +384,28 @@ module.exports = app => {
         });
     }
 
+    app.obtenerPrenominaParaDiesel = (req, res) => { 
+
+        const { tracto } = req.body;
+
+        prenomina.findAll({
+            where: {
+                tracto: tracto
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                result
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
 
     app.obtenerLiquidacionTotal = (req, res) => { 
         liquidacion.findAll({

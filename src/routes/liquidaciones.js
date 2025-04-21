@@ -20,7 +20,8 @@ module.exports = app => {
     app.get('/obtenerPrenominaXAnno/:anno', Liq.obtenerPrenominaXAnno);
 
     app.get('/resumenLiquidaciones', verificarToken, Liq.resumenLiquidaciones);
-
+    
+    app.get('/prenominaDiesel', verificarToken, Liq.obtenerPrenominaParaDiesel);
 
     app.get('/obtenerPrenominaDocumentos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentos);
 
