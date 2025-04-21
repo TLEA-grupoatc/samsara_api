@@ -983,7 +983,7 @@ module.exports = app => {
         var pres = await prenomina.findAll({
             where: {
                 estado: {
-                    [Op.ne]: 'CANCELADO',
+                    [Op.in]: ['EN PROCESO', 'COMPLETO']
                 },
                 fecha: {
                     [Op.between]: [`${an}-${me}-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
@@ -1026,7 +1026,7 @@ module.exports = app => {
         var pres = await prenomina.findAll({
             where: {
                 estado: {
-                    [Op.ne]: 'CANCELADO',
+                    [Op.in]: ['EN PROCESO', 'COMPLETO']
                 },
                 fecha: {
                     [Op.between]: [`2025-01-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
@@ -1075,7 +1075,7 @@ module.exports = app => {
             ],
             where: {
                 estado: {
-                    [Op.ne]: 'CANCELADO',
+                    [Op.in]: ['EN PROCESO', 'COMPLETO']
                 },
                 fecha: {
                     // [Op.between]: [`${an}-${me}-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
@@ -1093,7 +1093,7 @@ module.exports = app => {
                 [Op.between]: [sevenDaysAgo, today]
                 },
                 estado: {
-                [Op.ne]: 'CANCELADO'
+                    [Op.in]: ['EN PROCESO', 'COMPLETO']
                 }
             }
         })
@@ -1139,7 +1139,7 @@ module.exports = app => {
        var pres = await prenomina.findAll({
             where: {
                 estado: {
-                    [Op.ne]: 'CANCELADO',
+                    [Op.in]: ['EN PROCESO', 'COMPLETO']
                 },
                 fecha: {
                     [Op.between]: [`${an}-${me}-01 00:00:00`, `${an}-${me}-${di} 23:59:59`]
