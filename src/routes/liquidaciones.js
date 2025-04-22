@@ -21,7 +21,7 @@ module.exports = app => {
 
     app.get('/resumenLiquidaciones', verificarToken, Liq.resumenLiquidaciones);
     
-    app.get('/prenominaDiesel', verificarToken, Liq.obtenerPrenominaParaDiesel);
+    app.get('/prenominaDiesel', Liq.obtenerPrenominaParaDiesel);
 
     app.get('/obtenerPrenominaDocumentos/:id/:campo', verificarToken, Liq.obtenerPrenominaDocumentos);
 
