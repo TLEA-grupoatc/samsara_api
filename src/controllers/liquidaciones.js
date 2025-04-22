@@ -384,13 +384,10 @@ module.exports = app => {
         });
     }
 
-    app.obtenerPrenominaParaDiesel = (req, res) => { 
-
-        const { tracto } = req.body;
-
+    app.obtenerPrenominaParaDiesel = (req, res) => {
         prenomina.findAll({
             where: {
-                tracto: tracto
+                tracto: req.params.tracto
             }
         }).then(result => {
             res.json({
