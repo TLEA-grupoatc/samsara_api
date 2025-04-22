@@ -25,7 +25,7 @@ module.exports = app => {
 
     app.get('/obtenerReporte/:fechainicio/:fechafin', verificarToken, Peticion.obtenerReporte);
 
-    app.get('/obtenerDetalleReporte/:unidad/:fechainicio/:fechafin', verificarToken, Peticion.obtenerDetalleReporte);
+    app.get('/obtenerDetalleReporte/:unidad/:fechainicio/:fechafin', Peticion.obtenerDetalleReporte);
 
 
     app.get('/obtenerDivisionesVehiculo', verificarToken, Peticion.obtenerDivisionesVehiculo);
