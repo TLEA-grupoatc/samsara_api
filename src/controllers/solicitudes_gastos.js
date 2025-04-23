@@ -543,6 +543,7 @@ module.exports = app => {
                 monto: inf.monto, 
                 comentarios: inf.comentarios, 
                 conceptos_agrupados: inf.conceptos_agrupados, 
+                pendientedeaprobar: inf.pendientedeaprobar,
                 aprobado_por: inf.aprobado_por,
                 aprobado_por_gerente: inf.aprobado_por_gerente,
                 estatus: inf.estatus,
@@ -566,6 +567,7 @@ module.exports = app => {
                     'monto', 
                     'comentarios', 
                     'conceptos_agrupados', 
+                    'pendientedeaprobar',
                     'aprobado_por', 
                     'aprobado_por_gerente', 
                     'estatus',
@@ -753,6 +755,52 @@ module.exports = app => {
             });
         });
     }
+
+    app.solicitudDeGastosAceptarGratificaciones = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
+
+        let data = new gasto({
+            aprobado_por: req.params.aprobado_por,
+            fecha_jun: hoy,
+            pendientedeaprobar: 1
+        });
+
+        gasto.update(data.dataValues, {
+            where: {
+                id_gastos: req.params.id_gastos
+            },
+            individualHooks: true, 
+            fields: ['aprobado_por', 'fecha_jun', 'pendientedeaprobar']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     app.verificarExistenciaGastoComida = (req, res) => {  
         const today = new Date();
@@ -1377,6 +1425,66 @@ module.exports = app => {
         .catch(error => {
             res.status(412).json({
                 msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerGastosParaLiquidaciones = (req, res) => {
+        const where = {};
+
+        if(req.params.fecha_solicitud != 'undefined') {
+            const [startDate, endDate] = req.params.fecha_solicitud.split(' ');
+            where.fecha_solicitud = {
+                [Op.between]: [`${startDate} 00:00:00`, `${endDate} 23:59:59`],
+            };
+        }
+
+        if(req.params.operador != 'undefined') {
+            where.operador = req.params.operador;
+        }
+
+        if(req.params.economico != 'undefined') {
+            where.economico = req.params.economico;
+        }
+        
+        where.estatus = 'DEPOSITADO';
+        where.id_liquidacion = null
+        
+        gasto.findAll({
+            where,
+            limit: 100,
+            order: [['fecha_solicitud', 'DESC']],
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Gastos: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message,
             });
         });
     }

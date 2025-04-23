@@ -65,6 +65,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         }, 
+        pendientedeaprobar: {
+            type: DataType.INTEGER,
+            allowNull: true
+        }, 
         aprobado_por: {
             type: DataType.STRING,
             allowNull: true
@@ -102,6 +106,7 @@ module.exports = (sequelize, DataType) => {
             allowNull: true
         }
     },
+    
     {
         tableName: 'gastos',        
         timestamps: false

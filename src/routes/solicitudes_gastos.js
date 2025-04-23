@@ -42,7 +42,12 @@ module.exports = app => {
     app.delete('/solicitudDeGastosAceptarRechazar/:id_gastos/:aprobado_por/:estado', verificarToken, cu.solicitudDeGastosAceptarRechazar);
 
     app.delete('/solicitudDeGastosAceptarRechazarGerente/:id_gastos/:aprobado_por_gerente/:estado', verificarToken, cu.solicitudDeGastosAceptarRechazarGerente);
+   
+   
+    app.delete('/solicitudDeGastosAceptarGratificaciones/:id_gastos/:aprobado_por', verificarToken, cu.solicitudDeGastosAceptarGratificaciones);
+   
     
+
     app.get('/verificarExistenciaGastoComida/:operador/:fecha_creacion', cu.verificarExistenciaGastoComida);
 
     app.delete('/enviarProceso/:id_gastos/:estado', verificarToken, cu.enviarProceso);
@@ -111,7 +116,7 @@ module.exports = app => {
 
 
 
-
+    app.get('/obtenerGastosParaLiquidaciones/:fecha_solicitud/:operador/:economico', verificarToken, cu.obtenerGastosParaLiquidaciones);
 
 
 
