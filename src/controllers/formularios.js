@@ -18,6 +18,427 @@ module.exports = app => {
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
 
+    app.obtenerOperadores = (req, res) => {
+        operador.findAll({
+            where: {
+                estado: 'A'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Operadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerOperadoresLista = (req, res) => {
+        operador.findAll({
+            where: {
+                estado: 'LABORANDO'
+            },
+            order: [
+                ['nombre', 'ASC'],
+                ['estado', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Operadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerTodosLosOperadores = (req, res) => {
+        operador.findAll({
+            order: [
+                ['nombre', 'ASC'],
+                ['estado', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Operadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerListaParaSeguimeinto = async (req, res)  => {
+        var lista = [];
+        var opes = await operador.findAll({
+            order: [
+                ['estado', 'DESC']
+            ],
+        });
+
+        for(let i = 0; i < opes.length; i++) {
+            let da = ({
+                unidad: opes[i].unidad,
+                numero_empleado: opes[i].numero_empleado,
+                nombre: opes[i].nombre,
+                estado: opes[i].estado,
+                estado_actividad: opes[i].estado_actividad,
+                registrado_por: opes[i].registrado_por
+            });
+
+            lista.push(da);
+        }
+
+        res.json({
+            OK: true,
+            Total: lista.length,
+            Datos: lista
+        });
+    }
+
+    app.obtenerHistoricoActividadOpe = (req, res) => {
+        historico.findAll({
+        }).then(result => {
+            res.json({
+                OK: true,
+                Historico: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.actualizarOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new operador({
+            unidad: body.unidad,
+            numero_empleado: body.numero_empleado,
+            nombre: body.nombre,
+            estado: body.estado,
+            estado_actividad: body.estado_actividad,
+            registrado_por: body.registrado_por,
+            fecha_actividad: body.fecha_actividad
+        });
+
+        operador.update(nuevoRegistro.dataValues, {
+            where: {
+                id_operador: req.params.id_operador
+            },
+            fields: [
+                'unidad',
+                'numero_empleado',
+                'nombre',
+                'estado',
+                'estado_actividad',
+                'registrado_por',
+                'fecha_actividad'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Operador: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.eliminarOperador = (req, res) => {
+        let data = new operador({
+            estado: 'INACTIVO',
+        });
+
+        operador.update(data.dataValues, {
+            where: {
+                id_operador: req.params.id_operador
+            },
+            fields: ['estado']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.crearOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new operador({
+            unidad: body.unidad,
+            numero_empleado: body.numero_empleado,
+            nombre: body.nombre,
+            estado: body.estado,
+            estado_actividad: body.estado_actividad,
+            registrado_por: body.registrado_por,
+            fecha_actividad: body.fecha_actividad
+        });
+
+        operador.create(nuevoRegistro.dataValues, {
+            fields: [
+                'unidad',
+                'numero_empleado',
+                'nombre',
+                'estado',
+                'estado_actividad',
+                'registrado_por',
+                'fecha_actividad'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Operador: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearCartaOperador = (req, res) => {
+        let body = req.body;
+
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.archivo.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre, big1);
+        
+        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre;
+
+        let nuevoDocumento = new docoperador({
+            operador: body.operador,
+            numero_empleado: body.numero_empleado,
+            nombre: body.nombre,
+            descripcion: body.descripcion,
+            tipo: body.tipo,
+            archivo: doc,
+            comentario: body.comentario,
+            fecha_creacion: body.fecha_creacion,
+            usuario: body.usuario
+        });
+
+        docoperador.create(nuevoDocumento.dataValues, {
+            fields: [
+                'operador', 
+                'numero_empleado', 
+                'nombre', 
+                'descripcion', 
+                'tipo', 
+                'archivo',
+                'comentario',
+                'fecha_creacion',
+                'usuario'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Documento: result
+            });
+        }).catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerCartas = (req, res) => {
+        docoperador.findAll({
+            where: {
+                numero_empleado: req.params.numero_empleado
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Cartas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+    app.obtenerCobros = (req, res) => {
+        cobro.findAll({
+            where: {
+                registro: {
+                    [Op.between]: [req.params.fechaInicio + ' 00:00:00', req.params.fechaFin + ' 23:59:59']
+                }
+            },
+            order: [
+                ['registro', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Cobros: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearCobro = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new cobro({
+            unidad: body.unidad, 
+            operador: body.operador,
+            concepto: body.concepto,
+            cantidad: body.cantidad,
+            enlace: body.enlace,
+            registro: body.registro,
+            registrado_por: body.registrado_por,
+            cobrado: body.cobrado,
+            cobrado_por: body.cobrado_por,
+            estado: body.estado
+        });
+
+        cobro.create(nuevoRegistro.dataValues, {
+            fields: [
+                'unidad', 
+                'operador',
+                'concepto',
+                'cantidad',
+                'enlace',
+                'registro',
+                'registrado_por',
+                'cobrado',
+                'cobrado_por',
+                'estado'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Cobro: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.cobroRealizado = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
+        let data = new cobro({
+            estado: 'I',
+            cobrado: hoy,
+            cobrado_por: req.params.cobrado_por
+        });
+
+        cobro.update(data.dataValues, {
+            where: {
+                id_cobro: req.params.id_cobro
+            },
+            fields: ['estado', 'cobrado', 'cobrado_por']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+    app.obtenerReporteOperadoresAlertas = (req, res) => {
+        alerta.findAll({
+            attributes: [
+                'unidad', 
+                'operador', 
+                'event', 
+                [Sequelize.fn('COUNT', Sequelize.col('event')), 'total']
+            ],
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechaInicio, req.params.fechaFin],
+                }
+            },
+            group: ['event', 'unidad'],
+            order: [
+                ['unidad', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Reporte: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
     app.obtenerEventosCriticos = (req, res) => {
         evento.findAll({
             where: {
@@ -141,428 +562,6 @@ module.exports = app => {
         });
     }
 
-    app.obtenerOperadores = (req, res) => {
-        operador.findAll({
-            where: {
-                estado: 'A'
-            }
-        }).then(result => {
-            res.json({
-                OK: true,
-                Operadores: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-    app.obtenerOperadoresLista = (req, res) => {
-        operador.findAll({
-            where: {
-                estado: 'LABORANDO'
-            },
-            order: [
-                ['nombre', 'ASC'],
-                ['estado', 'DESC']
-            ],
-        }).then(result => {
-            res.json({
-                OK: true,
-                Operadores: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-
-    app.obtenerTodosLosOperadores = (req, res) => {
-        operador.findAll({
-            order: [
-                ['nombre', 'ASC'],
-                ['estado', 'DESC']
-            ],
-        }).then(result => {
-            res.json({
-                OK: true,
-                Operadores: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-    app.obtenerListaParaSeguimeinto = async (req, res)  => {
-        var lista = [];
-        var opes = await operador.findAll({
-            order: [
-                ['estado', 'DESC']
-            ],
-        });
-
-        for(let i = 0; i < opes.length; i++) {
-            let da = ({
-                unidad: opes[i].unidad,
-                numero_empleado: opes[i].numero_empleado,
-                nombre: opes[i].nombre,
-                estado: opes[i].estado,
-                estado_actividad: opes[i].estado_actividad,
-                registrado_por: opes[i].registrado_por
-            });
-
-            lista.push(da);
-        }
-
-        res.json({
-            OK: true,
-            Total: lista.length,
-            Datos: lista
-        });
-    }
-
-    app.obtenerHistoricoActividadOpe = (req, res) => {
-        historico.findAll({
-        }).then(result => {
-            res.json({
-                OK: true,
-                Historico: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-    app.actualizarOperador = (req, res) => {
-        let body = req.body;
-
-        let nuevoRegistro = new operador({
-            unidad: body.unidad,
-            numero_empleado: body.numero_empleado,
-            nombre: body.nombre,
-            estado: body.estado,
-            estado_actividad: body.estado_actividad,
-            registrado_por: body.registrado_por,
-            fecha_actividad: body.fecha_actividad
-        });
-
-        operador.update(nuevoRegistro.dataValues, {
-            where: {
-                id_operador: req.params.id_operador
-            },
-            fields: [
-                'unidad',
-                'numero_empleado',
-                'nombre',
-                'estado',
-                'estado_actividad',
-                'registrado_por',
-                'fecha_actividad'
-            ]
-        })
-        .then(async result => {
-            res.json({
-                OK: true,
-                Operador: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                OK: false,
-                msg: error.message
-            });
-        });
-    }
-
-    app.eliminarOperador = (req, res) => {
-        let data = new operador({
-            estado: 'INACTIVO',
-        });
-
-        operador.update(data.dataValues, {
-            where: {
-                id_operador: req.params.id_operador
-            },
-            fields: ['estado']
-        }).then(result => {
-            res.json({
-                OK: true,
-                rows_affected: result[0]
-            });
-        }).catch(err => {
-            res.status(412).json({
-                OK: false,
-                msg: err
-            });
-        });
-    }
-
-    app.crearOperador = (req, res) => {
-        let body = req.body;
-
-        let nuevoRegistro = new operador({
-            unidad: body.unidad,
-            numero_empleado: body.numero_empleado,
-            nombre: body.nombre,
-            estado: body.estado,
-            estado_actividad: body.estado_actividad,
-            registrado_por: body.registrado_por,
-            fecha_actividad: body.fecha_actividad
-        });
-
-        operador.create(nuevoRegistro.dataValues, {
-            fields: [
-                'unidad',
-                'numero_empleado',
-                'nombre',
-                'estado',
-                'estado_actividad',
-                'registrado_por',
-                'fecha_actividad'
-            ]
-        })
-        .then(async result => {
-            res.json({
-                OK: true,
-                Operador: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                OK: false,
-                msg: error.message
-            });
-        });
-    }
-
-    app.obtenerCobros = (req, res) => {
-        cobro.findAll({
-            where: {
-                registro: {
-                    [Op.between]: [req.params.fechaInicio + ' 00:00:00', req.params.fechaFin + ' 23:59:59']
-                }
-            },
-            order: [
-                ['registro', 'DESC']
-            ],
-        }).then(result => {
-            res.json({
-                OK: true,
-                Cobros: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-    app.crearCobro = (req, res) => {
-        let body = req.body;
-
-        let nuevoRegistro = new cobro({
-            unidad: body.unidad, 
-            operador: body.operador,
-            concepto: body.concepto,
-            cantidad: body.cantidad,
-            enlace: body.enlace,
-            registro: body.registro,
-            registrado_por: body.registrado_por,
-            cobrado: body.cobrado,
-            cobrado_por: body.cobrado_por,
-            estado: body.estado
-        });
-
-        cobro.create(nuevoRegistro.dataValues, {
-            fields: [
-                'unidad', 
-                'operador',
-                'concepto',
-                'cantidad',
-                'enlace',
-                'registro',
-                'registrado_por',
-                'cobrado',
-                'cobrado_por',
-                'estado'
-            ]
-        })
-        .then(result => {
-            res.json({
-                OK: true,
-                Cobro: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                OK: false,
-                msg: error.message
-            });
-        });
-    }
-
-    app.cobroRealizado = (req, res) => {
-        var today = new Date();
-        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
-        let data = new cobro({
-            estado: 'I',
-            cobrado: hoy,
-            cobrado_por: req.params.cobrado_por
-        });
-
-        cobro.update(data.dataValues, {
-            where: {
-                id_cobro: req.params.id_cobro
-            },
-            fields: ['estado', 'cobrado', 'cobrado_por']
-        }).then(result => {
-            res.json({
-                OK: true,
-                rows_affected: result[0]
-            });
-        }).catch(err => {
-            res.status(412).json({
-                OK: false,
-                msg: err
-            });
-        });
-    }
-
-    app.crearCartaOperador = (req, res) => {
-        let body = req.body;
-
-        var directorio = 'documentos/';
-
-        if(!fs.existsSync(directorio)) {
-            fs.mkdirSync(directorio, {recursive: true});
-        }
-
-        const [, base64Content] = body.archivo.split(',');
-        var big1 = Buffer.from(base64Content, 'base64');
-
-        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
-
-        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre, big1);
-        
-        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre;
-
-        let nuevoDocumento = new docoperador({
-            operador: body.operador,
-            numero_empleado: body.numero_empleado,
-            nombre: body.nombre,
-            descripcion: body.descripcion,
-            tipo: body.tipo,
-            archivo: doc,
-            comentario: body.comentario,
-            fecha_creacion: body.fecha_creacion,
-            usuario: body.usuario
-        });
-
-        docoperador.create(nuevoDocumento.dataValues, {
-            fields: [
-                'operador', 
-                'numero_empleado', 
-                'nombre', 
-                'descripcion', 
-                'tipo', 
-                'archivo',
-                'comentario',
-                'fecha_creacion',
-                'usuario'
-            ]
-        })
-        .then(result => {
-            res.json({
-                OK: true,
-                Documento: result
-            });
-        }).catch(error => {
-            res.status(412).json({
-                OK: false,
-                msg: error.message
-            });
-        });
-    }
-
-
-    app.obtenerCartas = (req, res) => {
-        docoperador.findAll({
-            where: {
-                numero_empleado: req.params.numero_empleado
-            }
-        }).then(result => {
-            res.json({
-                OK: true,
-                Cartas: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-
-
-
-
-
-
-
-    app.obtenerReporteOperadoresAlertas = (req, res) => {
-        alerta.findAll({
-            attributes: [
-                'unidad', 
-                'operador', 
-                'event', 
-                [Sequelize.fn('COUNT', Sequelize.col('event')), 'total']
-            ],
-            where: {
-                eventTime: {
-                    [Op.between]: [req.params.fechaInicio, req.params.fechaFin],
-                }
-            },
-            group: ['event', 'unidad'],
-            order: [
-                ['unidad', 'ASC']
-            ],
-        }).then(result => {
-            res.json({
-                OK: true,
-                Reporte: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
 
     return app;
 }

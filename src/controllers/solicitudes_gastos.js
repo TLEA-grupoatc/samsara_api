@@ -416,6 +416,27 @@ module.exports = app => {
         });
     }
 
+    app.obtenerSolicitudesDeGastosProCan = (req, res) => { 
+        gasto.findAll({
+            where: {
+                estatus: {
+                    [Op.in]: ['En Proceso', 'Cancelado']
+                }   
+            },
+            order: [['fecha_solicitud', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.obtenerSolicitudesDeGastosXEstatus = (req, res) => {  
         var today = new Date();
         const hoy = moment(today).format('YYYY-MM-DD');
