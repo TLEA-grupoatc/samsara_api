@@ -9,6 +9,7 @@ module.exports = app => {
 
     const operador = app.database.models.Operadores;
     const historico = app.database.models.HistoricoOperadores;
+    const actviidaddo = app.database.models.ActividadesDo;
 
     const docoperador = app.database.models.DocOperadores;
     
@@ -298,9 +299,73 @@ module.exports = app => {
 
 
 
+    app.obtenerActividadesDOXOperador = (req, res) => {
+        actviidaddo.findAll({
+            operador: req.params.operador,
+        }).then(result => {
+            res.json({
+                OK: true,
+                Actividades: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
+    app.crearActividadDO = (req, res) => {
+        let body = req.body;
 
+        let nuevoRegistro = new actviidaddo({
+            operador: body.operador, 
+            tipo: body.tipo, 
+            criticidad: body.criticidad, 
+            grupo: body.grupo, 
+            subgrupo: body.subgrupo, 
+            descripcion: body.descripcion, 
+            fecha_inicio: body.fecha_inicio, 
+            fecha_tentativa: body.fecha_tentativa, 
+            fecha_cierre: body.fecha_cierre, 
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion, 
+            fecha_modificacion: body.fecha_modificacion, 
+            usuario_modificacion: body.usuario_modificacion, 
+            estatus: body.estatus
+        });
 
+        actviidaddo.create(nuevoRegistro.dataValues, {
+            fields: [
+                'operador', 
+                'tipo', 
+                'criticidad', 
+                'grupo', 
+                'subgrupo', 
+                'descripcion', 
+                'fecha_inicio', 
+                'fecha_tentativa', 
+                'fecha_cierre', 
+                'fecha_creacion', 
+                'usuario_creacion', 
+                'fecha_modificacion', 
+                'usuario_modificacion', 
+                'estatus'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Actividad: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
 
 
 
@@ -400,12 +465,6 @@ module.exports = app => {
     }
 
 
-
-
-
-
-
-
     app.obtenerReporteOperadoresAlertas = (req, res) => {
         alerta.findAll({
             attributes: [
@@ -435,9 +494,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
 
     app.obtenerEventosCriticos = (req, res) => {
         evento.findAll({
@@ -561,7 +617,6 @@ module.exports = app => {
             });
         });
     }
-
 
     return app;
 }

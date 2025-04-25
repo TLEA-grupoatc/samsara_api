@@ -19,7 +19,7 @@ module.exports = {
             idle: 30000
         }
     },
-    SEED_TOKEN: process.env.SEED_TOKEN || 'tlea2025',
+    SEED_TOKEN: process.env.SEED_TOKEN || 'TLEA2025JWT',
     CADUCIDAD_TOKEN: process.env.CADUCIDAD_TOKEN || '48h',
     correoOpciones: {
         correo_electronico: process.env.EMAIL || 'flujoliquidaciones@gmail.com',

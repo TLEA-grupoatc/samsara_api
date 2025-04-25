@@ -11,24 +11,46 @@ module.exports = app => {
 
 
     app.get('/obtenerOperadores', verificarToken, Fo.obtenerOperadores);
-
+    
     app.get('/obtenerTodosLosOperadores', verificarToken, Fo.obtenerTodosLosOperadores);
-
+    
     app.get('/obtenerOperadoresLista', verificarToken, Fo.obtenerOperadoresLista);
-
+    
     app.get('/obtenerListaParaSeguimeinto', verificarToken, Fo.obtenerListaParaSeguimeinto);
-
+    
     app.get('/obtenerHistoricoActividadOpe', verificarToken, Fo.obtenerHistoricoActividadOpe);
-
+    
     app.put('/actualizarOperador/:id_operador', verificarToken, Fo.actualizarOperador);
-
+    
     app.delete('/eliminarOperador/:id_operador', verificarToken, Fo.eliminarOperador);
-
+    
     app.post('/crearOperador', verificarToken, Fo.crearOperador);
-
+    
     app.post('/crearCartaOperador', verificarToken, Fo.crearCartaOperador);
-
+    
     app.get('/obtenerCartas/:numero_empleado', verificarToken, Fo.obtenerCartas);
+    
+    
+    
+    
+    app.get('/obtenerActividadesDOXOperador/:operador', verificarToken, Fo.obtenerActividadesDOXOperador);
+    
+    
+    app.post('/crearActividadDO', verificarToken, Fo.crearActividadDO);
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     app.post('/crearCobro', verificarToken, Fo.crearCobro);
