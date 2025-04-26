@@ -20,7 +20,12 @@ module.exports = app => {
 
 
     app.getUbicacionPorEconomico = (req, res) => {  
-        ubiporeco.findAll().then(result => {
+        ubiporeco.findAll({
+            order: [
+                ['economico', 'DESC'],
+                ['hora_entrada', 'DESC']
+            ]
+        }).then(result => {
             res.json({
                 OK: true,
                 Registros: result
@@ -99,7 +104,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.obtenerOrigenes = (req, res) => {  
         origen.findAll().then(result => {
@@ -242,7 +246,6 @@ module.exports = app => {
             });
         });
     }
-
     
     app.obtenerPlanes = async (req, res) => {
         var fecha = moment(new Date()).format('YYYY-MM-DD');

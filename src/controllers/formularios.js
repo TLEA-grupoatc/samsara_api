@@ -130,56 +130,52 @@ module.exports = app => {
 
         operador.findAll({
             where: {
-            estado: 'LABORANDO'
+                estado: 'LABORANDO'
             },
             order: [
-            ['nombre', 'ASC'],
+                ['nombre', 'ASC'],
             ]
         }).then(async operadores => {
             const actividades = await historico.findAll({
-            where: {
-                fecha: {
-                [Op.between]: [thirteenDaysAgo.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
-                }
-            },
-            order: [
-                ['fecha', 'ASC'] // Ordenar las fechas de menor a mayor
-            ],
+                where: {
+                    fecha: {
+                        [Op.between]: [thirteenDaysAgo.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
+                    }
+                },
+                order: [
+                    ['fecha', 'ASC'] // Ordenar las fechas de menor a mayor
+                ]
             });
 
             const operadoresConActividades = operadores.map(op => {
-            const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
+                const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
 
-            const registros = Array.from({ length: 14 }, (_, index) => {
-                if (index < actividadesDelOperador.length) {
-                const actividad = actividadesDelOperador[index];
-                return {
-                    titulo: `${moment(actividad.fecha).format('MM-DD')}`,
-                    actividad: actividad.actividad
-                };
-                } else {
-                return {
-                    titulo: "Sin registro",
-                    actividad: "Sin registro"
-                };
-                }
-            });
+                const registros = Array.from({ length: 14 }, (_, index) => {
+                    const fecha = moment().subtract(index, 'days').startOf('day').format('YYYY-MM-DD');
+                    const titulo = `Día ${14 - index}: ${moment(fecha).format('DD-MM')}`;
+                    const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
 
-            return {
-                ...op.dataValues,
-                registros
-            };
+                    return {
+                        titulo,
+                        actividad: actividad ? actividad.actividad : ""
+                    };
+                }).reverse(); // Ordenar los títulos de forma ascendente
+
+                return {
+                    ...op.dataValues,
+                    registros
+                };
             });
 
             res.json({
-            OK: true,
-            Operadores: operadoresConActividades
+                OK: true,
+                Operadores: operadoresConActividades
             });
         })
         .catch(error => {
             res.status(412).json({
-            OK: false,
-            msg: error.message
+                OK: false,
+                msg: error.message
             });
         });
     }
