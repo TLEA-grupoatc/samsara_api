@@ -9,7 +9,6 @@ module.exports = app => {
     app.post('/crearEvento', verificarToken, Fo.crearEvento);
 
 
-
     app.get('/obtenerOperadores', verificarToken, Fo.obtenerOperadores);
     
     app.get('/obtenerTodosLosOperadores', verificarToken, Fo.obtenerTodosLosOperadores);
@@ -30,7 +29,13 @@ module.exports = app => {
     
     app.get('/obtenerCartas/:numero_empleado', verificarToken, Fo.obtenerCartas);
     
+
+
     
+    app.get('/obtenerOperadoresConHistorico', Fo.obtenerOperadoresConHistorico);
+
+
+
     
     
     app.get('/obtenerActividadesDOXOperador/:operador', verificarToken, Fo.obtenerActividadesDOXOperador);

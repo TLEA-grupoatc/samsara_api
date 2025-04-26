@@ -394,14 +394,13 @@ module.exports = app => {
 
    
 
-    app.obtenerSolicitudesDeGastos = (req, res) => {  
-        var today = new Date();
-        const hoy = moment(today).format('YYYY-MM-DD');
-
+    app.obtenerSolicitudesDeGastos = (req, res) => {
         gasto.findAll({
-            // where: {
-            //     fecha_creacion: hoy
-            // },
+            where: {
+                estatus: {
+                    [Op.ne]: ['Depositado']
+                },
+            },
             order: [['fecha_solicitud', 'DESC']],
         }).then(result => {
             res.json({
@@ -864,22 +863,23 @@ module.exports = app => {
         const today = new Date();
         const dayOfWeek = today.getDay();
         const startOfWeek = new Date(today);
-        
         startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-        
+        startOfWeek.setHours(0, 0, 0, 0);
+
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6);
-        
-        var fechainicio = startOfWeek.toISOString().split('T')[0];
-        var fechafin = endOfWeek.toISOString().split('T')[0];
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        const startOfWeekDate = startOfWeek.toISOString().split('T')[0];
+        const endOfWeekDate = endOfWeek.toISOString().split('T')[0];
+
 
         gasto.findAll({
             where: {
                 operador: req.params.operador,
                 concepto: 'Casa',
-                // fecha_creacion: req.params.fecha_creacion,
                 fecha_creacion: {
-                    [Op.between]: [fechainicio, fechafin]
+                    [Op.between]: [startOfWeekDate, endOfWeekDate]
                 }
             }
         }).then(result => {

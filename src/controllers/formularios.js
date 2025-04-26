@@ -121,6 +121,76 @@ module.exports = app => {
         });
     }
 
+
+
+
+    app.obtenerOperadoresConHistorico = (req, res) => {
+        const today = moment().startOf('day');
+        const thirteenDaysAgo = moment().subtract(13, 'days').startOf('day');
+
+        operador.findAll({
+            where: {
+            estado: 'LABORANDO'
+            },
+            order: [
+            ['nombre', 'ASC'],
+            ]
+        }).then(async operadores => {
+            const actividades = await historico.findAll({
+            where: {
+                fecha: {
+                [Op.between]: [thirteenDaysAgo.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
+                }
+            },
+            order: [
+                ['fecha', 'ASC'] // Ordenar las fechas de menor a mayor
+            ],
+            });
+
+            const operadoresConActividades = operadores.map(op => {
+            const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
+
+            const registros = Array.from({ length: 14 }, (_, index) => {
+                if (index < actividadesDelOperador.length) {
+                const actividad = actividadesDelOperador[index];
+                return {
+                    titulo: `${moment(actividad.fecha).format('MM-DD')}`,
+                    actividad: actividad.actividad
+                };
+                } else {
+                return {
+                    titulo: "Sin registro",
+                    actividad: "Sin registro"
+                };
+                }
+            });
+
+            return {
+                ...op.dataValues,
+                registros
+            };
+            });
+
+            res.json({
+            OK: true,
+            Operadores: operadoresConActividades
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+            OK: false,
+            msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
     app.actualizarOperador = (req, res) => {
         let body = req.body;
 
@@ -301,7 +371,9 @@ module.exports = app => {
 
     app.obtenerActividadesDOXOperador = (req, res) => {
         actviidaddo.findAll({
-            operador: req.params.operador,
+            where: {
+                operador: req.params.operador
+            }
         }).then(result => {
             res.json({
                 OK: true,
