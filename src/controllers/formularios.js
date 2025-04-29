@@ -143,7 +143,7 @@ module.exports = app => {
                     }
                 },
                 order: [
-                    ['fecha', 'ASC'] // Ordenar las fechas de menor a mayor
+                    ['fecha', 'ASC']
                 ]
             });
 
@@ -151,15 +151,15 @@ module.exports = app => {
                 const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
 
                 const registros = Array.from({ length: 14 }, (_, index) => {
-                    const fecha = moment().subtract(index, 'days').startOf('day').format('YYYY-MM-DD');
-                    const titulo = `Día ${14 - index}: ${moment(fecha).format('DD-MM')}`;
+                    const fecha = moment().subtract(13 - index, 'days').startOf('day').format('YYYY-MM-DD');
+                    const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
                     const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
 
                     return {
                         titulo,
                         actividad: actividad ? actividad.actividad : ""
                     };
-                }).reverse(); // Ordenar los títulos de forma ascendente
+                });
 
                 return {
                     ...op.dataValues,

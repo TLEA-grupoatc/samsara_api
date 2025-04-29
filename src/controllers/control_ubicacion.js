@@ -19,6 +19,39 @@ module.exports = app => {
     const Op = Sequelize.Op;
 
 
+    app.getUbicacionPorEconomicoAgrupado = (req, res) => {  
+        ubiporeco.findAll({
+            attributes: [
+                'id_upe',
+                'id_samsara',
+                'economico',
+                'motor',
+                'geocerca',
+                'ubicacion',
+                'ubicacion_snapshot',
+                [literal('MAX(hora_entrada)'), 'hora_entrada'],
+                'movimiento',
+                'hora_salida',
+                'evento',
+            ],
+            group: ['economico'],
+            order: [
+                ['economico', 'DESC'],
+                ['hora_entrada', 'DESC']
+            ]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Registros: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.getUbicacionPorEconomico = (req, res) => {  
         ubiporeco.findAll({
             order: [

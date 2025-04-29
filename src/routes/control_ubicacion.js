@@ -6,6 +6,9 @@ module.exports = app => {
 
 
     app.get('/getUbicacionPorEconomico', cu.getUbicacionPorEconomico);
+    
+    app.get('/getUbicacionPorEconomicoAgrupado', cu.getUbicacionPorEconomicoAgrupado);
+
 
     app.post('/crearCliente', verificarToken, cu.crearCliente);
     
