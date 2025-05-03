@@ -518,16 +518,18 @@ module.exports = app => {
 
 
 
-    app.verificarExistenciaGasto = (req, res) => {  
+    app.verificarExistenciaGasto = (req, res) => {
+        console.log(req.params.operador);
+        console.log(req.params.origen);
+        console.log(req.params.destino);
+        console.log(req.params.fecha_creacion);
+        
         gasto.findAll({
             where: {
                 operador: req.params.operador,
                 origen: req.params.origen,
                 destino: req.params.destino,
                 tipo_gasto: 'NORMAL',
-                concepto:{
-                    [Op.ne]: 'Comida'
-                },
                 fecha_creacion: req.params.fecha_creacion
             }
         }).then(result => {
@@ -823,28 +825,11 @@ module.exports = app => {
 
 
     app.verificarExistenciaGastoComida = (req, res) => {  
-        const today = new Date();
-        const dayOfWeek = today.getDay();
-        const startOfWeek = new Date(today);
-        
-        startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-        
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        
-        var fechainicio = startOfWeek.toISOString().split('T')[0];
-        var fechafin = endOfWeek.toISOString().split('T')[0];
-
-        const formato = moment(today).format('YYYY-MM-DD');
-
         gasto.findAll({
             where: {
                 operador: req.params.operador,
                 concepto: 'Comida',
-                fecha_creacion: formato
-                // fecha_creacion: {
-                //     [Op.between]: [fechainicio, fechafin]
-                // }
+                fecha_creacion: req.params.fecha_creacion
             }
         }).then(result => {
             res.json({
@@ -872,7 +857,6 @@ module.exports = app => {
 
         const startOfWeekDate = startOfWeek.toISOString().split('T')[0];
         const endOfWeekDate = endOfWeek.toISOString().split('T')[0];
-
 
         gasto.findAll({
             where: {
