@@ -8,7 +8,6 @@ module.exports = app => {
 
     app.post('/crearEvento', verificarToken, Fo.crearEvento);
 
-
     app.get('/obtenerOperadores', verificarToken, Fo.obtenerOperadores);
     
     app.get('/obtenerTodosLosOperadores', verificarToken, Fo.obtenerTodosLosOperadores);
@@ -29,43 +28,19 @@ module.exports = app => {
     
     app.get('/obtenerCartas/:numero_empleado', verificarToken, Fo.obtenerCartas);
     
-
-
-    
     app.get('/obtenerOperadoresConHistorico', Fo.obtenerOperadoresConHistorico);
 
+    app.get('/obtenerOperadoresConHistoricoConFiltro/:fecha', Fo.obtenerOperadoresConHistoricoConFiltro);
 
-
-    
-    
     app.get('/obtenerActividadesDOXOperador/:operador', verificarToken, Fo.obtenerActividadesDOXOperador);
-    
     
     app.post('/crearActividadDO', verificarToken, Fo.crearActividadDO);
     
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.post('/crearCobro', verificarToken, Fo.crearCobro);
     
     app.get('/obtenerCobros/:fechaInicio/:fechaFin', verificarToken, Fo.obtenerCobros);
     
     app.delete('/cobroRealizado/:id_cobro/:cobrado_por', verificarToken, Fo.cobroRealizado);
-
-
-
 
     app.get('/obtenerReporteOperadoresAlertas/:fechaInicio/:fechaFin', verificarToken, Fo.obtenerReporteOperadoresAlertas);
 }

@@ -181,6 +181,71 @@ module.exports = app => {
     }
 
 
+    app.obtenerOperadoresConHistoricoConFiltro = (req, res) => {
+        const today = moment(req.params.fecha).startOf('day')
+        const thirteenDaysAgo = today.clone().subtract(13, 'days');
+
+        operador.findAll({
+            where: {
+                estado: 'LABORANDO'
+            },
+            order: [
+                ['nombre', 'ASC'],
+            ]
+        }).then(async operadores => {
+            const actividades = await historico.findAll({
+                where: {
+                    fecha: {
+                        [Op.between]: [thirteenDaysAgo.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
+                    }
+                },
+                order: [
+                    ['fecha', 'ASC']
+                ]
+            });
+
+            const operadoresConActividades = operadores.map(op => {
+                const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
+
+                const registros = Array.from({ length: 14 }, (_, index) => {
+                    const fecha = moment(req.params.fecha).subtract(13 - index, 'days').startOf('day').format('YYYY-MM-DD');
+                    const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
+                    const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+
+                    return {
+                        titulo,
+                        actividad: actividad ? actividad.actividad : ""
+                    };
+                });
+
+                return {
+                    ...op.dataValues,
+                    registros
+                };
+            });
+
+            res.json({
+                OK: true,
+                Operadores: operadoresConActividades
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -392,7 +457,9 @@ module.exports = app => {
             criticidad: body.criticidad, 
             grupo: body.grupo, 
             subgrupo: body.subgrupo, 
-            descripcion: body.descripcion, 
+            descripcion: body.descripcion,
+            comentarios: body.comentarios,
+            seguimiento_colaborador: body.seguimiento_colaborador,
             fecha_inicio: body.fecha_inicio, 
             fecha_tentativa: body.fecha_tentativa, 
             fecha_cierre: body.fecha_cierre, 
@@ -411,6 +478,8 @@ module.exports = app => {
                 'grupo', 
                 'subgrupo', 
                 'descripcion', 
+                'comentarios', 
+                'seguimiento_colaborador', 
                 'fecha_inicio', 
                 'fecha_tentativa', 
                 'fecha_cierre', 

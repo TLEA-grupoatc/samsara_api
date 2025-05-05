@@ -26,6 +26,11 @@ module.exports = app => {
     
     
     app.get('/obtenerSolicitudesDeGastos', verificarToken, cu.obtenerSolicitudesDeGastos);
+
+
+    app.get('/obtenerSolicitudesDeGastosEnlace/:mes/:year', cu.obtenerSolicitudesDeGastosEnlace);
+
+
     
     app.post('/crearSolicitudGastos', verificarToken, cu.crearSolicitudGastos);
 

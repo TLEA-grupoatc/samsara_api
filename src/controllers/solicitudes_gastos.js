@@ -392,8 +392,6 @@ module.exports = app => {
         });    
     }
 
-   
-
     app.obtenerSolicitudesDeGastos = (req, res) => {
         gasto.findAll({
             where: {
@@ -497,33 +495,39 @@ module.exports = app => {
     }
 
 
+    app.obtenerSolicitudesDeGastosEnlace = (req, res) => {
+        var mes = req.params.mes;
+        var year = req.params.year;
 
+        // Calculate the first and last day of the month
+        var firstDay = new Date(year, mes - 1, 1); // First day of the month
+        console.log(firstDay);
+        
+        var lastDay = new Date(year, mes, 0); // Last day of the month
+        console.log(lastDay);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        gasto.findAll({
+            where: {
+                fecha_creacion: {
+                    [Op.between]: [firstDay, lastDay]
+                }
+            },
+            order: [['fecha_creacion', 'DESC']],
+        }).then(result => {
+            res.json({
+            OK: true,
+            Gastos: result
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
 
 
     app.verificarExistenciaGasto = (req, res) => {
-        console.log(req.params.operador);
-        console.log(req.params.origen);
-        console.log(req.params.destino);
-        console.log(req.params.fecha_creacion);
-        
         gasto.findAll({
             where: {
                 operador: req.params.operador,
