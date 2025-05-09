@@ -22,7 +22,6 @@ module.exports = app => {
     app.getUbicacionPorEconomicoAgrupado = (req, res) => {  
         ubiporeco.findAll({
             attributes: [
-                'id_samsara',
                 'economico',
                 'motor',
                 'geocerca',
