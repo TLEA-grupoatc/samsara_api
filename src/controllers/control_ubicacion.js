@@ -26,7 +26,7 @@ module.exports = app => {
         ubiporeco.findAll({
             attributes: [
                 'economico',
-                [Sequelize.fn('MAX', Sequelize.col('hora_entrada')), 'hora_entrada'],
+                [Sequelize.fn('MIN', Sequelize.col('hora_entrada')), 'hora_entrada'],
             ],
             where: {
                 hora_entrada: {
