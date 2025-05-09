@@ -42,7 +42,7 @@ module.exports = app => {
             const latestRecord = await ubiporeco.findOne({
                 where: {
                     economico: group.economico,
-                    hora_entrada: today.toDate()
+                    hora_entrada: group.hora_entrada
                 }
             });
             return latestRecord;
