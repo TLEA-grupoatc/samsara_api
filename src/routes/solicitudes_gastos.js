@@ -120,8 +120,9 @@ module.exports = app => {
 
 
 
+    //LIQUIDACIONES
 
-
+    app.get('/obtenerTramosParaOperadores/', verificarToken, cu.obtenerTramosParaOperadores);
 
 
     app.get('/obtenerGastosParaLiquidaciones/:fecha_solicitud/:operador/:economico', verificarToken, cu.obtenerGastosParaLiquidaciones);

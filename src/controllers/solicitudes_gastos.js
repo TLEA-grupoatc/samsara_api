@@ -1470,6 +1470,23 @@ module.exports = app => {
 
 
 
+    // LIQUIDACIONES
+    app.obtenerTramosParaOperadores = (req, res) => {
+        origendestino.findAll({
+            attributes: ['id_origen_gasto', 'id_destino_gasto'],
+            group: ['id_origen_gasto', 'id_destino_gasto'],
+        }).then(result => { 
+            res.json({
+                OK: true,
+                Tramos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 
