@@ -23,6 +23,14 @@ module.exports = app => {
         const today = moment().startOf('day');
         const sevenDaysAgo = moment().subtract(7, 'days').startOf('day');
 
+
+        var fortoday = today.toDate().toISOString().split('T')[0];
+        var fortosevenday = sevenDaysAgo.toDate().toISOString().split('T')[0];
+
+
+        console.log(fortosevenday + ' 23:59:59');
+        console.log(fortoday + ' 23:59:59');
+        
         ubiporeco.findAll({
             attributes: [
                 'economico',
@@ -30,7 +38,7 @@ module.exports = app => {
             ],
             where: {
                 hora_entrada: {
-                    [Op.between]: [sevenDaysAgo.toDate(), today.toDate()]
+                    [Op.between]: [fortosevenday + ' 00:00:00', fortoday + ' 23:59:59'],
                 }
             },
             group: ['economico'],
