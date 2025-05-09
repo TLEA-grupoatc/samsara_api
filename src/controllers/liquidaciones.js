@@ -12,7 +12,6 @@ module.exports = app => {
     const liquidacion = app.database.models.Liquidaciones;
     const prenominadocs = app.database.models.PrenominasDocumentos;
 
-    
     const gasto = app.database.models.SolicitudGastos;
 
     const Sequelize = require('sequelize');
@@ -403,7 +402,6 @@ module.exports = app => {
         });
     }
 
-
     app.obtenerLiquidacionTotal = (req, res) => { 
         liquidacion.findAll({
             order: [['fecha', 'DESC']],
@@ -419,7 +417,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.obtenerLiquidacionXAnno = (req, res) => { 
         liquidacion.findAll({
@@ -1013,8 +1010,6 @@ module.exports = app => {
         });
     }
 
-
-
     app.matrixDieselOperadorReporte = async (req, res) => {
         var an = req.params.ano;
         var me = req.params.mes;
@@ -1055,11 +1050,6 @@ module.exports = app => {
             Diferencias: resultado
         });
     }
-
-
-
-
-
 
     app.resumenMatrisOperador = async (req, res) => {
         var pres = await prenomina.findAll({
@@ -1124,9 +1114,6 @@ module.exports = app => {
             Dato: pres
         });
     }
-
-
-
 
     app.matrixDieselTracto = async (req, res) => {
         var an = req.params.ano;
@@ -1265,15 +1252,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1557,8 +1535,44 @@ module.exports = app => {
 
 
 
+    //obtener Usuarios Liquidacion
 
 
+    app.obtenerUsuariosLiquidacion = (req, res) => {
+        liquidacion.findAll({
+            attributes: ['usuario'],
+            group: ['usuario'],
+            order: [['usuario', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Usuarios: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerUsuariosPrenomina = (req, res) => {
+        liquidacion.findAll({
+            attributes: ['usuario'],
+            group: ['usuario'],
+            order: [['usuario', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Usuarios: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 

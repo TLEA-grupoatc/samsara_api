@@ -53,6 +53,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.FLOAT,
             allowNull: true
         }, 
+        montotabla: {
+            type: DataType.FLOAT,
+            allowNull: true
+        }, 
         comentarios: {
             type: DataType.STRING,
             allowNull: true

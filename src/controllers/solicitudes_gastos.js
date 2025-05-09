@@ -566,7 +566,8 @@ module.exports = app => {
                 cliente: inf.cliente, 
                 tipo_gasto: inf.tipo_gasto, 
                 concepto: inf.concepto, 
-                monto: inf.monto, 
+                monto: inf.monto,
+                montotabla: inf.montotabla,
                 comentarios: inf.comentarios, 
                 conceptos_agrupados: inf.conceptos_agrupados, 
                 pendientedeaprobar: inf.pendientedeaprobar,
@@ -590,7 +591,8 @@ module.exports = app => {
                     'cliente', 
                     'tipo_gasto', 
                     'concepto', 
-                    'monto', 
+                    'monto',
+                    'montotabla',
                     'comentarios', 
                     'conceptos_agrupados', 
                     'pendientedeaprobar',
@@ -817,7 +819,23 @@ module.exports = app => {
 
 
 
-
+    app.obtenerUsuariosGastos = (req, res) => {
+        liquidacion.findAll({
+            attributes: ['usuario'],
+            group: ['usuario'],
+            order: [['usuario', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Usuarios: result,
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 

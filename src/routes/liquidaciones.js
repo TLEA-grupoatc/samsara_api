@@ -62,6 +62,18 @@ module.exports = app => {
     
     app.get('/obtenerInfoOperador/:operador', verificarToken, Liq.obtenerInfoOperador);
 
+
+
+
+
+    app.get('/obtenerUsuariosLiquidacion', verificarToken, Liq.obtenerUsuariosLiquidacion);
+    
+    app.get('/obtenerUsuariosPrenomina', verificarToken, Liq.obtenerUsuariosPrenomina);
+
+
+
+
+
     app.get('/obtenerValesGastosLigados/:id_liquidacion', verificarToken, Liq.obtenerValesGastosLigados);
 
     app.put('/ligarNuevosValesGastos/:id_liquidacion', verificarToken, Liq.ligarNuevosValesGastos);

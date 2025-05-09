@@ -20,7 +20,17 @@ module.exports = app => {
         }
     };
 
-    app.obtenerSolicitudes = (req, res) => {
+    // samsaraDevRel.auth('samsara_api_hstw6FzOAtotyCJGFJmuIxmQfJPvhO');
+    // samsaraDevRel.createDriverVehicleAssignment(
+    //     {driverId: '54564', vehicleId: '48484919198981651'}
+    // ).then(({ data }) => console.log(data)).catch(err => console.error(err));
+
+    
+  
+  
+  
+  
+  app.obtenerSolicitudes = (req, res) => {
         valediesel.findAll({
             where: {
                 fecha_creacion: {

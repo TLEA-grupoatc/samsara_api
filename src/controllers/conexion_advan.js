@@ -513,17 +513,20 @@ module.exports = app => {
 
 
 
+            // RUTA_ORIGEN, RUTA_DESTINO, RUTA_DESCRIP
 
-
-            let result = await pool.request().query("SELECT BT.BAN_LIQUIDACION, BT.FECHA_BITACORA, BT.TERMINAL_BITACORA, BT.TRACTO_NUM_ECO, BRS.NUM_ORDEN, BRS.BITACORA, BRS.ORIGEN_DESC, BRS.cliente_nombre, BRS.DESTINO_DESC, BRS.NUM_ORDEN, OP.OPERADOR_NOMBRE FROM bitacoras AS BT \
-                INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
-                INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
-                WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES';"
-            );
-
-                
-
-
+            let result = await pool.request().query("SELECT localidades FROM ruta_descripcion group by localidades;");
+            // let result = await pool.request().query("SELECT localidades FROM ruta_descripcion;");
+            
+            // let result = await pool.request().query("SELECT top 100 * from vBitacora_ruta_sld;");
+            
+            
+            
+            // let result = await pool.request().query("SELECT BT.BAN_LIQUIDACION, BT.FECHA_BITACORA, BT.TERMINAL_BITACORA, BT.TRACTO_NUM_ECO, BRS.NUM_ORDEN, BRS.BITACORA, BRS.ORIGEN_DESC, BRS.cliente_nombre, BRS.DESTINO_DESC, BRS.NUM_ORDEN, OP.OPERADOR_NOMBRE FROM bitacoras AS BT \
+            //     INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
+            //     INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
+            //     WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES';"
+            // );
 
 
 
@@ -539,8 +542,8 @@ module.exports = app => {
             
             res.json({
                 OK: true,
-                total: result.length,
-                Registros: result
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
             });
         }
         catch (err) {
@@ -571,8 +574,8 @@ module.exports = app => {
             
             res.json({
                 OK: true,
-                total: result.length,
-                Registros: result
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
             });
         }
         catch (err) {
