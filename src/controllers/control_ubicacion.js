@@ -22,6 +22,8 @@ module.exports = app => {
     app.getUbicacionPorEconomicoAgrupado = (req, res) => {  
         ubiporeco.findAll({
             attributes: [
+                'id_upe',
+                'id_samsara',
                 'economico',
                 'motor',
                 'geocerca',
@@ -32,8 +34,7 @@ module.exports = app => {
                 'hora_salida',
                 'evento',
             ],
-            group: ['economico', 'geocerca', 'ubicacion_snapshot', 'hora_entrada'],
-            // group: ['economico'],
+            group: ['economico'],
             order: [
                 ['economico', 'DESC'],
                 ['hora_entrada', 'DESC']
