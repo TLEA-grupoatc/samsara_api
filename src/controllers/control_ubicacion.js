@@ -25,27 +25,27 @@ module.exports = app => {
 
         ubiporeco.findAll({
             attributes: [
-            'economico',
-            [Sequelize.fn('MAX', Sequelize.col('hora_entrada')), 'hora_entrada'],
+                'economico',
+                [Sequelize.fn('MAX', Sequelize.col('hora_entrada')), 'hora_entrada'],
             ],
             where: {
-            hora_entrada: {
-                [Op.between]: [sevenDaysAgo.toDate(), today.toDate()]
-            }
+                hora_entrada: {
+                    [Op.between]: [sevenDaysAgo.toDate(), today.toDate()]
+                }
             },
             group: ['economico'],
             order: [
-            ['economico', 'DESC'],
+                ['economico', 'DESC'],
             ]
         }).then(async groupedResults => {
             const result = await Promise.all(groupedResults.map(async group => {
             const latestRecord = await ubiporeco.findOne({
                 where: {
-                economico: group.economico,
-                hora_entrada: group.hora_entrada,
-                hora_entrada: {
-                    [Op.between]: [sevenDaysAgo.toDate(), today.toDate()]
-                }
+                    economico: group.economico,
+                    hora_entrada: group.hora_entrada,
+                    hora_entrada: {
+                        [Op.between]: [sevenDaysAgo.toDate(), today.toDate()]
+                    }
                 }
             });
             return latestRecord;
