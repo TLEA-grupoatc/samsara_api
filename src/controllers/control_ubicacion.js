@@ -20,11 +20,19 @@ module.exports = app => {
 
 
     app.getUbicacionPorEconomicoAgrupado = (req, res) => {  
+        const today = moment().startOf('day');
+        const sevenDaysAgo = moment().subtract(7, 'days').startOf('day');
+
         ubiporeco.findAll({
             attributes: [
             'economico',
             [Sequelize.fn('MAX', Sequelize.col('hora_entrada')), 'hora_entrada'],
             ],
+            where: {
+            hora_entrada: {
+                [Op.between]: [sevenDaysAgo.toDate(), today.toDate()]
+            }
+            },
             group: ['economico'],
             order: [
             ['economico', 'DESC'],
@@ -34,7 +42,10 @@ module.exports = app => {
             const latestRecord = await ubiporeco.findOne({
                 where: {
                 economico: group.economico,
-                hora_entrada: group.hora_entrada
+                hora_entrada: group.hora_entrada,
+                hora_entrada: {
+                    [Op.between]: [sevenDaysAgo.toDate(), today.toDate()]
+                }
                 }
             });
             return latestRecord;
@@ -46,7 +57,6 @@ module.exports = app => {
             Registros: result
             });
         })
-
         .catch(error => {
             res.status(412).json({
             msg: error.message
