@@ -22,28 +22,31 @@ module.exports = app => {
     app.getUbicacionPorEconomicoAgrupado = (req, res) => {  
         ubiporeco.findAll({
             attributes: [
-            'id_samsara',
             'economico',
-            'motor',
-            'geocerca',
-            'ubicacion',
-            'ubicacion_snapshot',
-            [literal('MAX(hora_entrada)'), 'hora_entrada'],
-            'movimiento',
-            'hora_salida',
-            'evento',
+            [Sequelize.fn('MAX', Sequelize.col('hora_entrada')), 'hora_entrada'],
             ],
             group: ['economico'],
             order: [
             ['economico', 'DESC'],
-            [literal('MAX(hora_entrada)'), 'DESC']
             ]
-        }).then(result => {
+        }).then(async groupedResults => {
+            const result = await Promise.all(groupedResults.map(async group => {
+            const latestRecord = await ubiporeco.findOne({
+                where: {
+                economico: group.economico,
+                hora_entrada: group.hora_entrada
+                }
+            });
+            return latestRecord;
+            }));
+
             res.json({
             OK: true,
+            Total: result.length,
             Registros: result
-            })
+            });
         })
+
         .catch(error => {
             res.status(412).json({
             msg: error.message
