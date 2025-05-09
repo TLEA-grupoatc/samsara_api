@@ -34,7 +34,8 @@ module.exports = app => {
                 'hora_salida',
                 'evento',
             ],
-            group: ['economico', 'geocerca', 'ubicacion_snapshot', 'hora_entrada'],
+            // group: ['economico', 'geocerca', 'ubicacion_snapshot', 'hora_entrada'],
+            group: ['economico'],
             order: [
                 ['economico', 'DESC'],
                 ['hora_entrada', 'DESC']
