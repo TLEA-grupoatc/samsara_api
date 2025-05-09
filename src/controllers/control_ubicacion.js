@@ -37,6 +37,7 @@ module.exports = app => {
                 [Sequelize.fn('MAX', Sequelize.col('hora_entrada')), 'hora_entrada'],
             ],
             where: {
+                movimiento:"Entro a Geocerca",
                 hora_entrada: {
                     [Op.between]: [fortosevenday + ' 00:00:00', fortoday + ' 23:59:59'],
                 }
