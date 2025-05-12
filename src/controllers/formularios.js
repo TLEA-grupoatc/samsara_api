@@ -122,6 +122,29 @@ module.exports = app => {
     }
 
 
+    app.cerrarQueja = (req, res) => {
+        let data = new actviidaddo({
+            estatus: 'CERRADO',
+            fecha_cierre: moment().format('YYYY-MM-DD HH:mm:ss')
+        });
+
+        actviidaddo.update(data.dataValues, {
+            where: {
+                id_actividad_ope_op: req.params.id_actividad_ope_op
+            },
+            fields: ['estatus', 'fecha_cierre']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
 
 
     app.obtenerOperadoresConHistorico = (req, res) => {

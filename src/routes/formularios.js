@@ -19,6 +19,8 @@ module.exports = app => {
     app.get('/obtenerHistoricoActividadOpe', verificarToken, Fo.obtenerHistoricoActividadOpe);
     
     app.put('/actualizarOperador/:id_operador', verificarToken, Fo.actualizarOperador);
+
+    app.put('/cerrarQueja/:id_actividad_ope_op', verificarToken, Fo.cerrarQueja);
     
     app.delete('/eliminarOperador/:id_operador', verificarToken, Fo.eliminarOperador);
     
