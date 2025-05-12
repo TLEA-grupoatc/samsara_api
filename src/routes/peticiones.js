@@ -73,8 +73,10 @@ module.exports = app => {
     app.get('/obtenerReporteAlertas/:division/:fechainicio/:fechafin', verificarToken, Peticion.obtenerReporteAlertas);
 
     app.get('/obtenerCumplientoAlertas/:fechainicio/:fechafin', verificarToken, Peticion.obtenerCumplientoAlertas);
-
-
+    
+    
+    app.get('/enlazarUnidadAOperadorSamsara', Peticion.enlazarUnidadAOperadorSamsara);
+    
 
 
     app.get('/obtenerTiempoDeRespuesta/:division/:fechainicio/:fechafin', verificarToken, Peticion.obtenerTiempoDeRespuesta);

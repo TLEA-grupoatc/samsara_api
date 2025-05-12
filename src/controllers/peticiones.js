@@ -71,6 +71,46 @@ module.exports = app => {
         });
     }
 
+    app.enlazarUnidadAOperadorSamsara = (req, res) => {
+
+
+        // lista.forEach(element => {
+        //     Samsara.createDriverVehicleAssignment({
+        //         driverId: element.idoperador, 
+        //         vehicleId: element.idunidad
+        //     })
+        //     .then(result => console.log(result))
+        //     .catch(err => console.error(err));
+        // });
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.obtenerVehiculos = (req, res) => {
         unidad.findAll({
             order: [
@@ -691,7 +731,6 @@ module.exports = app => {
         });
     }
 
-
     app.crearSeguimiento = (req, res) => {
         let body = req.body;
         const date = new Date(body.fechahora);
@@ -793,8 +832,6 @@ module.exports = app => {
             });
         });
     }
-
-
 
     app.obtenerGeocercas = (req, res) => {
         var geocercas = [];
@@ -966,8 +1003,6 @@ module.exports = app => {
             Grafica: resultado
         })
     }
-
-
 
     app.obtenerReporteGeneral = (req, res) => {
         alerta.findAll({

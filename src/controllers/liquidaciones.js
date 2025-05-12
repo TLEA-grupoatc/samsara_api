@@ -12,6 +12,9 @@ module.exports = app => {
     const liquidacion = app.database.models.Liquidaciones;
     const prenominadocs = app.database.models.PrenominasDocumentos;
 
+    const rechazoLiq = app.database.models.RechazoLiquidaciones;
+    const rechazoPre = app.database.models.RechazoPrenominas;
+
     const gasto = app.database.models.SolicitudGastos;
 
     const Sequelize = require('sequelize');
@@ -1253,11 +1256,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
     app.registrarLiquidacion = (req, res) => {
         let body = req.body;
         var directorio = 'documentos/';
@@ -1518,26 +1516,7 @@ module.exports = app => {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     //obtener Usuarios Liquidacion
-
-
     app.obtenerUsuariosLiquidacion = (req, res) => {
         liquidacion.findAll({
             attributes: ['usuario'],
@@ -1573,29 +1552,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     
     app.editarLiquidacion = (req, res) => {
         let body = req.body;
@@ -2701,7 +2657,6 @@ module.exports = app => {
         }
     }
 
-
     // rendimientos
     app.cargarEvidenciaRendimientos = (req, res) => {
             let data = new liquidacion({
@@ -2932,9 +2887,6 @@ module.exports = app => {
             // DocumentosExtras: result
         });
     }
-
-
-
 
 
 
@@ -3278,9 +3230,6 @@ module.exports = app => {
         });
     }
 
-
-
-
     app.obtenerTotalLocalidadDiario = (req, res) => {
         prenomina.findAll({
             attributes: [
@@ -3361,8 +3310,6 @@ module.exports = app => {
         }
     }
 
-
-
     app.obtenerTotalEstatusLiquidacion = (req, res) => {
         liquidacion.findAll({
             attributes: [
@@ -3419,7 +3366,138 @@ module.exports = app => {
         });
     }
 
-    
+    // BACKUPS
+    app.obtenerPrenominaDocumentosBackup = (req, res) => {
+        prenominadocs.findAll({}).then(result => {
+            res.json({
+                OK: true,
+                Registros: result
+            })
+        }).catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+    // RECHAZOS
+    app.crearRechazoLiquidacion = (req, res) => {
+        var body = req.body;
+
+        let nuevoRechazo = new rechazoLiq({
+            fecha: body.fecha,
+            liquidacion: body.liquidacion,
+            operador: body.operador,
+            unidad_negocio: body.unidad_negocio,
+            liquidador: body.liquidador,
+            incidencia: body.incidencia,
+            auditor: body.auditor
+        });
+
+        rechazoLiq.create(nuevoRechazo.dataValues, {
+            fields: [
+                'fecha', 
+                'liquidacion', 
+                'operador', 
+                'unidad_negocio', 
+                'liquidador', 
+                'incidencia', 
+                'auditor'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Rechazo: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerRechazosdeLiquidaciones = (req, res) => {
+        rechazoLiq.findAll({
+        }).then(result => {
+            res.json({
+                OK: true,
+                Rechazos : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearRechazoPrenomina = (req, res) => {
+        var body = req.body;
+
+        let nuevoRechazo = new rechazoPre({
+            fecha: body.fecha,
+            operador: body.operador,
+            tracto: body.tracto,
+            unidad_negocio: body.unidad_negocio,
+            prenominista: body.prenominista,
+            incidencia: body.incidencia,
+            auditor: body.auditor
+        });
+
+        rechazoPre.create(nuevoRechazo.dataValues, {
+            fields: [
+                'fecha', 
+                'operador', 
+                'tracto', 
+                'unidad_negocio', 
+                'prenominista', 
+                'incidencia', 
+                'auditor'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Rechazo: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerRechazosdePrenominas = (req, res) => {
+        rechazoPre.findAll({
+        }).then(result => {
+            res.json({
+                OK: true,
+                Rechazos : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
 
 
     function getDatesArray(startDate, endDate) {
@@ -3486,25 +3564,6 @@ module.exports = app => {
         catch (error) {
             
         }
-    }
-
-
-
-
-
-    // BACKUPS
-
-    app.obtenerPrenominaDocumentosBackup = (req, res) => {
-        prenominadocs.findAll({}).then(result => {
-            res.json({
-                OK: true,
-                Registros: result
-            })
-        }).catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
     }
 
     return app;

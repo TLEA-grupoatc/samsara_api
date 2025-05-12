@@ -241,7 +241,12 @@ module.exports = app => {
     
     
     
+    app.post('/crearRechazoLiquidacion', verificarToken, Liq.crearRechazoLiquidacion);
+    app.get('/obtenerRechazosdeLiquidaciones', Liq.obtenerRechazosdeLiquidaciones);
     
+    
+    app.post('/crearRechazoPrenomina', verificarToken, Liq.crearRechazoPrenomina);
+    app.get('/obtenerRechazosdePrenominas', Liq.obtenerRechazosdePrenominas);
     
     
     
