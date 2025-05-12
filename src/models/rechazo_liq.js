@@ -9,6 +9,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        id_liquidacion:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         liquidacion:{
             type: DataType.STRING,
             allowNull: true

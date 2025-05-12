@@ -3391,6 +3391,7 @@ module.exports = app => {
 
         let nuevoRechazo = new rechazoLiq({
             fecha: body.fecha,
+            id_liquidacion: body.id_liquidacion,
             liquidacion: body.liquidacion,
             operador: body.operador,
             unidad_negocio: body.unidad_negocio,
@@ -3402,6 +3403,7 @@ module.exports = app => {
         rechazoLiq.create(nuevoRechazo.dataValues, {
             fields: [
                 'fecha', 
+                'id_liquidacion', 
                 'liquidacion', 
                 'operador', 
                 'unidad_negocio', 
@@ -3438,10 +3440,29 @@ module.exports = app => {
         });
     }
 
+    app.obtenerRechazosdeLiquidacionesXliquidacion = (req, res) => {
+        rechazoLiq.findAll({
+            where: {
+                id_liquidacion: req.params.id_liquidacion
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Rechazos : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.crearRechazoPrenomina = (req, res) => {
         var body = req.body;
 
         let nuevoRechazo = new rechazoPre({
+            id_prenomina: body.id_prenomina,
             fecha: body.fecha,
             operador: body.operador,
             tracto: body.tracto,
@@ -3453,6 +3474,7 @@ module.exports = app => {
 
         rechazoPre.create(nuevoRechazo.dataValues, {
             fields: [
+                'id_prenomina', 
                 'fecha', 
                 'operador', 
                 'tracto', 
@@ -3478,7 +3500,25 @@ module.exports = app => {
     app.obtenerRechazosdePrenominas = (req, res) => {
         rechazoPre.findAll({
         }).then(result => {
-            res.json({
+            res.json({  
+                OK: true,
+                Rechazos : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerRechazosdePrenominasXPrenomina = (req, res) => {
+        rechazoPre.findAll({
+            where: {
+                id_prenomina: req.params.id_prenomina
+            }
+        }).then(result => {
+            res.json({  
                 OK: true,
                 Rechazos : result
             })

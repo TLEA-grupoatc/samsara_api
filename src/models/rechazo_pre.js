@@ -5,6 +5,10 @@ module.exports = (sequelize, DataType) => {
             autoIncrement: true,
             primaryKey: true
         },
+        id_prenomina:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         fecha:{
             type: DataType.STRING,
             allowNull: true
