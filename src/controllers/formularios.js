@@ -180,7 +180,8 @@ module.exports = app => {
 
                     return {
                         titulo,
-                        actividad: actividad ? actividad.actividad : ""
+                        actividad: actividad ? actividad.actividad : "",
+                        comentarios: actividad ? actividad.comentarios : ""
                     };
                 });
 
@@ -284,6 +285,7 @@ module.exports = app => {
             nombre: body.nombre,
             estado: body.estado,
             estado_actividad: body.estado_actividad,
+            comentarios: body.comentarios,
             registrado_por: body.registrado_por,
             fecha_actividad: body.fecha_actividad
         });
@@ -298,6 +300,7 @@ module.exports = app => {
                 'nombre',
                 'estado',
                 'estado_actividad',
+                'comentarios',
                 'registrado_por',
                 'fecha_actividad'
             ]

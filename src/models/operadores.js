@@ -25,6 +25,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        comentarios: {
+            type: DataType.STRING,
+            allowNull: true
+        },
         registrado_por: {
             type: DataType.STRING,
             allowNull: true

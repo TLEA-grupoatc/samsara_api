@@ -25,6 +25,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        comentarios: {
+            type: DataType.STRING,
+            allowNull: true
+        },
         fecha: {
             type: DataType.STRING,
             allowNull: true
