@@ -457,6 +457,35 @@ module.exports = app => {
         });
     }
 
+
+
+    app.obtenerSolicitudesDeGastosXEstatusPorAprobar = (req, res) => {  
+        gasto.findAll({
+            where: {
+                [Op.or]: [ { estatus: req.params.estatus }, { pendientedeaprobar: 0, estatus: 'Depositado' } ]
+            },
+            order: [['fecha_solicitud', 'DESC']],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
     app.obtenerSolicitudesDeGastosXAuxiliar = (req, res) => {  
         gasto.findAll({
             where: {

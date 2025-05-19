@@ -76,7 +76,8 @@ module.exports = app => {
     
     
     app.get('/obtenerSolicitudesDeGastosXEstatus/:estatus', verificarToken, cu.obtenerSolicitudesDeGastosXEstatus);
-
+    
+    app.get('/obtenerSolicitudesDeGastosXEstatusPorAprobar/:estatus', verificarToken, cu.obtenerSolicitudesDeGastosXEstatusPorAprobar);
 
     app.get('/obtenerSolicitudesDeGastosProCan', verificarToken, cu.obtenerSolicitudesDeGastosProCan);
     
