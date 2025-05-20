@@ -121,7 +121,6 @@ module.exports = app => {
         });
     }
 
-
     app.cerrarQueja = (req, res) => {
         let data = new actviidaddo({
             estatus: 'CERRADO',
@@ -146,64 +145,67 @@ module.exports = app => {
         });
     }
 
-
     app.obtenerOperadoresConHistorico = (req, res) => {
-        const today = moment().startOf('day');
-        const thirteenDaysAgo = moment().subtract(13, 'days').startOf('day');
+        const year = req.query.year ? parseInt(req.query.year) : moment().year();
+        const month = req.query.month ? parseInt(req.query.month) : moment().month() + 1; // month is 1-based for users
+
+        // Get first and last day of the month
+        const startOfMonth = moment(`${year}-${month}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month').startOf('day');
+        const daysInMonth = endOfMonth.date();
 
         operador.findAll({
             where: {
-                estado: 'LABORANDO'
+            estado: 'LABORANDO'
             },
             order: [
-                ['nombre', 'ASC'],
+            ['nombre', 'ASC'],
             ]
         }).then(async operadores => {
             const actividades = await historico.findAll({
-                where: {
-                    fecha: {
-                        [Op.between]: [thirteenDaysAgo.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
-                    }
-                },
-                order: [
-                    ['fecha', 'ASC']
-                ]
+            where: {
+                fecha: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
+                }
+            },
+            order: [
+                ['fecha', 'ASC']
+            ]
             });
 
             const operadoresConActividades = operadores.map(op => {
-                const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
+            const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
 
-                const registros = Array.from({ length: 14 }, (_, index) => {
-                    const fecha = moment().subtract(13 - index, 'days').startOf('day').format('YYYY-MM-DD');
-                    const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
-                    const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
-
-                    return {
-                        titulo,
-                        actividad: actividad ? actividad.actividad : "",
-                        comentarios: actividad ? actividad.comentarios : ""
-                    };
-                });
+            const registros = Array.from({ length: daysInMonth }, (_, index) => {
+                const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
+                const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
+                const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
 
                 return {
-                    ...op.dataValues,
-                    registros
+                titulo,
+                actividad: actividad ? actividad.actividad : "",
+                comentarios: actividad ? actividad.comentarios : ""
                 };
             });
 
+            return {
+                ...op.dataValues,
+                registros
+            };
+            });
+
             res.json({
-                OK: true,
-                Operadores: operadoresConActividades
+            OK: true,
+            Operadores: operadoresConActividades
             });
         })
         .catch(error => {
             res.status(412).json({
-                OK: false,
-                msg: error.message
+            OK: false,
+            msg: error.message
             });
         });
     }
-
 
     app.obtenerOperadoresConHistoricoConFiltro = (req, res) => {
         const today = moment(req.params.fecha).startOf('day')
