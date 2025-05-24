@@ -10,6 +10,7 @@ module.exports = app => {
     const operador = app.database.models.Operadores;
     const historico = app.database.models.HistoricoOperadores;
     const actviidaddo = app.database.models.ActividadesDo;
+    const queope = app.database.models.QuejaOperador;
 
     const prenomina = app.database.models.Prenominas;
     const liquidacion = app.database.models.Liquidaciones;
@@ -153,7 +154,8 @@ module.exports = app => {
         const year = req.query.year ? parseInt(req.query.year) : moment().year();
         const month = req.query.month ? parseInt(req.query.month) : moment().month() + 1; // month is 1-based for users
 
-        const startOfMonth = moment(`${year}-${month}-01`).startOf('day');
+        const monthPadded = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
         const endOfMonth = moment(startOfMonth).endOf('month').startOf('day');
         const daysInMonth = endOfMonth.date();
 
@@ -169,21 +171,21 @@ module.exports = app => {
 
         operador.findAll({
             where: {
-            estado: 'LABORANDO'
+                estado: 'LABORANDO'
             },
             order: [
-            ['nombre', 'ASC'],
+                ['nombre', 'ASC'],
             ]
         }).then(async operadores => {
             const actividades = await historico.findAll({
-            where: {
-                fecha: {
-                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
-                }
-            },
-            order: [
-                ['fecha', 'ASC']
-            ]
+                where: {
+                    fecha: {
+                        [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
+                    }
+                },
+                order: [
+                    ['fecha', 'ASC']
+                ]
             });
 
             const operadoresConActividades = operadores.map(op => {
@@ -199,9 +201,9 @@ module.exports = app => {
                 const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
 
                 return {
-                titulo,
-                actividad: actividad ? actividad.actividad : "",
-                comentarios: actividad ? actividad.comentarios : ""
+                    titulo,
+                    actividad: actividad ? actividad.actividad : "",
+                    comentarios: actividad ? actividad.comentarios : ""
                 };
             });
 
@@ -213,21 +215,41 @@ module.exports = app => {
             });
 
             res.json({
-            OK: true,
-            Operadores: operadoresConActividades
+                OK: true,
+                Operadores: operadoresConActividades
             });
         })
         .catch(error => {
             res.status(412).json({
-            OK: false,
-            msg: error.message
+                OK: false,
+                msg: error.message
             });
         });
     }
 
-    app.obtenerOperadoresConHistoricoConFiltro = (req, res) => {
-        const today = moment(req.params.fecha).startOf('day')
-        const thirteenDaysAgo = today.clone().subtract(13, 'days');
+    app.obtenerOperadoresConHistoricoConFiltro = async (req, res) => {
+        const year = req.params.year ? parseInt(req.params.year) : moment().year();
+        const month = req.params.month ? parseInt(req.params.month) : moment().month() + 1; // month is 1-based for users
+
+        console.log(req.params.year);
+        console.log(year);
+        console.log(req.params.month);
+        console.log(month);
+
+        const monthPadded = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month').startOf('day');
+        const daysInMonth = endOfMonth.date();
+
+        let empleadosExternos = [];
+
+        try {
+            const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
+            empleadosExternos = response.data.Empleados || [];
+        }
+        catch (err) {
+            empleadosExternos = [];
+        }
 
         operador.findAll({
             where: {
@@ -240,7 +262,7 @@ module.exports = app => {
             const actividades = await historico.findAll({
                 where: {
                     fecha: {
-                        [Op.between]: [thirteenDaysAgo.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')],
+                        [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
                     }
                 },
                 order: [
@@ -249,23 +271,29 @@ module.exports = app => {
             });
 
             const operadoresConActividades = operadores.map(op => {
-                const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
+            const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
 
-                const registros = Array.from({ length: 14 }, (_, index) => {
-                    const fecha = moment(req.params.fecha).subtract(13 - index, 'days').startOf('day').format('YYYY-MM-DD');
-                    const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
-                    const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+            // Buscar avatar usando numero_empleado0
+            const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.numero_empleado));
+            const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
 
-                    return {
-                        titulo,
-                        actividad: actividad ? actividad.actividad : ""
-                    };
-                });
+            const registros = Array.from({ length: daysInMonth }, (_, index) => {
+                const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
+                const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
+                const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
 
                 return {
-                    ...op.dataValues,
-                    registros
+                    titulo,
+                    actividad: actividad ? actividad.actividad : "",
+                    comentarios: actividad ? actividad.comentarios : ""
                 };
+            });
+
+            return {
+                ...op.dataValues,
+                avatar,
+                registros
+            };
             });
 
             res.json({
@@ -579,6 +607,90 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+    app.obtenerQuejasXOperador = (req, res) => {
+        queope.findAll({
+            where: {
+                operador: req.params.operador
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Quejas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearQuejaOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new queope({
+            operador: body.operador, 
+            realizo_queja: body.realizo_queja, 
+            descripcion: body.descripcion, 
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion, 
+            fecha_modificacion: body.fecha_modificacion, 
+            usuario_modificacion: body.usuario_modificacion, 
+            fecha_cierre: body.fecha_cierre, 
+            estatus: body.estatus
+        });
+
+        queope.create(nuevoRegistro.dataValues, {
+            fields: [
+                'operador', 
+                'realizo_queja',
+                'descripcion', 
+                'fecha_creacion', 
+                'usuario_creacion', 
+                'fecha_modificacion', 
+                'usuario_modificacion', 
+                'fecha_cierre', 
+                'estatus'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Queja: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.obtenerActividadesDOXOperador = (req, res) => {
         actviidaddo.findAll({
             where: {
@@ -608,6 +720,8 @@ module.exports = app => {
             subgrupo: body.subgrupo, 
             descripcion: body.descripcion,
             comentarios: body.comentarios,
+            enbase: body.enbase,
+            base: body.base,
             seguimiento_colaborador: body.seguimiento_colaborador,
             fecha_inicio: body.fecha_inicio, 
             fecha_tentativa: body.fecha_tentativa, 
@@ -628,6 +742,8 @@ module.exports = app => {
                 'subgrupo', 
                 'descripcion', 
                 'comentarios', 
+                'enbase', 
+                'base', 
                 'seguimiento_colaborador', 
                 'fecha_inicio', 
                 'fecha_tentativa', 

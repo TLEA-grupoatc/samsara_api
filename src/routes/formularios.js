@@ -16,7 +16,7 @@ module.exports = app => {
     
     app.get('/obtenerListaParaSeguimeinto', verificarToken, Fo.obtenerListaParaSeguimeinto);
     
-    app.get('/obtenerHistoricoActividadOpe', verificarToken, Fo.obtenerHistoricoActividadOpe);
+    app.get('/obtenerHistoricoActividadOpe', Fo.obtenerHistoricoActividadOpe);
     
     app.put('/actualizarOperador/:id_operador', verificarToken, Fo.actualizarOperador);
 
@@ -32,7 +32,7 @@ module.exports = app => {
     
     app.get('/obtenerOperadoresConHistorico', Fo.obtenerOperadoresConHistorico);
 
-    app.get('/obtenerOperadoresConHistoricoConFiltro/:fecha', Fo.obtenerOperadoresConHistoricoConFiltro);
+    app.get('/obtenerOperadoresConHistoricoConFiltro/:year/:month', Fo.obtenerOperadoresConHistoricoConFiltro);
 
     app.get('/obtenerActividadesDOXOperador/:operador', verificarToken, Fo.obtenerActividadesDOXOperador);
     
@@ -51,6 +51,9 @@ module.exports = app => {
 
 
 
+    app.get('/obtenerQuejasXOperador/:operador', verificarToken, Fo.obtenerQuejasXOperador);
+    
+    app.post('/crearQuejaOperador', verificarToken, Fo.crearQuejaOperador);
 
 
     app.get('/obtenerScoreCardOperador/:operador/:mes', verificarToken, Fo.obtenerScoreCardOperador);

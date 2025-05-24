@@ -32,6 +32,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         }, 
+        enbase: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
+        base: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         seguimiento_colaborador: {
             type: DataType.STRING,
             allowNull: true
