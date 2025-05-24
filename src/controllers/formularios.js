@@ -296,14 +296,10 @@ module.exports = app => {
 
 app.obtenerScoreCardOperador = async (req, res) => {
     try {
-        // Permitir recibir el año por query o params, default al actual si no viene
         const operadorId = req.params.operador;
         const anio = req.params.anio || req.query.anio || moment().year();
-
-        // Obtener todos los meses del año (1 a 12)
         const meses = Array.from({ length: 12 }, (_, i) => i + 1);
 
-        // Consultar liquidaciones y prenominas agrupadas por mes
         const liquidacionResult = await liquidacion.findAll({
             attributes: [
                 'operador',
@@ -342,7 +338,29 @@ app.obtenerScoreCardOperador = async (req, res) => {
             order: [[prenomina.sequelize.fn('MONTH', prenomina.sequelize.col('fecha')), 'ASC']]
         });
 
-        // Convertir resultados a objetos por mes para fácil acceso
+        const diaslaboradosResult = await historico.findAll({
+            attributes: [
+                'nombre',
+                'actividad',
+                [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'mes'],
+                [historico.sequelize.fn('COUNT', historico.sequelize.col('actividad')), 'totaldiaslaborados'],
+            ],
+            where: {
+                nombre: operadorId,
+                actividad: {
+                    [Op.notIn]: ['SINV', 'ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'LIQ', 'POSB', 'MTTO', 'ESP']
+                },
+                fecha: {
+                    [Op.between]: [
+                        moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                        moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                    ],
+                }
+            },
+            group: ['mes', 'nombre'],
+            order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'ASC']]
+        });
+
         const liquidacionPorMes = {};
         liquidacionResult.forEach(l => {
             liquidacionPorMes[l.dataValues.mes] = Number(l.dataValues.totalliquidacion) || 0;
@@ -353,22 +371,35 @@ app.obtenerScoreCardOperador = async (req, res) => {
             dieselPorMes[d.dataValues.mes] = Number(d.dataValues.totaldiesel) || 0;
         });
 
-        // Construir el array de scoreCard por mes
+        const diaslaboradoPorMes = {};
+        diaslaboradosResult.forEach(d => {
+            diaslaboradoPorMes[d.dataValues.mes] = Number(d.dataValues.totaldiaslaborados) || 0;
+        });
+
+        const porcentajeDiasLaboradoPorMes = {};
+        diaslaboradosResult.forEach(d => {
+            const mes = d.dataValues.mes;
+            const totalDiasLaborados = Number(d.dataValues.totaldiaslaborados) || 0;
+            const diasEnMes = moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
+            porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
+        });
+
         const scoreCard = meses.map(mes => ({
             mes,
             totalliquidacion: liquidacionPorMes[mes] || 0,
             totaldiesel: dieselPorMes[mes] || 0,
             cartaacuerdo: liquidacionPorMes[mes] ? 1 : 0,
             sistemadiciplinario: liquidacionPorMes[mes] ? 1 : 0,
-            productividad: liquidacionPorMes[mes] ? 19 : 0,
-            porcentaje: liquidacionPorMes[mes] ? 63 : 0,
+            productividad: diaslaboradoPorMes[mes] || 0,
+            porcentaje: porcentajeDiasLaboradoPorMes[mes] || 0,
         }));
 
         res.json({
             OK: true,
             ScoreCard: scoreCard
         });
-    } catch (error) {
+    } 
+    catch (error) {
         res.status(412).json({
             OK: false,
             msg: error.message
