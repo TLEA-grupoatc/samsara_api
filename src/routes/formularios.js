@@ -45,4 +45,13 @@ module.exports = app => {
     app.delete('/cobroRealizado/:id_cobro/:cobrado_por', verificarToken, Fo.cobroRealizado);
 
     app.get('/obtenerReporteOperadoresAlertas/:fechaInicio/:fechaFin', verificarToken, Fo.obtenerReporteOperadoresAlertas);
+
+
+
+
+
+
+
+
+    app.get('/obtenerScoreCardOperador/:operador/:mes', verificarToken, Fo.obtenerScoreCardOperador);
 }

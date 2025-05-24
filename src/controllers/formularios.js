@@ -11,12 +11,16 @@ module.exports = app => {
     const historico = app.database.models.HistoricoOperadores;
     const actviidaddo = app.database.models.ActividadesDo;
 
+    const prenomina = app.database.models.Prenominas;
+    const liquidacion = app.database.models.Liquidaciones;
+
     const docoperador = app.database.models.DocOperadores;
     
     const alerta = app.database.models.Alertas;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
+    const axios = require('axios');
     const Op = Sequelize.Op;
 
     app.obtenerOperadores = (req, res) => {
@@ -145,14 +149,24 @@ module.exports = app => {
         });
     }
 
-    app.obtenerOperadoresConHistorico = (req, res) => {
+    app.obtenerOperadoresConHistorico = async (req, res) => {
         const year = req.query.year ? parseInt(req.query.year) : moment().year();
         const month = req.query.month ? parseInt(req.query.month) : moment().month() + 1; // month is 1-based for users
 
-        // Get first and last day of the month
         const startOfMonth = moment(`${year}-${month}-01`).startOf('day');
         const endOfMonth = moment(startOfMonth).endOf('month').startOf('day');
         const daysInMonth = endOfMonth.date();
+
+        let empleadosExternos = [];
+
+
+        try {
+            const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
+            empleadosExternos = response.data.Empleados || [];
+        }
+        catch (err) {
+            empleadosExternos = [];
+        }
 
         operador.findAll({
             where: {
@@ -176,6 +190,10 @@ module.exports = app => {
             const operadoresConActividades = operadores.map(op => {
             const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
 
+            // Buscar avatar usando numero_empleado0
+            const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.numero_empleado));
+            const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+
             const registros = Array.from({ length: daysInMonth }, (_, index) => {
                 const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
                 const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
@@ -190,6 +208,7 @@ module.exports = app => {
 
             return {
                 ...op.dataValues,
+                avatar,
                 registros
             };
             });
@@ -263,6 +282,99 @@ module.exports = app => {
         });
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+app.obtenerScoreCardOperador = async (req, res) => {
+    try {
+        // Permitir recibir el año por query o params, default al actual si no viene
+        const operadorId = req.params.operador;
+        const anio = req.params.anio || req.query.anio || moment().year();
+
+        // Obtener todos los meses del año (1 a 12)
+        const meses = Array.from({ length: 12 }, (_, i) => i + 1);
+
+        // Consultar liquidaciones y prenominas agrupadas por mes
+        const liquidacionResult = await liquidacion.findAll({
+            attributes: [
+                'operador',
+                [liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha')), 'mes'],
+                [liquidacion.sequelize.fn('SUM', liquidacion.sequelize.col('monto')), 'totalliquidacion'],
+            ],
+            where: {
+                operador: operadorId,
+                fecha: {
+                    [Op.between]: [
+                        moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                        moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                    ],
+                }
+            },
+            group: ['mes', 'operador'],
+            order: [[liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha')), 'ASC']]
+        });
+
+        const dieselResult = await prenomina.findAll({
+            attributes: [
+                'operador',
+                [prenomina.sequelize.fn('MONTH', prenomina.sequelize.col('fecha')), 'mes'],
+                [prenomina.sequelize.fn('SUM', prenomina.sequelize.col('diferencia_diesel')), 'totaldiesel'],
+            ],
+            where: {
+                operador: operadorId,
+                fecha: {
+                    [Op.between]: [
+                        moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                        moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                    ],
+                }
+            },
+            group: ['mes', 'operador'],
+            order: [[prenomina.sequelize.fn('MONTH', prenomina.sequelize.col('fecha')), 'ASC']]
+        });
+
+        // Convertir resultados a objetos por mes para fácil acceso
+        const liquidacionPorMes = {};
+        liquidacionResult.forEach(l => {
+            liquidacionPorMes[l.dataValues.mes] = Number(l.dataValues.totalliquidacion) || 0;
+        });
+
+        const dieselPorMes = {};
+        dieselResult.forEach(d => {
+            dieselPorMes[d.dataValues.mes] = Number(d.dataValues.totaldiesel) || 0;
+        });
+
+        // Construir el array de scoreCard por mes
+        const scoreCard = meses.map(mes => ({
+            mes,
+            totalliquidacion: liquidacionPorMes[mes] || 0,
+            totaldiesel: dieselPorMes[mes] || 0,
+            cartaacuerdo: liquidacionPorMes[mes] ? 1 : 0,
+            sistemadiciplinario: liquidacionPorMes[mes] ? 1 : 0,
+            productividad: liquidacionPorMes[mes] ? 19 : 0,
+            porcentaje: liquidacionPorMes[mes] ? 63 : 0,
+        }));
+
+        res.json({
+            OK: true,
+            ScoreCard: scoreCard
+        });
+    } catch (error) {
+        res.status(412).json({
+            OK: false,
+            msg: error.message
+        });
+    }
+}
 
 
 
@@ -628,7 +740,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.obtenerReporteOperadoresAlertas = (req, res) => {
         alerta.findAll({
