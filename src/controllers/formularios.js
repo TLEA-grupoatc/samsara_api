@@ -159,7 +159,6 @@ module.exports = app => {
 
         let empleadosExternos = [];
 
-
         try {
             const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
             empleadosExternos = response.data.Empleados || [];
@@ -285,138 +284,117 @@ module.exports = app => {
 
 
 
+    app.obtenerScoreCardOperador = async (req, res) => {
+        try {
+            const operadorId = req.params.operador;
+            const anio = req.params.anio || req.query.anio || moment().year();
+            const meses = Array.from({ length: 12 }, (_, i) => i + 1);
 
-
-
-
-
-
-
-
-
-app.obtenerScoreCardOperador = async (req, res) => {
-    try {
-        const operadorId = req.params.operador;
-        const anio = req.params.anio || req.query.anio || moment().year();
-        const meses = Array.from({ length: 12 }, (_, i) => i + 1);
-
-        const liquidacionResult = await liquidacion.findAll({
-            attributes: [
-                'operador',
-                [liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha')), 'mes'],
-                [liquidacion.sequelize.fn('SUM', liquidacion.sequelize.col('monto')), 'totalliquidacion'],
-            ],
-            where: {
-                operador: operadorId,
-                fecha: {
-                    [Op.between]: [
-                        moment(`${anio}-01-01`).format('YYYY-MM-DD'),
-                        moment(`${anio}-12-31`).format('YYYY-MM-DD')
-                    ],
-                }
-            },
-            group: ['mes', 'operador'],
-            order: [[liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha')), 'ASC']]
-        });
-
-        const dieselResult = await prenomina.findAll({
-            attributes: [
-                'operador',
-                [prenomina.sequelize.fn('MONTH', prenomina.sequelize.col('fecha')), 'mes'],
-                [prenomina.sequelize.fn('SUM', prenomina.sequelize.col('diferencia_diesel')), 'totaldiesel'],
-            ],
-            where: {
-                operador: operadorId,
-                fecha: {
-                    [Op.between]: [
-                        moment(`${anio}-01-01`).format('YYYY-MM-DD'),
-                        moment(`${anio}-12-31`).format('YYYY-MM-DD')
-                    ],
-                }
-            },
-            group: ['mes', 'operador'],
-            order: [[prenomina.sequelize.fn('MONTH', prenomina.sequelize.col('fecha')), 'ASC']]
-        });
-
-        const diaslaboradosResult = await historico.findAll({
-            attributes: [
-                'nombre',
-                'actividad',
-                [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'mes'],
-                [historico.sequelize.fn('COUNT', historico.sequelize.col('actividad')), 'totaldiaslaborados'],
-            ],
-            where: {
-                nombre: operadorId,
-                actividad: {
-                    [Op.notIn]: ['SINV', 'ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'LIQ', 'POSB', 'MTTO', 'ESP']
+            const liquidacionResult = await liquidacion.findAll({
+                attributes: [
+                    'operador',
+                    [liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha')), 'mes'],
+                    [liquidacion.sequelize.fn('SUM', liquidacion.sequelize.col('monto')), 'totalliquidacion'],
+                ],
+                where: {
+                    operador: operadorId,
+                    fecha: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
                 },
-                fecha: {
-                    [Op.between]: [
-                        moment(`${anio}-01-01`).format('YYYY-MM-DD'),
-                        moment(`${anio}-12-31`).format('YYYY-MM-DD')
-                    ],
-                }
-            },
-            group: ['mes', 'nombre'],
-            order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'ASC']]
-        });
+                group: ['mes', 'operador'],
+                order: [[liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha')), 'ASC']]
+            });
 
-        const liquidacionPorMes = {};
-        liquidacionResult.forEach(l => {
-            liquidacionPorMes[l.dataValues.mes] = Number(l.dataValues.totalliquidacion) || 0;
-        });
+            const dieselResult = await prenomina.findAll({
+                attributes: [
+                    'operador',
+                    [prenomina.sequelize.fn('MONTH', prenomina.sequelize.col('fecha')), 'mes'],
+                    [prenomina.sequelize.fn('SUM', prenomina.sequelize.col('diferencia_diesel')), 'totaldiesel'],
+                ],
+                where: {
+                    operador: operadorId,
+                    fecha: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[prenomina.sequelize.fn('MONTH', prenomina.sequelize.col('fecha')), 'ASC']]
+            });
 
-        const dieselPorMes = {};
-        dieselResult.forEach(d => {
-            dieselPorMes[d.dataValues.mes] = Number(d.dataValues.totaldiesel) || 0;
-        });
+            const diaslaboradosResult = await historico.findAll({
+                attributes: [
+                    'nombre',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('actividad')), 'totaldiaslaborados'],
+                ],
+                where: {
+                    nombre: operadorId,
+                    actividad: {
+                        [Op.notIn]: ['SINV', 'ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'LIQ', 'POSB', 'MTTO', 'ESP']
+                    },
+                    fecha: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'nombre'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'ASC']]
+            });
 
-        const diaslaboradoPorMes = {};
-        diaslaboradosResult.forEach(d => {
-            diaslaboradoPorMes[d.dataValues.mes] = Number(d.dataValues.totaldiaslaborados) || 0;
-        });
+            const liquidacionPorMes = {};
+            liquidacionResult.forEach(l => {
+                liquidacionPorMes[l.dataValues.mes] = Number(l.dataValues.totalliquidacion) || 0;
+            });
 
-        const porcentajeDiasLaboradoPorMes = {};
-        diaslaboradosResult.forEach(d => {
-            const mes = d.dataValues.mes;
-            const totalDiasLaborados = Number(d.dataValues.totaldiaslaborados) || 0;
-            const diasEnMes = moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
-            porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
-        });
+            const dieselPorMes = {};
+            dieselResult.forEach(d => {
+                dieselPorMes[d.dataValues.mes] = Number(d.dataValues.totaldiesel) || 0;
+            });
 
-        const scoreCard = meses.map(mes => ({
-            mes,
-            totalliquidacion: liquidacionPorMes[mes] || 0,
-            totaldiesel: dieselPorMes[mes] || 0,
-            cartaacuerdo: liquidacionPorMes[mes] ? 1 : 0,
-            sistemadiciplinario: liquidacionPorMes[mes] ? 1 : 0,
-            productividad: diaslaboradoPorMes[mes] || 0,
-            porcentaje: porcentajeDiasLaboradoPorMes[mes] || 0,
-        }));
+            const diaslaboradoPorMes = {};
+            diaslaboradosResult.forEach(d => {
+                diaslaboradoPorMes[d.dataValues.mes] = Number(d.dataValues.totaldiaslaborados) || 0;
+            });
 
-        res.json({
-            OK: true,
-            ScoreCard: scoreCard
-        });
-    } 
-    catch (error) {
-        res.status(412).json({
-            OK: false,
-            msg: error.message
-        });
+            const porcentajeDiasLaboradoPorMes = {};
+            diaslaboradosResult.forEach(d => {
+                const mes = d.dataValues.mes;
+                const totalDiasLaborados = Number(d.dataValues.totaldiaslaborados) || 0;
+                const diasEnMes = moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
+                porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
+            });
+
+            const scoreCard = meses.map(mes => ({
+                mes,
+                totalliquidacion: liquidacionPorMes[mes] || 0,
+                totaldiesel: dieselPorMes[mes] || 0,
+                cartaacuerdo: liquidacionPorMes[mes] ? 1 : 0,
+                sistemadiciplinario: liquidacionPorMes[mes] ? 1 : 0,
+                productividad: diaslaboradoPorMes[mes] || 0,
+                porcentaje: porcentajeDiasLaboradoPorMes[mes] || 0,
+            }));
+
+            res.json({
+                OK: true,
+                ScoreCard: scoreCard
+            });
+        } 
+        catch (error) {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        }
     }
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
