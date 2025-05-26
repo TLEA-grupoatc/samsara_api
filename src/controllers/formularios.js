@@ -11,6 +11,7 @@ module.exports = app => {
     const historico = app.database.models.HistoricoOperadores;
     const actviidaddo = app.database.models.ActividadesDo;
     const queope = app.database.models.QuejaOperador;
+    const ateope = app.database.models.AtencionOperador;
 
     const prenomina = app.database.models.Prenominas;
     const liquidacion = app.database.models.Liquidaciones;
@@ -126,29 +127,6 @@ module.exports = app => {
         });
     }
 
-    app.cerrarQueja = (req, res) => {
-        let data = new actviidaddo({
-            estatus: 'CERRADO',
-            fecha_cierre: moment().format('YYYY-MM-DD HH:mm:ss')
-        });
-
-        actviidaddo.update(data.dataValues, {
-            where: {
-                id_actividad_ope_op: req.params.id_actividad_ope_op
-            },
-            fields: ['estatus', 'fecha_cierre']
-        }).then(result => {
-            res.json({
-                OK: true,
-                rows_affected: result[0]
-            });
-        }).catch(err => {
-            res.status(412).json({
-                OK: false,
-                msg: err
-            });
-        });
-    }
 
     app.obtenerOperadoresConHistorico = async (req, res) => {
         const year = req.query.year ? parseInt(req.query.year) : moment().year();
@@ -665,6 +643,60 @@ module.exports = app => {
 
 
 
+    app.obtenerAtencionesXOperador = (req, res) => {
+        ateope.findAll({
+            where: {
+                operador: req.params.operador
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Atenciones: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearAtencionOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new ateope({
+            operador: body.operador, 
+            realizo_atencion: body.realizo_atencion, 
+            atencion: body.atencion, 
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion
+        });
+
+        ateope.create(nuevoRegistro.dataValues, {
+            fields: [
+                'operador', 
+                'realizo_atencion',
+                'atencion', 
+                'fecha_creacion', 
+                'usuario_creacion'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Atencion: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
     app.obtenerQuejasXOperador = (req, res) => {
         queope.findAll({
             where: {
@@ -725,6 +757,32 @@ module.exports = app => {
         });
     }
 
+
+    app.cerrarQueja = (req, res) => {
+        let data = new queope({
+            estatus: 'CERRADO',
+            fecha_cierre: moment().format('YYYY-MM-DD HH:mm:ss')
+        });
+
+        queope.update(data.dataValues, {
+            where: {
+                id_queja: req.params.id_queja
+            },
+            fields: ['estatus', 'fecha_cierre']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    
 
 
 
@@ -819,6 +877,29 @@ module.exports = app => {
         });
     }
 
+    app.cerrarReporte = (req, res) => {
+        let data = new actviidaddo({
+            estatus: 'CERRADO',
+            fecha_cierre: moment().format('YYYY-MM-DD HH:mm:ss')
+        });
+
+        actviidaddo.update(data.dataValues, {
+            where: {
+                id_actividad_ope_op: req.params.id_actividad_ope_op
+            },
+            fields: ['estatus', 'fecha_cierre']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
 
 
 
