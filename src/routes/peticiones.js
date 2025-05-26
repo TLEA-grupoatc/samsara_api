@@ -25,6 +25,8 @@ module.exports = app => {
 
     app.get('/obtenerReporte/:fechainicio/:fechafin', Peticion.obtenerReporte);
 
+    app.get('/obtenerReporteJson/:fechainicio/:fechafin', Peticion.obtenerReporteJson);
+
     app.get('/obtenerDetalleReporte/:unidad/:fechainicio/:fechafin', Peticion.obtenerDetalleReporte);
 
 

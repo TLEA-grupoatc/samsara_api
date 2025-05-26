@@ -378,6 +378,46 @@ module.exports = app => {
                 order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'ASC']]
             });
 
+            const cartasAcuerdoResult = await docoperador.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('archivo')), 'totalcartasacuerdo'],
+                ],
+                where: {
+                    operador: operadorId,
+                    descripcion: 'Carta',
+                    fecha_creacion: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
+            });
+
+            const sistemaDiciplinarioResult = await docoperador.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('archivo')), 'totalsistemadiciplinario'],
+                ],
+                where: {
+                    operador: operadorId,
+                    descripcion: 'Sistema Disciplinario',
+                    fecha_creacion: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
+            });
+
             const liquidacionPorMes = {};
             liquidacionResult.forEach(l => {
                 liquidacionPorMes[l.dataValues.mes] = Number(l.dataValues.totalliquidacion) || 0;
@@ -386,6 +426,16 @@ module.exports = app => {
             const dieselPorMes = {};
             dieselResult.forEach(d => {
                 dieselPorMes[d.dataValues.mes] = Number(d.dataValues.totaldiesel) || 0;
+            });
+
+            const cartasAcuerdoPorMes = {};
+            cartasAcuerdoResult.forEach(d => {
+                cartasAcuerdoPorMes[d.dataValues.mes] = Number(d.dataValues.totalcartasacuerdo) || 0;
+            });
+
+            const sitemaDiciplinarioPorMes = {};
+            sistemaDiciplinarioResult.forEach(d => {
+                sitemaDiciplinarioPorMes[d.dataValues.mes] = Number(d.dataValues.totalsistemadiciplinario) || 0;
             });
 
             const diaslaboradoPorMes = {};
@@ -405,8 +455,8 @@ module.exports = app => {
                 mes,
                 totalliquidacion: liquidacionPorMes[mes] || 0,
                 totaldiesel: dieselPorMes[mes] || 0,
-                cartaacuerdo: liquidacionPorMes[mes] ? 1 : 0,
-                sistemadiciplinario: liquidacionPorMes[mes] ? 1 : 0,
+                cartaacuerdo: cartasAcuerdoPorMes[mes] || 0,
+                sistemadiciplinario: sitemaDiciplinarioPorMes[mes] || 0,
                 productividad: diaslaboradoPorMes[mes] || 0,
                 porcentaje: porcentajeDiasLaboradoPorMes[mes] || 0,
             }));

@@ -428,6 +428,32 @@ module.exports = app => {
         });
     }
 
+
+    app.obtenerReporteJson = async (req, res) => {
+        reporte.findAll({
+            where: {
+                fechahorakm: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                },
+            },
+            order: [
+                ['unidad', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                fechas: req.params.fechainicio + ' ' + req.params.fechafin,
+                Total: result.length,
+                Reporte: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.obtenerDetalleReporte = (req, res) => {
         reporte.findAll({
             where: {
