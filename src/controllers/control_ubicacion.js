@@ -21,7 +21,7 @@ module.exports = app => {
 
     app.getUbicacionPorEconomicoAgrupado = (req, res) => {  
         const today = moment().startOf('day');
-        const sevenDaysAgo = moment().subtract(7, 'days').startOf('day');
+        const sevenDaysAgo = moment().subtract(5, 'days').startOf('day');
 
         var fortoday = today.toDate().toISOString().split('T')[0];
         var fortosevenday = sevenDaysAgo.toDate().toISOString().split('T')[0];
@@ -43,11 +43,13 @@ module.exports = app => {
             ]
         }).then(async groupedResults => {
             const result = await Promise.all(groupedResults.map(async group => {
-            const latestRecord = await ubiporeco.findOne({
+            const latestRecord = await ubiporeco.findAll({
                 where: {
                     economico: group.economico,
                     hora_entrada: group.hora_entrada
-                }
+                },
+                limit: 1,
+                order: [['hora_entrada', 'DESC']]
             });
             
             return latestRecord;
