@@ -430,10 +430,13 @@ module.exports = app => {
 
 
     app.obtenerReporteJson = async (req, res) => {
+
+        var fechainicio = req.params.fechainicio + 'T00:00:00Z';
+        var fechafin = req.params.fechainicio + 'T23:59:59Z';
         reporte.findAll({
             where: {
                 fechahorakm: {
-                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                    [Op.between]: [fechainicio, fechafin],
                 },
             },
             order: [
@@ -442,7 +445,7 @@ module.exports = app => {
         }).then(result => {
             res.json({
                 OK: true,
-                fechas: req.params.fechainicio + ' ' + req.params.fechafin,
+                fechas: fechainicio + ' ' + fechafin,
                 Total: result.length,
                 Reporte: result
             })
