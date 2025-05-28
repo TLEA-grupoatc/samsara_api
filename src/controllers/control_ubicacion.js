@@ -63,13 +63,25 @@ module.exports = app => {
         })
         .catch(error => {
             res.status(412).json({
-            msg: error.message
+                msg: error.message
             });
         });
     }
 
-    app.getUbicacionPorEconomico = (req, res) => {  
+    app.getUbicacionPorEconomico = (req, res) => {
+        const today = moment().startOf('day');
+        const sevenDaysAgo = moment().subtract(5, 'days').startOf('day');
+
+        var fortoday = today.toDate().toISOString().split('T')[0];
+        var fortosevenday = sevenDaysAgo.toDate().toISOString().split('T')[0];
+
         ubiporeco.findAll({
+            where: {
+                movimiento:"Entro a Geocerca",
+                hora_entrada: {
+                    [Op.between]: [fortosevenday + ' 00:00:00', fortoday + ' 23:59:59'],
+                }
+            },
             order: [
                 ['economico', 'DESC'],
                 ['hora_entrada', 'DESC']
@@ -77,6 +89,7 @@ module.exports = app => {
         }).then(result => {
             res.json({
                 OK: true,
+                Total: result.length,
                 Registros: result
             })
         })
