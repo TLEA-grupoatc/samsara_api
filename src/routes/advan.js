@@ -33,7 +33,7 @@ module.exports = app => {
 
 
 
-    app.get('/operadores', ca.operadores);
+    app.get('/listadoOperadores', ca.listadoOperadores);
 
 
 

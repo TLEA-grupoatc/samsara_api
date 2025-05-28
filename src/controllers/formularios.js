@@ -147,30 +147,27 @@ module.exports = app => {
             empleadosExternos = [];
         }
 
-        operador.findAll({
+        try {
+            // Obtener operadores desde API externa
+            const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
+            const operadores = operadoresResponse.data.Registros || [];
+
+            const actividades = await historico.findAll({
             where: {
-                estado: 'LABORANDO'
+                fecha: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
+                }
             },
             order: [
-                ['nombre', 'ASC'],
+                ['fecha', 'ASC']
             ]
-        }).then(async operadores => {
-            const actividades = await historico.findAll({
-                where: {
-                    fecha: {
-                        [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
-                    }
-                },
-                order: [
-                    ['fecha', 'ASC']
-                ]
             });
 
             const operadoresConActividades = operadores.map(op => {
-            const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
+            const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
 
-            // Buscar avatar usando numero_empleado0
-            const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.numero_empleado));
+            // Buscar avatar usando numero_empleado
+            const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
             const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
 
             const registros = Array.from({ length: daysInMonth }, (_, index) => {
@@ -179,46 +176,41 @@ module.exports = app => {
                 const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
 
                 return {
-                    titulo,
-                    actividad: actividad ? actividad.actividad : "",
-                    comentarios: actividad ? actividad.comentarios : ""
+                titulo,
+                actividad: actividad ? actividad.actividad : "",
+                comentarios: actividad ? actividad.comentarios : ""
                 };
             });
 
             return {
-                ...op.dataValues,
+                ...op,
                 avatar,
                 registros
             };
             });
 
             res.json({
-                OK: true,
-                Operadores: operadoresConActividades
+            OK: true,
+            Operadores: operadoresConActividades
             });
-        })
-        .catch(error => {
+        } catch (error) {
             res.status(412).json({
-                OK: false,
-                msg: error.message
+            OK: false,
+            msg: error.message
             });
-        });
+        }
     }
 
     app.obtenerOperadoresConHistoricoConFiltro = async (req, res) => {
         const year = req.params.year ? parseInt(req.params.year) : moment().year();
         const month = req.params.month ? parseInt(req.params.month) : moment().month() + 1; // month is 1-based for users
 
-        console.log(req.params.year);
-        console.log(year);
-        console.log(req.params.month);
-        console.log(month);
-
         const monthPadded = month.toString().padStart(2, '0');
         const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
         const endOfMonth = moment(startOfMonth).endOf('month').startOf('day');
         const daysInMonth = endOfMonth.date();
 
+        
         let empleadosExternos = [];
 
         try {
@@ -229,30 +221,27 @@ module.exports = app => {
             empleadosExternos = [];
         }
 
-        operador.findAll({
+        try {
+            // Obtener operadores desde API externa
+            const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
+            const operadores = operadoresResponse.data.Registros || [];
+
+            const actividades = await historico.findAll({
             where: {
-                estado: 'LABORANDO'
+                fecha: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
+                }
             },
             order: [
-                ['nombre', 'ASC'],
+                ['fecha', 'ASC']
             ]
-        }).then(async operadores => {
-            const actividades = await historico.findAll({
-                where: {
-                    fecha: {
-                        [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
-                    }
-                },
-                order: [
-                    ['fecha', 'ASC']
-                ]
             });
 
             const operadoresConActividades = operadores.map(op => {
-            const actividadesDelOperador = actividades.filter(h => h.nombre === op.nombre);
+            const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
 
-            // Buscar avatar usando numero_empleado0
-            const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.numero_empleado));
+            // Buscar avatar usando numero_empleado
+            const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
             const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
 
             const registros = Array.from({ length: daysInMonth }, (_, index) => {
@@ -261,30 +250,29 @@ module.exports = app => {
                 const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
 
                 return {
-                    titulo,
-                    actividad: actividad ? actividad.actividad : "",
-                    comentarios: actividad ? actividad.comentarios : ""
+                titulo,
+                actividad: actividad ? actividad.actividad : "",
+                comentarios: actividad ? actividad.comentarios : ""
                 };
             });
 
             return {
-                ...op.dataValues,
+                ...op,
                 avatar,
                 registros
             };
             });
 
             res.json({
-                OK: true,
-                Operadores: operadoresConActividades
+            OK: true,
+            Operadores: operadoresConActividades
             });
-        })
-        .catch(error => {
+        } catch (error) {
             res.status(412).json({
-                OK: false,
-                msg: error.message
+            OK: false,
+            msg: error.message
             });
-        });
+        }
     }
 
 
@@ -783,6 +771,78 @@ module.exports = app => {
     }
 
     
+
+
+
+
+
+
+
+
+
+
+    app.obtenerActividadesDO = (req, res) => {
+        actviidaddo.findAll({
+            order: [['operador', 'ASC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Actividades: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+    app.obtenerAtenciones = (req, res) => {
+        ateope.findAll({
+            order: [['operador', 'ASC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Atenciones: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerQuejas = (req, res) => {
+        queope.findAll({
+            order: [['operador', 'ASC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Quejas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

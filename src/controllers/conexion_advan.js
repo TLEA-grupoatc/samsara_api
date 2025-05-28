@@ -130,6 +130,8 @@ module.exports = app => {
 
 
 
+
+
     app.obtenerCombustible = async (req, res) => {
         try {
             let pool = await sql.connect(config);
@@ -563,12 +565,13 @@ module.exports = app => {
 
 
 
-    app.operadores = async (req, res) => {
+    app.listadoOperadores = async (req, res) => {
         try {
             let pool = await sql.connect(config);
 
 
-            let result = await pool.request().query("SELECT * FROM operador AS OP;");
+            // let result = await pool.request().query("SELECT * FROM operador WHERE operador_terminal LIKE 'MTY%' AND STATUS = 1 ORDER BY OPERADOR_NOMBRE ASC;");
+            let result = await pool.request().query("SELECT * FROM operador WHERE STATUS = 1 ORDER BY OPERADOR_NOMBRE ASC;");
 
             sql.close();
             
