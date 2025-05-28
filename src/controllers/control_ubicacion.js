@@ -57,7 +57,6 @@ module.exports = app => {
 
             res.json({
                 OK: true,
-                Total: groupedResults.length,
                 Registros: groupedResults
             });
         })
@@ -89,7 +88,6 @@ module.exports = app => {
         }).then(result => {
             res.json({
                 OK: true,
-                Total: result.length,
                 Registros: result
             })
         })
