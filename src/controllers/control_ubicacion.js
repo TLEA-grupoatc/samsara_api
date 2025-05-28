@@ -42,23 +42,23 @@ module.exports = app => {
                 ['economico', 'DESC'],
             ]
         }).then(async groupedResults => {
-            const result = await Promise.all(groupedResults.map(async group => {
-            const latestRecord = await ubiporeco.findAll({
-                where: {
-                    economico: group.economico,
-                    hora_entrada: group.hora_entrada
-                },
-                limit: 1,
-                order: [['hora_entrada', 'DESC']]
-            });
+            // const result = await Promise.all(groupedResults.map(async group => {
+            // const latestRecord = await ubiporeco.findAll({
+            //     where: {
+            //         economico: group.economico,
+            //         hora_entrada: group.hora_entrada
+            //     },
+            //     limit: 1,
+            //     order: [['hora_entrada', 'DESC']]
+            // });
             
-            return latestRecord;
-            }));
+            // return latestRecord;
+            // }));
 
             res.json({
                 OK: true,
-                Total: result.length,
-                Registros: result
+                Total: groupedResults.length,
+                Registros: groupedResults
             });
         })
         .catch(error => {
