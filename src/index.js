@@ -49,6 +49,7 @@ cron.schedule('* * * * *', () => {
 app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
+
   const timestamp = payload.eventMs;
   const date = new Date(timestamp);
   const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');

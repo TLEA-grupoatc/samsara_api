@@ -12,6 +12,7 @@ module.exports = app => {
     const actviidaddo = app.database.models.ActividadesDo;
     const queope = app.database.models.QuejaOperador;
     const ateope = app.database.models.AtencionOperador;
+    const opedan = app.database.models.OperadoresDanos;
 
     const prenomina = app.database.models.Prenominas;
     const liquidacion = app.database.models.Liquidaciones;
@@ -126,7 +127,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.obtenerOperadoresConHistorico = async (req, res) => {
         const year = req.query.year ? parseInt(req.query.year) : moment().year();
@@ -274,9 +274,6 @@ module.exports = app => {
             });
         }
     }
-
-
-
 
     app.obtenerScoreCardOperador = async (req, res) => {
         try {
@@ -439,9 +436,6 @@ module.exports = app => {
             });
         }
     }
-
-
-
 
     app.actualizarOperador = (req, res) => {
         let body = req.body;
@@ -783,7 +777,7 @@ module.exports = app => {
 
     app.obtenerActividadesDO = (req, res) => {
         actviidaddo.findAll({
-            order: [['operador', 'ASC']]
+            order: [['fecha_inicio', 'DESC']]
         }).then(result => {
             res.json({
                 OK: true,
@@ -797,10 +791,9 @@ module.exports = app => {
         });
     }
 
-
     app.obtenerAtenciones = (req, res) => {
         ateope.findAll({
-            order: [['operador', 'ASC']]
+            order: [['fecha_creacion', 'DESC']]
         }).then(result => {
             res.json({
                 OK: true,
@@ -816,11 +809,27 @@ module.exports = app => {
 
     app.obtenerQuejas = (req, res) => {
         queope.findAll({
-            order: [['operador', 'ASC']]
+            order: [['fecha_creacion', 'DESC']]
         }).then(result => {
             res.json({
                 OK: true,
                 Quejas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerDanosOperador = (req, res) => {
+        opedan.findAll({
+            order: [['fecha_creacion', 'DESC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Danos: result
             })
         })
         .catch(error => {
@@ -835,7 +844,112 @@ module.exports = app => {
 
 
 
+    app.crearDanoOperador = (req, res) => {
+        let body = req.body;
 
+        let nuevoRegistro = new opedan({
+            cliente: body.cliente, 
+            cartaporte: body.cartaporte, 
+            vin: body.vin, 
+            pt: body.pt, 
+            modelo_vin: body.modelo_vin, 
+            posicion_vin: body.posicion_vin, 
+            proceso_enque_ocurrio: body.proceso_enque_ocurrio, 
+            causa_dano: body.causa_dano, 
+            puesto_responasble: body.puesto_responasble, 
+            nombre_responsable: body.nombre_responsable, 
+            tipo_dano: body.tipo_dano, 
+            panel_danado: body.panel_danado, 
+            severidad_dano: body.severidad_dano, 
+            fecha_dano: body.fecha_dano, 
+            tipo_movimiento: body.tipo_movimiento, 
+            economico: body.economico, 
+            operador: body.operador, 
+            cliente_considero_dano: body.cliente_considero_dano, 
+            clasificacion_dano: body.clasificacion_dano,
+            fecha_creacion: body.fecha_creacion,
+            usuario_creacion: body.usuario_creacion
+        });
+
+        opedan.create(nuevoRegistro.dataValues, {
+            fields: [
+                'cliente', 
+                'cartaporte', 
+                'vin', 
+                'pt', 
+                'modelo_vin', 
+                'posicion_vin', 
+                'proceso_enque_ocurrio', 
+                'causa_dano', 
+                'puesto_responasble', 
+                'nombre_responsable', 
+                'tipo_dano', 
+                'panel_danado', 
+                'severidad_dano', 
+                'fecha_dano', 
+                'tipo_movimiento', 
+                'economico', 
+                'operador', 
+                'cliente_considero_dano', 
+                'clasificacion_dano',
+                'fecha_creacion',
+                'usuario_creacion'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Dano: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+    app.crearActividadOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new historico({
+            numero_empleado: body.numero_empleado, 
+            unidad: body.unidad, 
+            nombre: body.nombre, 
+            estado: body.estado, 
+            actividad: body.actividad, 
+            comentarios: body.comentarios, 
+            fecha: body.fecha, 
+            usuario: body.usuario
+        });
+
+        historico.create(nuevoRegistro.dataValues, {
+            fields: [
+                'numero_empleado', 
+                'unidad', 
+                'nombre', 
+                'estado', 
+                'actividad', 
+                'comentarios', 
+                'fecha', 
+                'usuario'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Actividad: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
 
 
 

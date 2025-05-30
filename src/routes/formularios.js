@@ -52,8 +52,15 @@ module.exports = app => {
     app.get('/obtenerAtenciones', verificarToken, Fo.obtenerAtenciones);
     app.get('/obtenerQuejas', verificarToken, Fo.obtenerQuejas);
     app.get('/obtenerActividadesDO', verificarToken, Fo.obtenerActividadesDO);
+    app.get('/obtenerDanosOperador', verificarToken, Fo.obtenerDanosOperador);
     
     
+    app.post('/crearActividadOperador', verificarToken, Fo.crearActividadOperador);
+    
+    
+    app.post('/crearDanoOperador', verificarToken, Fo.crearDanoOperador);
+
+
     
     app.get('/obtenerQuejasXOperador/:operador', verificarToken, Fo.obtenerQuejasXOperador);
     

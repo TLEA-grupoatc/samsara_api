@@ -569,9 +569,9 @@ module.exports = app => {
         try {
             let pool = await sql.connect(config);
 
-
-            // let result = await pool.request().query("SELECT * FROM operador WHERE operador_terminal LIKE 'MTY%' AND STATUS = 1 ORDER BY OPERADOR_NOMBRE ASC;");
-            let result = await pool.request().query("SELECT * FROM operador WHERE STATUS = 1 ORDER BY OPERADOR_NOMBRE ASC;");
+            let result = await pool.request().query("SELECT ope.OPERADOR_CLAVE, ope.operador_num_externo, ope.OPERADOR_NOMBRE, ope.NUM_LICENCIA, ope.STATUS, ope.OPERADOR_TELEFONO, ope.CELULAR, ope.operador_terminal, ost.SUBTIPO_DESCRIP FROM voperador as ope\
+                INNER JOIN OPERADOR_SUBTIPO AS ost ON ost.SUBTIPO_CLAVE = ope.SUBTIPO_CLAVE\
+                WHERE ope.STATUS = 1 ORDER BY ope.OPERADOR_NOMBRE ASC;");
 
             sql.close();
             
