@@ -148,7 +148,7 @@ module.exports = app => {
         }
 
         try {
-            // Obtener operadores desde API externa
+            // Obtener operadores
             const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
             const operadores = operadoresResponse.data.Registros || [];
 
@@ -381,6 +381,44 @@ module.exports = app => {
                 order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
             });
 
+            const quejasResult = await actviidaddo.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totalquejas'],
+                ],
+                where: {
+                    operador: operadorId,
+                    fecha_creacion: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
+            });
+
+            const danosResult = await opedan.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_dano')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totaldanos'],
+                ],
+                where: {
+                    operador: operadorId,
+                    fecha_dano: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_dano')), 'ASC']]
+            });
+
             const liquidacionPorMes = {};
             liquidacionResult.forEach(l => {
                 liquidacionPorMes[l.dataValues.mes] = Number(l.dataValues.totalliquidacion) || 0;
@@ -414,6 +452,16 @@ module.exports = app => {
                 porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
             });
 
+            const quejasPorMes = {};
+            quejasResult.forEach(d => {
+                quejasPorMes[d.dataValues.mes] = Number(d.dataValues.totalquejas) || 0;
+            });
+
+            const danosPorMes = {};
+            danosResult.forEach(d => {
+                danosPorMes[d.dataValues.mes] = Number(d.dataValues.totaldanos) || 0;
+            });
+
             const scoreCard = meses.map(mes => ({
                 mes,
                 totalliquidacion: liquidacionPorMes[mes] || 0,
@@ -422,6 +470,8 @@ module.exports = app => {
                 sistemadiciplinario: sitemaDiciplinarioPorMes[mes] || 0,
                 productividad: diaslaboradoPorMes[mes] || 0,
                 porcentaje: porcentajeDiasLaboradoPorMes[mes] || 0,
+                quejas: quejasPorMes[mes] || 0,
+                danos: danosPorMes[mes] || 0,
             }));
 
             res.json({
@@ -743,7 +793,7 @@ module.exports = app => {
     app.cerrarQueja = (req, res) => {
         let data = new queope({
             estatus: 'CERRADO',
-            fecha_cierre: moment().format('YYYY-MM-DD HH:mm:ss')
+            fecha_cierre: moment().format('YYYY-MM-DD')
         });
 
         queope.update(data.dataValues, {
