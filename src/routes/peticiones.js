@@ -77,7 +77,7 @@ module.exports = app => {
     app.get('/obtenerCumplientoAlertas/:fechainicio/:fechafin', verificarToken, Peticion.obtenerCumplientoAlertas);
     
     
-    app.get('/enlazarUnidadAOperadorSamsara', Peticion.enlazarUnidadAOperadorSamsara);
+    // app.get('/enlazarUnidadAOperadorSamsara', Peticion.enlazarUnidadAOperadorSamsara);
     
 
 

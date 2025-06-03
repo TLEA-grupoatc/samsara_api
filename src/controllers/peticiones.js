@@ -1,4 +1,5 @@
 const dotenv = require('dotenv').config();
+const cron = require('node-cron');
 const moment = require('moment');
 const _ = require('lodash');
 
@@ -14,6 +15,7 @@ module.exports = app => {
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
+    const axios = require('axios');
 
     const { parseISO, format,  startOfWeek, differenceInCalendarWeeks, es } = require('date-fns');
 
@@ -71,96 +73,87 @@ module.exports = app => {
         });
     }
 
-    app.enlazarUnidadAOperadorSamsara = async (req, res) => {
-        var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
+    //    async function ubicacion(hora) {
+    async function enlazarUnidadAOperadorSamsara() {
+        var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
         var operadores = [];
         var tractos = [];
-        console.log(fecha);
 
-        Samsara.listDrivers().then(result => {
-            result['data']['data'].forEach(async (element) => {
-                let nuevoOperador = ({
+        // try {
+            const operadoresResult = await Samsara.listDrivers();
+            operadoresResult['data']['data'].forEach(element => {
+                operadores.push({
                     id_operador: element.id,
                     name: element.name
                 });
-
-                operadores.push(nuevoOperador);
             });
-        });
-        
-        Samsara.listVehicles({limit: '512'}).then(result => {
-            result['data']['data'].forEach(async (element) => {
-                let nuevaUnidad = new unidad({
+
+            const tractosResult = await Samsara.listVehicles({ limit: '512' });
+            tractosResult['data']['data'].forEach(element => {
+                tractos.push({
                     id_unidad: element.id,
                     name: element.name
                 });
-
-                tractos.push(nuevaUnidad);
             });
-        });
 
-        try {
-            const listaoperadoresAdvan = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
+            const listaoperadoresAdvan = await axios.get('https://servidorlocal.ngrok.app/obtenerBitacorasQuinceDias');
             const listaadvan = listaoperadoresAdvan.data.Registros || [];
 
-            const operadoresConActividades = listaadvan.map(op => {
-                const iddeoperador = operadores.filter(h => h.name === op.operador);
-                const iddetracto = tractos.find(e => e.name == op.name);
+            var listafinal= [];
+            // Helper function to delay execution
+            function delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
 
+            for (const op of listaadvan) {
+                listafinal.push(op);
+                const operador = operadores.find(o => o.name === op.operador);
+                const tracto = tractos.find(t => t.name === op.economico);
 
+                op.id_operador = operador ? operador.id_operador : null;
+                op.id_unidad = tracto ? tracto.id_unidad : null;
+                op.fecha = fechaHoy;
 
+                if (op.id_operador && op.id_unidad) {
+                    await Samsara.createDriverVehicleAssignment({
+                        driverId: op.id_operador,
+                        vehicleId: op.id_unidad
+                    })
+                    .then(({ data }) => console.log(data))
+                    .catch(err => console.error(err));
+                    await delay(100); // 2 seconds delay
+                }
+            }
 
-                const registros = Array.from({ length: daysInMonth }, (_, index) => {
-                    const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
-                    const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
-                    const actividad = iddeoperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
-
-                    return {
-                        titulo,
-                        actividad: actividad ? actividad.actividad : "",
-                        comentarios: actividad ? actividad.comentarios : ""
-                    };
-                });
-
-                return {
-                    ...op,
-                    avatar,
-                    registros
-                };
-            });
-
-            res.json({
-                OK: true,
-                Operadores: operadoresConActividades
-            });
-        } 
-        catch (error) {
-            res.status(412).json({
-                OK: false,
-                msg: error.message
-            });
-        }
+            // res.json({
+            //     OK: true,
+            //     Total: listafinal.length,
+            //     Operadores: listafinal
+            //     // Total: listaadvan.length,
+            //     // Operadores: listaadvan
+            // });
+        // }
+        // catch (error) {
+        //     // res.status(412).json({
+        //     //     OK: false,
+        //     //     msg: error.message
+        //     // });
+        // }
     }
 
+    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
+    cron.schedule('03 08 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('03 09 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('03 10 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('03 11 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('03 12 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('03 13 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('03 14 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('03 15 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('03 16 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('03 17 * * *', () => { enlazarUnidadAOperadorSamsara(); });
 
 
 
