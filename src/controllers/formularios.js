@@ -155,48 +155,52 @@ module.exports = app => {
             const actividades = await historico.findAll({
             where: {
                 fecha: {
-                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
-                }
-            },
-            order: [
-                ['fecha', 'ASC']
-            ]
+                    [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
+                    }
+                },
+                order: [
+                    ['fecha', 'ASC']
+                ]
             });
 
             const operadoresConActividades = operadores.map(op => {
-            const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
+                const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
 
-            // Buscar avatar usando numero_empleado
-            const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
-            const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+                // Buscar avatar usando numero_empleado
+                const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
+                const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
 
-            const registros = Array.from({ length: daysInMonth }, (_, index) => {
-                const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
-                const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
-                const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+                const registros = Array.from({ length: daysInMonth }, (_, index) => {
+                    const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
+                    const titulo = `Día ${index + 1}: ${moment(fecha).format('YYYY-MM-DD')}`;
+                    const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+
+                    return {
+                        titulo,
+                        numeroEmpleado: op.operador_num_externo,
+                        operador: op.OPERADOR_NOMBRE,
+                        unidad: op.operador_terminal,
+                        actividad: actividad ? actividad.actividad : "",
+                        comentarios: actividad ? actividad.comentarios : ""
+                    };
+                });
 
                 return {
-                titulo,
-                actividad: actividad ? actividad.actividad : "",
-                comentarios: actividad ? actividad.comentarios : ""
+                    ...op,
+                    avatar,
+                    registros
                 };
             });
 
-            return {
-                ...op,
-                avatar,
-                registros
-            };
-            });
-
             res.json({
-            OK: true,
-            Operadores: operadoresConActividades
+                OK: true,
+                Operadores: operadoresConActividades
             });
-        } catch (error) {
+        }
+        catch (error) {
             res.status(412).json({
-            OK: false,
-            msg: error.message
+                OK: false,
+                msg: error.message
             });
         }
     }
@@ -229,38 +233,40 @@ module.exports = app => {
             const actividades = await historico.findAll({
             where: {
                 fecha: {
-                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
-                }
-            },
-            order: [
-                ['fecha', 'ASC']
-            ]
+                        [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
+                    }
+                },
+                order: [
+                    ['fecha', 'ASC']
+                ]
             });
 
             const operadoresConActividades = operadores.map(op => {
-            const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
+                const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
 
-            // Buscar avatar usando numero_empleado
-            const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
-            const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+                // Buscar avatar usando numero_empleado
+                const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
+                const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
 
-            const registros = Array.from({ length: daysInMonth }, (_, index) => {
-                const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
-                const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
-                const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+                const registros = Array.from({ length: daysInMonth }, (_, index) => {
+                    const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
+                    const titulo = `Día ${index + 1}: ${moment(fecha).format('YYYY-MM-DD')}`;
+                    const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+
+                    return {
+                        titulo,
+                        numeroEmpleado: op.operador_num_externo,
+                        operador: op.OPERADOR_NOMBRE,
+                        actividad: actividad ? actividad.actividad : "",
+                        comentarios: actividad ? actividad.comentarios : ""
+                    };
+                });
 
                 return {
-                titulo,
-                actividad: actividad ? actividad.actividad : "",
-                comentarios: actividad ? actividad.comentarios : ""
+                    ...op,
+                    avatar,
+                    registros
                 };
-            });
-
-            return {
-                ...op,
-                avatar,
-                registros
-            };
             });
 
             res.json({

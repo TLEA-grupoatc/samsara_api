@@ -451,6 +451,17 @@ module.exports = app => {
         });
     }
 
+
+
+
+
+
+
+
+
+
+
+
     cron.schedule('00 08 * * *', () => { ubicacion('ubicacion1'); });
     cron.schedule('00 09 * * *', () => { ubicacion('ubicacion2'); });
     cron.schedule('00 10 * * *', () => { ubicacion('ubicacion3'); });

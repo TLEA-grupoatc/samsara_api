@@ -71,19 +71,75 @@ module.exports = app => {
         });
     }
 
-    app.enlazarUnidadAOperadorSamsara = (req, res) => {
+    app.enlazarUnidadAOperadorSamsara = async (req, res) => {
+        var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
+        var operadores = [];
+        var tractos = [];
+        console.log(fecha);
+
+        Samsara.listDrivers().then(result => {
+            result['data']['data'].forEach(async (element) => {
+                let nuevoOperador = ({
+                    id_operador: element.id,
+                    name: element.name
+                });
+
+                operadores.push(nuevoOperador);
+            });
+        });
+        
+        Samsara.listVehicles({limit: '512'}).then(result => {
+            result['data']['data'].forEach(async (element) => {
+                let nuevaUnidad = new unidad({
+                    id_unidad: element.id,
+                    name: element.name
+                });
+
+                tractos.push(nuevaUnidad);
+            });
+        });
+
+        try {
+            const listaoperadoresAdvan = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
+            const listaadvan = listaoperadoresAdvan.data.Registros || [];
+
+            const operadoresConActividades = listaadvan.map(op => {
+                const iddeoperador = operadores.filter(h => h.name === op.operador);
+                const iddetracto = tractos.find(e => e.name == op.name);
 
 
-        // lista.forEach(element => {
-        //     Samsara.createDriverVehicleAssignment({
-        //         driverId: element.idoperador, 
-        //         vehicleId: element.idunidad
-        //     })
-        //     .then(result => console.log(result))
-        //     .catch(err => console.error(err));
-        // });
 
 
+                const registros = Array.from({ length: daysInMonth }, (_, index) => {
+                    const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
+                    const titulo = `Día ${index + 1}: ${moment(fecha).format('DD-MM')}`;
+                    const actividad = iddeoperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+
+                    return {
+                        titulo,
+                        actividad: actividad ? actividad.actividad : "",
+                        comentarios: actividad ? actividad.comentarios : ""
+                    };
+                });
+
+                return {
+                    ...op,
+                    avatar,
+                    registros
+                };
+            });
+
+            res.json({
+                OK: true,
+                Operadores: operadoresConActividades
+            });
+        } 
+        catch (error) {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        }
     }
 
 
