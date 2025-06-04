@@ -155,11 +155,11 @@ module.exports = app => {
             const actividades = await historico.findAll({
             where: {
                 fecha: {
-                    [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
+                        [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
                     }
                 },
                 order: [
-                    ['fecha', 'ASC']
+                    ['fecha', 'DESC']
                 ]
             });
 

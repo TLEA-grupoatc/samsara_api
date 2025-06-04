@@ -73,90 +73,69 @@ module.exports = app => {
         });
     }
 
-    //    async function ubicacion(hora) {
     async function enlazarUnidadAOperadorSamsara() {
         var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
         var operadores = [];
         var tractos = [];
+        var listafinal= [];
 
-        // try {
-            const operadoresResult = await Samsara.listDrivers();
-            operadoresResult['data']['data'].forEach(element => {
-                operadores.push({
-                    id_operador: element.id,
-                    name: element.name
-                });
+        const operadoresResult = await Samsara.listDrivers();
+        operadoresResult['data']['data'].forEach(element => {
+            operadores.push({
+                id_operador: element.id,
+                name: element.name
             });
+        });
 
-            const tractosResult = await Samsara.listVehicles({ limit: '512' });
-            tractosResult['data']['data'].forEach(element => {
-                tractos.push({
-                    id_unidad: element.id,
-                    name: element.name
-                });
+        const tractosResult = await Samsara.listVehicles({ limit: '512' });
+        tractosResult['data']['data'].forEach(element => {
+            tractos.push({
+                id_unidad: element.id,
+                name: element.name
             });
+        });
 
-            const listaoperadoresAdvan = await axios.get('https://servidorlocal.ngrok.app/obtenerBitacorasQuinceDias');
-            const listaadvan = listaoperadoresAdvan.data.Registros || [];
+        const listaoperadoresAdvan = await axios.get('https://servidorlocal.ngrok.app/obtenerBitacorasQuinceDias');
+        const listaadvan = listaoperadoresAdvan.data.Registros || [];
 
-            var listafinal= [];
-            // Helper function to delay execution
-            function delay(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        for(const op of listaadvan) {
+            listafinal.push(op);
+            const operador = operadores.find(o => o.name === op.operador);
+            const tracto = tractos.find(t => t.name === op.economico);
+
+            op.id_operador = operador ? operador.id_operador : null;
+            op.id_unidad = tracto ? tracto.id_unidad : null;
+            op.fecha = fechaHoy;
+
+            // console.log(`Enlazando unidad ${op.economico} con operador ${op.operador}...`);
+            if(op.id_operador && op.id_unidad) {
+                
+                await Samsara.createDriverVehicleAssignment({
+                    driverId: op.id_operador,
+                    vehicleId: op.id_unidad
+                }).then(({ data }) => console.log(data)).catch(err => console.error(err));
+                await delay(100);
             }
-
-            for (const op of listaadvan) {
-                listafinal.push(op);
-                const operador = operadores.find(o => o.name === op.operador);
-                const tracto = tractos.find(t => t.name === op.economico);
-
-                op.id_operador = operador ? operador.id_operador : null;
-                op.id_unidad = tracto ? tracto.id_unidad : null;
-                op.fecha = fechaHoy;
-
-                if (op.id_operador && op.id_unidad) {
-                    await Samsara.createDriverVehicleAssignment({
-                        driverId: op.id_operador,
-                        vehicleId: op.id_unidad
-                    })
-                    .then(({ data }) => console.log(data))
-                    .catch(err => console.error(err));
-                    await delay(100); // 2 seconds delay
-                }
-            }
-
-            // res.json({
-            //     OK: true,
-            //     Total: listafinal.length,
-            //     Operadores: listafinal
-            //     // Total: listaadvan.length,
-            //     // Operadores: listaadvan
-            // });
-        // }
-        // catch (error) {
-        //     // res.status(412).json({
-        //     //     OK: false,
-        //     //     msg: error.message
-        //     // });
-        // }
+        }
     }
 
     
 
-    
-    cron.schedule('03 08 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('03 09 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('03 10 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('03 11 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('03 12 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('03 13 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('03 14 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('03 15 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('03 16 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('03 17 * * *', () => { enlazarUnidadAOperadorSamsara(); });
 
-
-
+    cron.schedule('02 08 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('02 09 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('02 10 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('02 11 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('02 12 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('02 13 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('02 14 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('02 15 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('02 16 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    cron.schedule('02 17 * * *', () => { enlazarUnidadAOperadorSamsara(); });
 
 
 
