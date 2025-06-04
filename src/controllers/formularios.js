@@ -237,7 +237,7 @@ module.exports = app => {
                     }
                 },
                 order: [
-                    ['fecha', 'ASC']
+                    ['fecha', 'DESC']
                 ]
             });
 
