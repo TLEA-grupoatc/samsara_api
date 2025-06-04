@@ -16,6 +16,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         }, 
+        detalle: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         fecha_creacion: {
             type: DataType.STRING,
             allowNull: true
