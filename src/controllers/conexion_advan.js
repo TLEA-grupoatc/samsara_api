@@ -118,6 +118,29 @@ module.exports = app => {
 
 
 
+    app.obtenerGPS = (req, res) => {
+        Samsara.getVehicleStatsHistory({
+            startTime: req.params.fechaInicio,
+            endTime: req.params.fechaFin,
+            tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
+            types: 'obdOdometerMeters'
+        }).then(result => {
+
+            var registros = [result['data']['data'][0]['obdOdometerMeters'][0], result['data']['data'][0]['obdOdometerMeters'][result['data']['data'][0]['obdOdometerMeters'].length -1]];
+            res.json({
+                OK: true,
+                Reporte: registros
+            });
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
 
 
 

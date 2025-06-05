@@ -181,7 +181,8 @@ module.exports = app => {
                         operador: op.OPERADOR_NOMBRE,
                         unidad: op.operador_terminal,
                         actividad: actividad ? actividad.actividad : "",
-                        comentarios: actividad ? actividad.comentarios : ""
+                        comentarios: actividad ? actividad.comentarios : "",
+                        id_historico: actividad ? actividad.id_historico : null
                     };
                 });
 
@@ -258,7 +259,8 @@ module.exports = app => {
                         numeroEmpleado: op.operador_num_externo,
                         operador: op.OPERADOR_NOMBRE,
                         actividad: actividad ? actividad.actividad : "",
-                        comentarios: actividad ? actividad.comentarios : ""
+                        comentarios: actividad ? actividad.comentarios : "",
+                        id_historico: actividad ? actividad.id_historico : null
                     };
                 });
 
@@ -344,7 +346,7 @@ module.exports = app => {
                     }
                 },
                 group: ['mes', 'nombre'],
-                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'ASC']]
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'DESC']]
             });
 
             const cartasAcuerdoResult = await docoperador.findAll({
@@ -1010,9 +1012,50 @@ module.exports = app => {
     }
 
 
+// ---------------------------------------------------------------------------------------
 
+    app.actualizarActividadOperador = (req, res) => {
+        let body = req.body;
 
+        let nuevoRegistro = new historico({
+            numero_empleado: body.numero_empleado, 
+            unidad: body.unidad, 
+            nombre: body.nombre, 
+            estado: body.estado, 
+            actividad: body.actividad, 
+            comentarios: body.comentarios, 
+            fecha: body.fecha, 
+            usuario: body.usuario
+        });
 
+        historico.update(nuevoRegistro.dataValues, {
+            where: {
+                id_historico: req.params.id_historico
+            },
+            fields: [
+                'numero_empleado', 
+                'unidad', 
+                'nombre', 
+                'estado', 
+                'actividad', 
+                'comentarios', 
+                'fecha', 
+                'usuario'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Actividad: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
 
 
 
