@@ -458,24 +458,45 @@ module.exports = app => {
 
 
     app.obtenerReporteJson = async (req, res) => {
+        const fechainicio = req.params.fechainicio + 'T00:00:00Z';
+        const fechafin = req.params.fechafin + 'T23:59:59Z';
 
-        var fechainicio = req.params.fechainicio + 'T00:00:00Z';
-        var fechafin = req.params.fechainicio + 'T23:59:59Z';
         reporte.findAll({
-            where: {
-                fechahorakm: {
-                    [Op.between]: [fechainicio, fechafin],
-                },
-            },
-            order: [
-                ['unidad', 'ASC']
+            attributes: [
+            'unidad',
+            [Sequelize.fn('DATE', Sequelize.col('fechaodo')), 'fecha'],
+            [Sequelize.fn('MIN', Sequelize.col('odometer')), 'odometro_inicio'],
+            [Sequelize.fn('MAX', Sequelize.col('odometer')), 'odometro_fin']
             ],
+            where: {
+            fechaodo: {
+                [Op.between]: [fechainicio, fechafin],
+            }
+            },
+            group: ['unidad', Sequelize.fn('DATE', Sequelize.col('fechaodo'))],
+            order: [['unidad', 'ASC'], [Sequelize.fn('DATE', Sequelize.col('fechaodo')), 'ASC']]
         }).then(result => {
+            // Calcular la diferencia por día
+            const reporteFinal = result.map(row => {
+            const data = row.dataValues;
+            const odometro_inicio = Number(data.odometro_inicio) || 0;
+            const odometro_fin = Number(data.odometro_fin) || 0;
+
+            var res = odometro_fin - odometro_inicio
+            return {
+                unidad: data.unidad,
+                fecha: data.fecha,
+                odometro_inicio,
+                odometro_fin,
+                recorrido: res / 1000
+            };
+            });
+
             res.json({
-                OK: true,
-                fechas: fechainicio + ' ' + fechafin,
-                Total: result.length,
-                Reporte: result
+            OK: true,
+            fechas: fechainicio + ' ' + fechafin,
+            Total: reporteFinal.length,
+            Reporte: reporteFinal
             })
         })
         .catch(error => {
