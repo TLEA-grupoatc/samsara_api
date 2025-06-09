@@ -218,28 +218,46 @@ module.exports = app => {
     cron.schedule('02 17 * * *', () => { enlazarUnidadAOperadorSamsara(); });
 
 
-    app.obtenerVehiculos = async (req, res) => {
-        try {
-            const tractosResult = await Samsara.listVehicles({ limit: '512' });
-            const tractos = tractosResult['data']['data'].map(element => {
-                if(element.name && element.name.startsWith('C-')) {
-                    element.name = element.name.replace('C-', 'C');
-                }
-                return {
-                    id_unidad: element.id,
-                    name: element.name
-                };
-            });
+
+    app.obtenerVehiculos = (req, res) => {
+        unidad.findAll({
+            order: [
+                ['name', 'DESC']
+            ],
+        }).then(result => {
             res.json({
                 OK: true,
-                Unidades: tractos
-            });
-        } catch (error) {
+                Unidades: result
+            })
+        })
+        .catch(error => {
             res.status(412).json({
                 msg: error.message
             });
-        }
+        });
     }
+    // app.obtenerVehiculos = async (req, res) => {
+    //     try {
+    //         const tractosResult = await Samsara.listVehicles({ limit: '512' });
+    //         const tractos = tractosResult['data']['data'].map(element => {
+    //             if(element.name && element.name.startsWith('C-')) {
+    //                 element.name = element.name.replace('C-', 'C');
+    //             }
+    //             return {
+    //                 id_unidad: element.id,
+    //                 name: element.name
+    //             };
+    //         });
+    //         res.json({
+    //             OK: true,
+    //             Unidades: tractos
+    //         });
+    //     } catch (error) {
+    //         res.status(412).json({
+    //             msg: error.message
+    //         });
+    //     }
+    // }
 
     app.obtenerVehiculosxTag = (req, res) => {
         unidad.findAll({
