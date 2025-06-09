@@ -89,6 +89,10 @@ module.exports = app => {
 
         const tractosResult = await Samsara.listVehicles({ limit: '512' });
         tractosResult['data']['data'].forEach(element => {
+            if(element.name && element.name.startsWith('C-')) {
+                element.name = element.name.replace('C-', 'C');
+            }
+
             tractos.push({
                 id_unidad: element.id,
                 name: element.name
@@ -103,17 +107,15 @@ module.exports = app => {
         }
 
         for(const op of listaadvan) {
-            listafinal.push(op);
             const operador = operadores.find(o => o.name === op.operador);
             const tracto = tractos.find(t => t.name === op.economico);
-
+            
             op.id_operador = operador ? operador.id_operador : null;
             op.id_unidad = tracto ? tracto.id_unidad : null;
             op.fecha = fechaHoy;
-
-            // console.log(`Enlazando unidad ${op.economico} con operador ${op.operador}...`);
+            
             if(op.id_operador && op.id_unidad) {
-                
+                listafinal.push(op);
                 await Samsara.createDriverVehicleAssignment({
                     driverId: op.id_operador,
                     vehicleId: op.id_unidad
@@ -123,7 +125,85 @@ module.exports = app => {
         }
     }
 
-    
+
+
+
+
+
+
+
+    app.obtenerEnlazarOpeSam = async  (req, res) => {
+        var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
+        var operadores = [];
+        var tractos = [];
+        var listafinal = [];
+        var listanovalidos = [];
+
+        const operadoresResult = await Samsara.listDrivers();
+        operadoresResult['data']['data'].forEach(element => {
+            operadores.push({
+                id_operador: element.id,
+                name: element.name
+            });
+        });
+
+        const tractosResult = await Samsara.listVehicles({ limit: '512' });
+        tractosResult['data']['data'].forEach(element => {
+            if(element.name && element.name.startsWith('C-')) {
+                element.name = element.name.replace('C-', 'C');
+            }
+
+            tractos.push({
+                id_unidad: element.id,
+                name: element.name
+            });
+        });
+
+        const listaoperadoresAdvan = await axios.get('https://servidorlocal.ngrok.app/obtenerBitacorasQuinceDias');
+        const listaadvan = listaoperadoresAdvan.data.Registros || [];
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        for(const op of listaadvan) {
+            const operador = operadores.find(o => o.name === op.operador);
+            const tracto = tractos.find(t => t.name === op.economico);
+            
+            op.id_operador = operador ? operador.id_operador : null;
+            op.id_unidad = tracto ? tracto.id_unidad : null;
+            op.fecha = fechaHoy;
+            
+            if(op.id_operador && op.id_unidad) {
+                listafinal.push(op);
+                // await Samsara.createDriverVehicleAssignment({
+                //     driverId: op.id_operador,
+                //     vehicleId: op.id_unidad
+                // }).then(({ data }) => console.log(data)).catch(err => console.error(err));
+                // await delay(100);
+            }
+            else {
+                listanovalidos.push(op);
+            }
+        }
+
+
+
+        res.json({
+            OK: true,
+            listafinal: listafinal,
+            novalidos: listanovalidos
+        })
+    }
+
+
+
+
+
+
+
+
+
 
 
     cron.schedule('02 08 * * *', () => { enlazarUnidadAOperadorSamsara(); });
@@ -138,23 +218,27 @@ module.exports = app => {
     cron.schedule('02 17 * * *', () => { enlazarUnidadAOperadorSamsara(); });
 
 
-
-    app.obtenerVehiculos = (req, res) => {
-        unidad.findAll({
-            order: [
-                ['name', 'DESC']
-            ],
-        }).then(result => {
+    app.obtenerVehiculos = async (req, res) => {
+        try {
+            const tractosResult = await Samsara.listVehicles({ limit: '512' });
+            const tractos = tractosResult['data']['data'].map(element => {
+                if(element.name && element.name.startsWith('C-')) {
+                    element.name = element.name.replace('C-', 'C');
+                }
+                return {
+                    id_unidad: element.id,
+                    name: element.name
+                };
+            });
             res.json({
                 OK: true,
-                Unidades: result
-            })
-        })
-        .catch(error => {
+                Unidades: tractos
+            });
+        } catch (error) {
             res.status(412).json({
                 msg: error.message
             });
-        });
+        }
     }
 
     app.obtenerVehiculosxTag = (req, res) => {

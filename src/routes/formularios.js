@@ -56,6 +56,7 @@ module.exports = app => {
     
     
     app.post('/crearActividadOperador', verificarToken, Fo.crearActividadOperador);
+    
     app.put('/actualizarActividadOperador/:id_historico', verificarToken, Fo.actualizarActividadOperador);
     
     

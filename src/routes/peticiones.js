@@ -79,6 +79,7 @@ module.exports = app => {
     
     // app.get('/enlazarUnidadAOperadorSamsara', Peticion.enlazarUnidadAOperadorSamsara);
     
+    app.get('/obtenerEnlazarOpeSam', Peticion.obtenerEnlazarOpeSam);
 
 
     app.get('/obtenerTiempoDeRespuesta/:division/:fechainicio/:fechafin', verificarToken, Peticion.obtenerTiempoDeRespuesta);
