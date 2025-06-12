@@ -1467,7 +1467,6 @@ module.exports = app => {
         gasto.findAll({
             where: {
                 estatus: req.params.estatus,
-                pendientedeaprobar: 1,
                 id_liquidacion:{
                     [Op.is]: null
                 }
