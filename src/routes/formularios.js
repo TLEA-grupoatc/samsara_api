@@ -63,6 +63,38 @@ module.exports = app => {
     app.post('/crearDanoOperador', verificarToken, Fo.crearDanoOperador);
 
 
+
+
+
+
+
+
+
+    app.get('/obtenerDopings', verificarToken, Fo.obtenerDopings);
+
+    app.post('/crearDopingOperador', verificarToken, Fo.crearDopingOperador);
+    
+
+
+
+
+
+    app.get('/obtenerDanosUnidadesOpe', verificarToken, Fo.obtenerDanosUnidadesOpe);
+
+    app.post('/crearDanoUnidadOperador', verificarToken, Fo.crearDanoUnidadOperador);
+    
+
+
+
+
+
+
+
+
+
+
+
+
     
     app.get('/obtenerQuejasXOperador/:operador', verificarToken, Fo.obtenerQuejasXOperador);
     

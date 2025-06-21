@@ -13,6 +13,7 @@ module.exports = app => {
     const queope = app.database.models.QuejaOperador;
     const ateope = app.database.models.AtencionOperador;
     const opedan = app.database.models.OperadoresDanos;
+    const dopope = app.database.models.DopingsOperadores;
 
     const prenomina = app.database.models.Prenominas;
     const liquidacion = app.database.models.Liquidaciones;
@@ -20,6 +21,8 @@ module.exports = app => {
     const docoperador = app.database.models.DocOperadores;
     
     const alerta = app.database.models.Alertas;
+
+    const danosunidadoperador = app.database.models.DanosUnidadOperador;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -825,6 +828,181 @@ module.exports = app => {
     }
 
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerDanosUnidadesOpe = (req, res) => {
+        danosunidadoperador.findAll({
+            order: [['fecha', 'DESC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                DanosUnidad: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearDanoUnidadOperador = (req, res) => {
+        let body = req.body;
+        
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.evidencia.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+        fs.writeFileSync(directorio + body.usuario_creacion.replace(' ', '') + '_' + fechacorta + '_' + body.nombre, big1);
+        
+        doc = directorio + body.usuario_creacion.replace(' ', '') + '_' + fechacorta + '_' + body.nombre;
+
+        let nuevoRegistro = new danosunidadoperador({
+            economico: body.economico, 
+            operador: body.operador, 
+            comentarios: body.comentarios, 
+            fecha: body.fecha, 
+            evidencia: doc, 
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion
+        });
+
+        danosunidadoperador.create(nuevoRegistro.dataValues, {
+            fields: [
+                'economico', 
+                'operador', 
+                'comentarios', 
+                'fecha',
+                'evidencia',
+                'fecha_creacion', 
+                'usuario_creacion'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                DanoUnidad: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerDopings = (req, res) => {
+        dopope.findAll({
+            order: [['fecha', 'DESC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Dopings: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearDopingOperador = (req, res) => {
+        let body = req.body;
+        
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.evidencia.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+        fs.writeFileSync(directorio + body.usuario_creacion.replace(' ', '') + '_' + fechacorta + '_' + body.nombre, big1);
+        
+        doc = directorio + body.usuario_creacion.replace(' ', '') + '_' + fechacorta + '_' + body.nombre;
+
+        let nuevoRegistro = new dopope({
+            operador: body.operador, 
+            fecha: body.fecha, 
+            evidencia: doc, 
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion
+        });
+
+        dopope.create(nuevoRegistro.dataValues, {
+            fields: [
+                'operador', 
+                'fecha',
+                'evidencia',
+                'fecha_creacion', 
+                'usuario_creacion'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Doping: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
 
 
 
