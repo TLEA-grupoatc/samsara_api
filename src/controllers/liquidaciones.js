@@ -30,6 +30,7 @@ module.exports = app => {
             encrypt: false
         }
     };
+    
 
     app.obtenerPlan = async (req, res) => {
         try {
