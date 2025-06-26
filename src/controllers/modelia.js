@@ -12,7 +12,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   app.preguntar = async (req, res) => {
     try {
       const pregunta = req.params.pregunta;
-      if (!pregunta) return res.status(400).json({ error: 'Falta la pregunta' });
+      if(!pregunta) return res.status(400).json({ error: 'Falta la pregunta' });
 
       const schema = `Tabla Liquidaciones: id_liquidacion(INT), operador(STRING), monto(FLOAT), fecha(STRING), estado(STRING), folio(STRING)`;
       const systemPrompt = `Eres un asistente que convierte preguntas a código Sequelize. Genera solo el código JS sin explicaciones.`;
@@ -37,8 +37,8 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       );
       const datos = await fn(liquidacion, Sequelize, Sequelize.Op);
 
-      res.json({ ok: true, code: codigo, datos });
-
+      // res.json({ ok: true, code: codigo, datos });
+      res.json({ ok: true, respuesta: datos });
     } 
     catch (err) {
       res.status(500).json({ error: err.message });
