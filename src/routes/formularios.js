@@ -37,6 +37,8 @@ module.exports = app => {
     
     app.post('/crearActividadDO', verificarToken, Fo.crearActividadDO);
     
+    app.put('/editarActividadDO/:id_actividad_ope_op', verificarToken, Fo.editarActividadDO);
+    
     app.put('/cerrarReporte/:id_actividad_ope_op', verificarToken, Fo.cerrarReporte);
     
     app.post('/crearCobro', verificarToken, Fo.crearCobro);

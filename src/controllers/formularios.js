@@ -1330,6 +1330,83 @@ module.exports = app => {
         });
     }
 
+
+    app.editarActividadDO = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new actviidaddo({
+            operador: body.operador, 
+            tipo: body.tipo, 
+            criticidad: body.criticidad, 
+            grupo: body.grupo, 
+            subgrupo: body.subgrupo, 
+            descripcion: body.descripcion,
+            comentarios: body.comentarios,
+            enbase: body.enbase,
+            base: body.base,
+            seguimiento_colaborador: body.seguimiento_colaborador,
+            fecha_inicio: body.fecha_inicio, 
+            fecha_tentativa: body.fecha_tentativa, 
+            fecha_cierre: body.fecha_cierre, 
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion, 
+            fecha_modificacion: body.fecha_modificacion, 
+            usuario_modificacion: body.usuario_modificacion, 
+            estatus: body.estatus
+        });
+
+        actviidaddo.update(nuevoRegistro.dataValues, {
+            where: {
+                id_actividad_ope_op: req.params.id_actividad_ope_op
+            },
+            fields: [
+                'operador', 
+                'tipo', 
+                'criticidad', 
+                'grupo', 
+                'subgrupo', 
+                'descripcion', 
+                'comentarios', 
+                'enbase', 
+                'base', 
+                'seguimiento_colaborador', 
+                'fecha_inicio', 
+                'fecha_tentativa', 
+                'fecha_cierre', 
+                'fecha_creacion', 
+                'usuario_creacion', 
+                'fecha_modificacion', 
+                'usuario_modificacion', 
+                'estatus'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Actividad: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.cerrarReporte = (req, res) => {
         let data = new actviidaddo({
             estatus: 'CERRADO',
