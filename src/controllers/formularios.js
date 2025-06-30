@@ -24,6 +24,9 @@ module.exports = app => {
 
     const danosunidadoperador = app.database.models.DanosUnidadOperador;
 
+    const Samsara = require("@api/samsara-dev-rel");
+    Samsara.auth(process.env.KEYSAM);
+
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const axios = require('axios');
@@ -149,6 +152,24 @@ module.exports = app => {
         catch (err) {
             empleadosExternos = [];
         }
+
+        // try {
+        //     // Obtener todos los registros de asignaciones de vehículos y operadores
+        //     try {
+        //         // Obtener asignaciones de operadores y vehículos desde Samsara
+        //         const { data } = await Samsara.getDriverVehicleAssignments({ filterBy: 'vehicles', driverIds: '', vehicleIds: '' });
+        //         // Extraer solo id de vehicle y id de driver de todos los registros
+        //         data['data']['data'].forEach(async (element) => {
+        //         var vehiculo = element['gps'].time.split('T')[0];
+
+        //     });
+        //     } catch (err) {
+        //         console.error(err);
+        //     }
+        // }
+        // catch (err) {
+        //     empleadosExternos = [];
+        // }
 
         try {
             // Obtener operadores

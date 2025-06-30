@@ -711,7 +711,7 @@ module.exports = app => {
             monto: body.monto, 
             comentarios: body.comentarios, 
             conceptos_agrupados: body.conceptos_agrupados, 
-            pendientedeaprobar: body.pendientedeaprobar,
+            pendientedeaprobar: 0,
             aprobado_por: body.aprobado_por,
             aprobado_por_gerente: body.aprobado_por_gerente,
             estatus: body.estatus,
