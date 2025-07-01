@@ -239,7 +239,6 @@ module.exports = app => {
         const endOfMonth = moment(startOfMonth).endOf('month').startOf('day');
         const daysInMonth = endOfMonth.date();
 
-        
         let empleadosExternos = [];
 
         try {
@@ -251,7 +250,6 @@ module.exports = app => {
         }
 
         try {
-            // Obtener operadores desde API externa
             const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
             const operadores = operadoresResponse.data.Registros || [];
 
@@ -282,6 +280,7 @@ module.exports = app => {
                         titulo,
                         numeroEmpleado: op.operador_num_externo,
                         operador: op.OPERADOR_NOMBRE,
+                        unidad: op.operador_terminal,
                         actividad: actividad ? actividad.actividad : "",
                         comentarios: actividad ? actividad.comentarios : "",
                         id_historico: actividad ? actividad.id_historico : null
