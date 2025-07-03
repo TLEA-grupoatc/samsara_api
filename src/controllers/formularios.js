@@ -255,6 +255,7 @@ module.exports = app => {
         const daysInMonth = endOfMonth.date();
 
         let empleadosExternos = [];
+        let listaTractosAsignados = [];
 
         try {
             const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
@@ -262,6 +263,17 @@ module.exports = app => {
         }
         catch (err) {
             empleadosExternos = [];
+        }
+        
+        try {
+            listaTractosAsignados = await operador.findAll({
+                order: [
+                    ['nombre', 'ASC']
+                ]
+            });
+        }
+        catch (err) {
+            listaTractosAsignados = [];
         }
 
         try {
@@ -281,10 +293,12 @@ module.exports = app => {
 
             const operadoresConActividades = operadores.map(op => {
                 const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
-
-                // Buscar avatar usando numero_empleado
                 const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
+                const tractos = listaTractosAsignados.find(e => e.nombre == op.OPERADOR_NOMBRE);
+
                 const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+                const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
+                const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
 
                 const registros = Array.from({ length: daysInMonth }, (_, index) => {
                     const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
@@ -305,6 +319,8 @@ module.exports = app => {
                 return {
                     ...op,
                     avatar,
+                    tractoTitular,
+                    tractoActual,
                     registros
                 };
             });
