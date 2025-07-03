@@ -144,6 +144,7 @@ module.exports = app => {
         const daysInMonth = endOfMonth.date();
 
         let empleadosExternos = [];
+        let listaTractosAsignados = [];
 
         try {
             const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
@@ -151,6 +152,17 @@ module.exports = app => {
         }
         catch (err) {
             empleadosExternos = [];
+        }
+
+        try {
+            listaTractosAsignados = await operador.findAll({
+                order: [
+                    ['nombre', 'ASC']
+                ]
+            });
+        }
+        catch (err) {
+            listaTractosAsignados = [];
         }
 
         // try {
@@ -172,7 +184,6 @@ module.exports = app => {
         // }
 
         try {
-            // Obtener operadores
             const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
             const operadores = operadoresResponse.data.Registros || [];
 
@@ -189,10 +200,12 @@ module.exports = app => {
 
             const operadoresConActividades = operadores.map(op => {
                 const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
-
-                // Buscar avatar usando numero_empleado
                 const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
+                const tractos = listaTractosAsignados.find(e => e.nombre == op.OPERADOR_NOMBRE);
+
                 const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+                const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
+                const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
 
                 const registros = Array.from({ length: daysInMonth }, (_, index) => {
                     const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
@@ -213,6 +226,8 @@ module.exports = app => {
                 return {
                     ...op,
                     avatar,
+                    tractoTitular,
+                    tractoActual,
                     registros
                 };
             });
@@ -431,6 +446,25 @@ module.exports = app => {
                 order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
             });
 
+            const indiciplinasResult = await queope.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totalindisciplinas'],
+                ],
+                where: {
+                    operador: operadorId,
+                    fecha_creacion: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
+            });
+
             const danosResult = await opedan.findAll({
                 attributes: [
                     'operador',
@@ -448,6 +482,44 @@ module.exports = app => {
                 },
                 group: ['mes', 'operador'],
                 order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_dano')), 'ASC']]
+            });
+
+            const danosUnidadesResult = await danosunidadoperador.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totaldanosunidades'],
+                ],
+                where: {
+                    operador: operadorId,
+                    fecha: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'ASC']]
+            });
+
+            const bienestarResult = await ateope.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totalbienestar'],
+                ],
+                where: {
+                    operador: operadorId,
+                    fecha_creacion: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
             });
 
             const liquidacionPorMes = {};
@@ -488,9 +560,24 @@ module.exports = app => {
                 quejasPorMes[d.dataValues.mes] = Number(d.dataValues.totalquejas) || 0;
             });
 
+            const indiciplinasPorMes = {};
+            indiciplinasResult.forEach(d => {
+                indiciplinasPorMes[d.dataValues.mes] = Number(d.dataValues.totalindisciplinas) || 0;
+            });
+
             const danosPorMes = {};
             danosResult.forEach(d => {
                 danosPorMes[d.dataValues.mes] = Number(d.dataValues.totaldanos) || 0;
+            });
+
+            const danosUnidadesPorMes = {};
+            danosUnidadesResult.forEach(d => {
+                danosUnidadesPorMes[d.dataValues.mes] = Number(d.dataValues.totaldanosunidades) || 0;
+            });
+
+            const bienestarPorMes = {};
+            bienestarResult.forEach(d => {
+                bienestarPorMes[d.dataValues.mes] = Number(d.dataValues.totalbienestar) || 0;
             });
 
             const scoreCard = meses.map(mes => ({
@@ -502,7 +589,10 @@ module.exports = app => {
                 productividad: diaslaboradoPorMes[mes] || 0,
                 porcentaje: porcentajeDiasLaboradoPorMes[mes] || 0,
                 quejas: quejasPorMes[mes] || 0,
+                indiciplinas: indiciplinasPorMes[mes] || 0,
                 danos: danosPorMes[mes] || 0,
+                danosunidades: danosUnidadesPorMes[mes] || 0,
+                bienestar: bienestarPorMes[mes] || 0,
             }));
 
             res.json({
@@ -1413,6 +1503,62 @@ module.exports = app => {
             });
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.actualizarTractoTitularOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new operador({
+            tracto_titular: body.tracto_titular
+        });
+
+        operador.update(nuevoRegistro.dataValues, {
+            where: {
+                numero_empleado: req.params.numero_empleado
+            },
+            fields: [
+                'tracto_titular'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Tracto: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

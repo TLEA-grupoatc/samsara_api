@@ -11,6 +11,7 @@ module.exports = app => {
     const reporte = app.database.models.Reportes;
     const alerta = app.database.models.Alertas;
     const seguimiento = app.database.models.Seguimientos;
+    const ope = app.database.models.Operadores;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -114,23 +115,29 @@ module.exports = app => {
             op.id_unidad = tracto ? tracto.id_unidad : null;
             op.fecha = fechaHoy;
             
+            let data = new ope({
+                tracto_actual: op.economico,
+                fecha_actividad: moment().format('YYYY-MM-DD')
+            });
+            
+            ope.update(data.dataValues, {
+                where: {
+                    nombre: op.operador
+                },
+                fields: ['tracto_actual', 'fecha_actividad']
+            });
+            
             if(op.id_operador && op.id_unidad) {
                 listafinal.push(op);
                 await Samsara.createDriverVehicleAssignment({
                     driverId: op.id_operador,
                     vehicleId: op.id_unidad
                 }).then(({ data }) => console.log(data)).catch(err => console.error(err));
-                await delay(100);
             }
+
+            await delay(100);
         }
     }
-
-
-
-
-
-
-
 
     app.obtenerEnlazarOpeSam = async  (req, res) => {
         var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
@@ -174,20 +181,33 @@ module.exports = app => {
             op.id_unidad = tracto ? tracto.id_unidad : null;
             op.fecha = fechaHoy;
             
-            if(op.id_operador && op.id_unidad) {
-                listafinal.push(op);
-                // await Samsara.createDriverVehicleAssignment({
-                //     driverId: op.id_operador,
-                //     vehicleId: op.id_unidad
-                // }).then(({ data }) => console.log(data)).catch(err => console.error(err));
-                // await delay(100);
-            }
-            else {
-                listanovalidos.push(op);
-            }
+            let data = new operador({
+                tracto_actual: op.economico,
+                fecha_actividad: moment().format('YYYY-MM-DD')
+            });
+        
+            console.log(op.operador, op.economico);
+            
+            operador.update(data.dataValues, {
+                where: {
+                    nombre: op.operador
+                },
+                fields: ['tracto_actual', 'fecha_actividad']
+            });
+            
+            // if(op.id_operador && op.id_unidad) {
+            //     listafinal.push(op);
+            //     await Samsara.createDriverVehicleAssignment({
+            //         driverId: op.id_operador,
+            //         vehicleId: op.id_unidad
+            //     }).then(({ data }) => console.log(data)).catch(err => console.error(err));
+            // }
+            // else {
+            //     listanovalidos.push(op);
+            // }
+
+            await delay(100);
         }
-
-
 
         res.json({
             OK: true,
@@ -195,16 +215,6 @@ module.exports = app => {
             novalidos: listanovalidos
         })
     }
-
-
-
-
-
-
-
-
-
-
 
     cron.schedule('02 08 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 09 * * *', () => { enlazarUnidadAOperadorSamsara(); });
@@ -216,7 +226,6 @@ module.exports = app => {
     cron.schedule('02 15 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 16 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 17 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-
 
 
     app.obtenerVehiculos = (req, res) => {
@@ -236,6 +245,7 @@ module.exports = app => {
             });
         });
     }
+
     // app.obtenerVehiculos = async (req, res) => {
     //     try {
     //         const tractosResult = await Samsara.listVehicles({ limit: '512' });

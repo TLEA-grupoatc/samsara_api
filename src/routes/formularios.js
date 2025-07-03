@@ -50,6 +50,7 @@ module.exports = app => {
     app.get('/obtenerReporteOperadoresAlertas/:fechaInicio/:fechaFin', verificarToken, Fo.obtenerReporteOperadoresAlertas);
     
     
+    app.put('/actualizarTractoTitularOperador/:numero_empleado', verificarToken, Fo.actualizarTractoTitularOperador);
     
     app.get('/obtenerAtenciones', verificarToken, Fo.obtenerAtenciones);
     app.get('/obtenerQuejas', verificarToken, Fo.obtenerQuejas);

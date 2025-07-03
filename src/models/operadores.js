@@ -29,6 +29,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        tracto_titular: {
+            type: DataType.STRING,
+            allowNull: true
+        },
+        tracto_actual: {
+            type: DataType.STRING,
+            allowNull: true
+        },
         registrado_por: {
             type: DataType.STRING,
             allowNull: true
@@ -36,8 +44,7 @@ module.exports = (sequelize, DataType) => {
         fecha_actividad: {
             type: DataType.STRING,
             allowNull: true
-        },
-
+        }
     },
     {
         tableName: 'operador',        
