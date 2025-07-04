@@ -1,0 +1,299 @@
+{
+  "eventId": "a73d22aa-6812-4a33-89e1-ecb43b2657ef",
+  "eventMs": 1751667919011,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474991878022-1751667802363&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "A harsh event has occurred.",
+    "alertConditionId": "HarshEvent",
+    "details": "Se detectó un evento por Uso del móvil en el vehículo TLEA-350 a la(s) Jul 4 4:23PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474991878022/incident/1751667802363",
+    "device": {
+      "id": 281474991878022,
+      "name": "TLEA-350",
+      "serial": "GTX4ZYP9AZ",
+      "vin": "3BKZL40X9SF551993"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751667802363,
+    "summary": "Se detectó un evento Uso del móvil en el vehículo TLEA-350 en Jul 4 4:23PM CST."
+  }
+}
+{
+  "eventId": "477674b0-faef-4ad1-acf2-55f3d3384f7a",
+  "eventMs": 1751667942449,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/workflows/incidents/23eeb3ec-9bc5-43bc-839d-d79335cf77ad/1/281474989471567/1751667642021/link?dl=eyJkZWVwTGlua1R5cGUiOiJXb3JrZmxvd0luY2lkZW50IiwiZ3JvdXBJZCI6MTA5NDA2fQ==",
+    "alertConditionDescription": "Vehicle speed",
+    "alertConditionId": "DeviceSpeedAbove",
+    "details": "La velocidad de 'TLEA-356' es superior a 105 km/h. Actualmente de 121 km/h. Ubicación: El Jagüey, SLP, MX. Informe de velocidad de viaje: https://cloud.samsara.com/o/10003072/fleet/reports/safety/speeding/devices/281474989471567/trip/1751663878026",
+    "device": {
+      "id": 281474989471567,
+      "name": "TLEA-356",
+      "serial": "GKCG3GXFM2",
+      "vin": "3BKZL40XXSF551999"
+    },
+    "orgId": 10003072,
+    "resolved": false,
+    "startMs": 1751667642021,
+    "summary": "La velocidad de 'TLEA-356' excedió 105 km/h durante más de 4 minutos."
+  }
+}
+{
+  "eventId": "0d30e154-4c41-4f9d-bea8-dc2727217742",
+  "eventMs": 1751667984518,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/workflows/incidents/68928618-a95e-4871-b11e-65e2eb28f155/1/281474987547710/1751667767040/link?dl=eyJkZWVwTGlua1R5cGUiOiJXb3JrZmxvd0luY2lkZW50IiwiZ3JvdXBJZCI6MTA5NDA2fQ==",
+    "alertConditionDescription": "Vehicle is stopped in geofence",
+    "alertConditionId": "DeviceLocationStoppedInGeofence",
+    "details": "TLEA-030 se ha detenido dentro de ZONA DE RIESGO por más de 3 minutos.",
+    "device": {
+      "id": 281474987547710,
+      "name": "TLEA-030",
+      "serial": "G77GSP97NG",
+      "vin": "3BKZL40X3PF536266"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751667767040,
+    "summary": "TLEA-030 se ha detenido dentro de ZONA DE RIESGO por más de 3 minutos."
+  }
+}
+{
+  "eventId": "ce05a9df-a97b-477d-932c-cdeac5aa93dd",
+  "eventMs": 1751668070515,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474989107051-1751667922638&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "Se ha producido un incumplimiento de la política",
+    "alertConditionId": "PolicyViolations",
+    "details": "Se detectó un evento por Sin cinturón de seguridad en el vehículo TLEA-316 a la(s) Jul 4 4:25PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474989107051/incident/1751667922638",
+    "device": {
+      "id": 281474989107051,
+      "name": "TLEA-316",
+      "serial": "GVVAYHCKZR",
+      "vin": "5KKHAEDV2PPNP6076"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751667922638,
+    "summary": "Se detectó un evento Sin cinturón de seguridad en el vehículo TLEA-316 en Jul 4 4:25PM CST."
+  }
+}
+{
+  "eventId": "a2567ccb-fa6f-4908-a739-7ef53057b782",
+  "eventMs": 1751668070731,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474989107424-1751667896393&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "Se ha producido un incumplimiento de la política",
+    "alertConditionId": "PolicyViolations",
+    "details": "Se detectó un evento por Sin cinturón de seguridad en el vehículo TLEA-315 a la(s) Jul 4 4:24PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474989107424/incident/1751667896393",
+    "device": {
+      "id": 281474989107424,
+      "name": "TLEA-315",
+      "serial": "GWFJC9UPW9",
+      "vin": "5KKHAEDV8PPNP6101"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751667896393,
+    "summary": "Se detectó un evento Sin cinturón de seguridad en el vehículo TLEA-315 en Jul 4 4:24PM CST."
+  }
+}
+{
+  "eventId": "b4fa67dc-a37a-40cc-b21a-60d509752082",
+  "eventMs": 1751668077983,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474992549798-1751667967140&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "A harsh event has occurred.",
+    "alertConditionId": "HarshEvent",
+    "details": "Se detectó un evento por Uso del móvil en el vehículo TLEA-329 a la(s) Jul 4 4:26PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474992549798/incident/1751667967140",
+    "device": {
+      "id": 281474992549798,
+      "name": "TLEA-329",
+      "serial": "GHV74TVDA4",
+      "vin": "3BKZL40X5SF551988"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751667967140,
+    "summary": "Se detectó un evento Uso del móvil en el vehículo TLEA-329 en Jul 4 4:26PM CST."
+  }
+}
+{
+  "eventId": "b8cf3d52-07b5-4ebd-b3e9-d17a1229c766",
+  "eventMs": 1751668165644,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/workflows/incidents/23eeb3ec-9bc5-43bc-839d-d79335cf77ad/1/281474986987819/1751667896027/link?dl=eyJkZWVwTGlua1R5cGUiOiJXb3JrZmxvd0luY2lkZW50IiwiZ3JvdXBJZCI6MTA5NDA2fQ==",
+    "alertConditionDescription": "Vehicle speed",
+    "alertConditionId": "DeviceSpeedAbove",
+    "details": "La velocidad de 'TLEA-159' es superior a 105 km/h. Actualmente de 122 km/h. Ubicación: El Jagüey, SLP, MX. Informe de velocidad de viaje: https://cloud.samsara.com/o/10003072/fleet/reports/safety/speeding/devices/281474986987819/trip/1751663846004",
+    "device": {
+      "id": 281474986987819,
+      "name": "TLEA-159",
+      "serial": "GN3D946J7F",
+      "vin": "3BKZL40X4RF540166"
+    },
+    "orgId": 10003072,
+    "resolved": false,
+    "startMs": 1751667896027,
+    "summary": "La velocidad de 'TLEA-159' excedió 105 km/h durante más de 4 minutos."
+  }
+}
+{
+  "eventId": "1111fab2-72bc-4553-960b-49b62863fb1c",
+  "eventMs": 1751668093521,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474988007367-1751667923879&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "Se ha producido un incumplimiento de la política",
+    "alertConditionId": "PolicyViolations",
+    "details": "Se detectó un evento por Sin cinturón de seguridad en el vehículo TLEA-232 a la(s) Jul 4 4:25PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474988007367/incident/1751667923879",
+    "device": {
+      "id": 281474988007367,
+      "name": "TLEA-232",
+      "serial": "GCXRYHYSDK",
+      "vin": "5KKHAEDVXPPNP6066"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751667923879,
+    "summary": "Se detectó un evento Sin cinturón de seguridad en el vehículo TLEA-232 en Jul 4 4:25PM CST."
+  }
+}
+{
+  "eventId": "135224f0-127f-4fc9-8668-c854bb7466e4",
+  "eventMs": 1751668104012,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474988539480-1751667977722&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "Se ha producido un incumplimiento de la política",
+    "alertConditionId": "PolicyViolations",
+    "details": "Se detectó un evento por Cámara obstruida en el vehículo TLEA-162 a la(s) Jul 4 4:26PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474988539480/incident/1751667977722",
+    "device": {
+      "id": 281474988539480,
+      "name": "TLEA-162",
+      "serial": "GMJPBJYHKS",
+      "vin": "3HSDZAPT1RN143449"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751667977722,
+    "summary": "Se detectó un evento Cámara obstruida en el vehículo TLEA-162 en Jul 4 4:26PM CST."
+  }
+}
+{
+  "eventId": "dde1debb-dfcf-4ff1-b97c-86d0da190070",
+  "eventMs": 1751668186770,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474992549798-1751667993328&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "A harsh event has occurred.",
+    "alertConditionId": "HarshEvent",
+    "details": "Se detectó un evento por Conducción distraída en el vehículo TLEA-329 a la(s) Jul 4 4:26PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474992549798/incident/1751667993328",
+    "device": {
+      "id": 281474992549798,
+      "name": "TLEA-329",
+      "serial": "GHV74TVDA4",
+      "vin": "3BKZL40X5SF551988"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751667993328,
+    "summary": "Se detectó un evento Conducción distraída en el vehículo TLEA-329 en Jul 4 4:26PM CST."
+  }
+}
+{
+  "eventId": "4a98b34b-067d-4515-a47c-55ce3d56ec68",
+  "eventMs": 1751668186860,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474992549798-1751668001528&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "A harsh event has occurred.",
+    "alertConditionId": "HarshEvent",
+    "details": "Se detectó un evento por Uso del móvil en el vehículo TLEA-329 a la(s) Jul 4 4:26PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474992549798/incident/1751668001528",
+    "device": {
+      "id": 281474992549798,
+      "name": "TLEA-329",
+      "serial": "GHV74TVDA4",
+      "vin": "3BKZL40X5SF551988"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751668001528,
+    "summary": "Se detectó un evento Uso del móvil en el vehículo TLEA-329 en Jul 4 4:26PM CST."
+  }
+}
+{
+  "eventId": "77e5d84c-c294-4258-912f-72c41555035d",
+  "eventMs": 1751668186938,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474992549798-1751668011724&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "A harsh event has occurred.",
+    "alertConditionId": "HarshEvent",
+    "details": "Se detectó un evento por Uso del móvil en el vehículo TLEA-329 a la(s) Jul 4 4:26PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474992549798/incident/1751668011724",
+    "device": {
+      "id": 281474992549798,
+      "name": "TLEA-329",
+      "serial": "GHV74TVDA4",
+      "vin": "3BKZL40X5SF551988"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751668011724,
+    "summary": "Se detectó un evento Uso del móvil en el vehículo TLEA-329 en Jul 4 4:26PM CST."
+  }
+}
+{
+  "eventId": "99151480-1aff-484c-ba3a-0b7dc27e139b",
+  "eventMs": 1751668194097,
+  "eventType": "Alert",
+  "orgId": 10003072,
+  "webhookId": "8290022608382498",
+  "event": {
+    "alertEventUrl": "https://cloud.samsara.com/o/10003072/fleet/safety/event_review?selectedEvent=281474987371159-1751668042258&dl=eyJkZWVwTGlua1R5cGUiOiJTYWZldHlFdmVudCIsImdyb3VwSWQiOjEwOTQwNiwiZXZlbnRJZCI6MH0=",
+    "alertConditionDescription": "Se ha producido un incumplimiento de la política",
+    "alertConditionId": "PolicyViolations",
+    "details": "Se detectó un evento por Sin cinturón de seguridad en el vehículo TLEA-093 a la(s) Jul 4 4:27PM CST. Informe del incidente: https://cloud.samsara.com/o/10003072/fleet/reports/safety/vehicle/281474987371159/incident/1751668042258",
+    "device": {
+      "id": 281474987371159,
+      "name": "TLEA-093",
+      "serial": "GC3D5AKYHR",
+      "vin": "3BKZL40X9PF536272"
+    },
+    "orgId": 10003072,
+    "resolved": true,
+    "startMs": 1751668042258,
+    "summary": "Se detectó un evento Sin cinturón de seguridad en el vehículo TLEA-093 en Jul 4 4:27PM CST."
+  }
+}

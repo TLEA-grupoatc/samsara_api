@@ -50,6 +50,17 @@ cron.schedule('* * * * *', () => {
 app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
+  const filePath = './webhookAPITLEA_payload.txt';
+
+  fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
+    if (err) {
+      console.error('Error writing payload to file:', err);
+      // res.status(500).send('Error saving payload');
+    } else {
+      // res.status(200).send('Payload saved');
+    }
+  });
+
   const timestamp = payload.eventMs;
   const date = new Date(timestamp);
   const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
@@ -57,9 +68,6 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
   var eventoCase;
   
   var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
-  var eventoformat1 = payload.event.details.replace('La velocidad de ', "");
-  var eventoformat2 = eventoformat1.split('  km/h. ')[0];
-  var eventoformat2 = eventoformat2.split('  km/h.')[0];
   var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
   var eventoformat2 = eventoformat2.split(' event was')[0];
 
@@ -125,6 +133,7 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
     case 'Harsh Turn': eventoCase = 'Giro brusco'; break;
 
     case 'Parada no Autorizada': eventoCase = 'Parada no Autorizada'; break;
+    case 'Exceso de Velocidad': eventoCase = 'Exceso de Velocidad'; break;
     
     case 'Sin cinturón de seguridad': eventoCase = 'Sin cinturón de seguridad'; break;
     case 'No Seat Belt': eventoCase = 'Sin cinturón de seguridad'; break;
@@ -605,22 +614,22 @@ async function ubicacion(idsam) {
   }
 }
 
-http.listen(app.get('port'), () => {
-  console.log(`Server on port ${app.get('port')}`.random);
-});
-
-// http.listen(app.get('port'), async () => {
-//   try {
-//     await ngrok.authtoken(process.env.TOKENNGROK);
-//     const url = await ngrok.forward(app.get('port'));
-
-//     console.log(`Server on port ${app.get('port')}`.random);
-//     console.log(url.url());
-//   }
-//   catch (error) {
-//     console.error('Error al iniciar el túnel Ngrok:', error);
-//   }
+// http.listen(app.get('port'), () => {
+//   console.log(`Server on port ${app.get('port')}`.random);
 // });
+
+http.listen(app.get('port'), async () => {
+  try {
+    await ngrok.authtoken(process.env.TOKENNGROK);
+    const url = await ngrok.forward(app.get('port'));
+
+    console.log(`Server on port ${app.get('port')}`.random);
+    console.log(url.url());
+  }
+  catch (error) {
+    console.error('Error al iniciar el túnel Ngrok:', error);
+  }
+});
 
 
 
