@@ -86,6 +86,10 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
     validacionEvento = 'Botón de pánico';
   }
 
+  if(payload.event.alertConditionId == 'DeviceSpeedAbove') {
+    validacionEvento = 'Exceso de Velocidad';
+  }
+
   if(validacionEvento != '') {
     eventoformat2 = validacionEvento.trim();
   }
@@ -134,7 +138,7 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
   let nuevaAlerta = new alerta({
     eventId: payload.eventId,
     eventType: payload.eventType,
-    alertConditionId: payload.event.alertConditionId,
+    alertConditionId: payload.event.alertConditionDescription,
     webhookId: payload.webhookId,
     event: eventoCase,
     eventDescription: payload.event.details,
