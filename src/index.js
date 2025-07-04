@@ -168,7 +168,8 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
       'numero_empleado', 
       'operador',
       'fecha_cierre',
-      'primer_interaccion'
+      'primer_interaccion',
+      'aplica'
     ]
   }).then(result => {}).catch(error => { console.log(error.message); });
 
