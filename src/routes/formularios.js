@@ -29,6 +29,8 @@ module.exports = app => {
     app.get('/obtenerCartas/:numero_empleado', verificarToken, Fo.obtenerCartas);
 
     app.get('/obtenerDocumentosCartas/:operador', verificarToken, Fo.obtenerDocumentosCartas);
+
+    app.get('/obtenerDocumentosCartasIndi/:operador', verificarToken, Fo.obtenerDocumentosCartasIndi);
     
     app.get('/obtenerOperadoresConHistorico', Fo.obtenerOperadoresConHistorico);
     

@@ -883,6 +883,27 @@ module.exports = app => {
             });
         });
     }
+    
+    app.obtenerDocumentosCartasIndi = (req, res) => {
+        docoperador.findAll({
+            where: {
+            operador: req.params.operador,
+            descripcion: {
+                [Op.notIn]: ['Carta', 'Sistema Disciplinario']
+            }
+            }
+        }).then(result => {
+            res.json({
+            OK: true,
+            Cartas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
 
 
 
