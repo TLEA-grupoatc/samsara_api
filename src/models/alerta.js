@@ -68,6 +68,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        aplica:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         fechahora_interaccion:{
             type: DataType.DATE,
             allowNull: true

@@ -35,6 +35,7 @@ const alerta = app.database.models.Alertas;
 const geogaso = app.database.models.GeoGaso;
 const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
 const Samsara = require("@api/samsara-dev-rel");
+const fs = require('fs');
 Samsara.auth(process.env.KEYSAM);
 
 cron.schedule('* * * * *', () => {   
@@ -46,9 +47,8 @@ cron.schedule('* * * * *', () => {
   }); 
 });
 
-app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
-
 
   const timestamp = payload.eventMs;
   const date = new Date(timestamp);
@@ -57,13 +57,28 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
   var eventoCase;
   
   var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
+  var eventoformat1 = payload.event.details.replace('La velocidad de ', "");
+  var eventoformat2 = eventoformat1.split('  km/h. ')[0];
+  var eventoformat2 = eventoformat2.split('  km/h.')[0];
   var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
   var eventoformat2 = eventoformat2.split(' event was')[0];
 
-  var operador = '';
-  var numero_operador = '';
 
-  if(payload.event.alertConditionId == 'DeviceLocationInsideGeofence') {
+  var operador = '';
+  var numero_operador = null;
+
+  // Obtener el nombre del conductor asignado al vehículo
+  try {
+    const { data } = await Samsara.getDriverVehicleAssignments({ filterBy: 'vehicles', vehicleIds: payload.event.device.id });
+    if (data && data.data && data.data.length > 0 && data.data[0].driver && data.data[0].driver.name) {
+      operador = data.data[0].driver.name;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+
+
+  if(payload.event.alertConditionId == 'DeviceLocationStoppedInGeofence') {
     validacionEvento = 'Parada no Autorizada';
   }
   
@@ -116,16 +131,6 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
     default: 'Otros Eventos'; break;
   }
 
-  // await app.connectToDatabase({unidad: payload.event.device.name}, {
-  //   json: (data) => {
-  //     numero_operador =  data.Operador.OPERADOR_CLAVE;
-  //     operador =  data.Operador.OPERADOR_NOMBRE;
-  //   },
-  //   status: (statusCode) => ({
-  //     json: (data) => console.log(statusCode, data)
-  //   })
-  // });
-
   let nuevaAlerta = new alerta({
     eventId: payload.eventId,
     eventType: payload.eventType,
@@ -137,12 +142,11 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
     alertEventURL: payload.event.alertEventUrl,
     id_unidad: payload.event.device.id,
     unidad: payload.event.device.name,
-    // numero_empleado: numero_operador,
-    // operador: operador,
-    numero_empleado: null,
-    operador: null,
+    numero_empleado: numero_operador,
+    operador: operador,
     fecha_cierre: null,
-    primer_interaccion: ''
+    primer_interaccion: '',
+    aplica: 0
   });
 
   await alerta.create(nuevaAlerta.dataValues, {
@@ -167,54 +171,35 @@ app.post('/webhook1Samsara', bodyParser.raw({type: 'application/json'}), async (
   res.status(200).send('Ok');
 });
 
-app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-  const payload = req.body;
-});
 
-app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-  const payload = req.body;
 
-  const date = payload.eventTime;
-  const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
 
-  let nuevaAlerta = new geogaso({
-    eventId: payload.eventId,
-    eventType: payload.eventType,
-    alertConditionId: 'gatewayUnplugged',
-    webhookId: payload.webhookId,
-    event: 'GPS Desconectado',
-    eventDescription: 'Se ah Desconectado la Puerta de enlace',
-    eventTime: formato,
-    alertEventURL: payload.data.incidentUrl,
-    id_unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['id'],
-    unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['name'],
-    numero_empleado: null,
-    operador: null,
-    fecha_cierre: null,
-    primer_interaccion: ''
-  });
 
-  await alerta.create(nuevaAlerta.dataValues, {
-    fields: [
-      'eventId', 
-      'eventType',
-      'alertConditionId',
-      'webhookId',
-      'event', 
-      'eventDescription', 
-      'eventTime', 
-      'alertEventURL', 
-      'id_unidad', 
-      'unidad',
-      'fecha_cierre',
-      'primer_interaccion'
-    ]
-  }).then(result => {}).catch(error => { console.log(error.message); });
-});
 
-app.post('/webhookManipulacion', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-  const payload = req.body;
-});
+
+
+
+
+// app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+//   const payload = req.body;
+//   const filePath = './webhookAPITLEA_payload.txt';
+
+//   fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
+//     if (err) {
+//       console.error('Error writing payload to file:', err);
+//       res.status(500).send('Error saving payload');
+//     } else {
+//       res.status(200).send('Payload saved');
+//     }
+//   });
+// });
+
+
+
+
+
+
+
 
 app.post('/slack/events',  async (req, res) => {
   const { type, challenge, event } = req.body;
@@ -615,21 +600,52 @@ async function ubicacion(idsam) {
   }
 }
 
-http.listen(app.get('port'), () => {
-  console.log(`Server on port ${app.get('port')}`.random);
+// http.listen(app.get('port'), () => {
+//   console.log(`Server on port ${app.get('port')}`.random);
+// });
+
+http.listen(app.get('port'), async () => {
+  try {
+    await ngrok.authtoken(process.env.TOKENNGROK);
+    const url = await ngrok.forward(app.get('port'));
+
+    console.log(`Server on port ${app.get('port')}`.random);
+    console.log(url.url());
+  }
+  catch (error) {
+    console.error('Error al iniciar el túnel Ngrok:', error);
+  }
 });
 
-// http.listen(app.get('port'), async () => {
-//   try {
-//     await ngrok.authtoken(process.env.TOKENNGROK);
-//     const url = await ngrok.forward(app.get('port'));
 
-//     console.log(`Server on port ${app.get('port')}`.random);
-//     console.log(url.url());
-//   }
-//   catch (error) {
-//     console.error('Error al iniciar el túnel Ngrok:', error);
-//   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+//   const payload = req.body;
 // });
 
 
@@ -639,18 +655,50 @@ http.listen(app.get('port'), () => {
 
 
 
+// app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+//   const payload = req.body;
 
+//   const date = payload.eventTime;
+//   const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
 
+//   let nuevaAlerta = new geogaso({
+//     eventId: payload.eventId,
+//     eventType: payload.eventType,
+//     alertConditionId: 'gatewayUnplugged',
+//     webhookId: payload.webhookId,
+//     event: 'GPS Desconectado',
+//     eventDescription: 'Se ah Desconectado la Puerta de enlace',
+//     eventTime: formato,
+//     alertEventURL: payload.data.incidentUrl,
+//     id_unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['id'],
+//     unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['name'],
+//     numero_empleado: null,
+//     operador: null,
+//     fecha_cierre: null,
+//     primer_interaccion: ''
+//   });
 
+//   await alerta.create(nuevaAlerta.dataValues, {
+//     fields: [
+//       'eventId', 
+//       'eventType',
+//       'alertConditionId',
+//       'webhookId',
+//       'event', 
+//       'eventDescription', 
+//       'eventTime', 
+//       'alertEventURL', 
+//       'id_unidad', 
+//       'unidad',
+//       'fecha_cierre',
+//       'primer_interaccion'
+//     ]
+//   }).then(result => {}).catch(error => { console.log(error.message); });
+// });
 
-
-
-
-
-
-
-
-
+// app.post('/webhookManipulacion', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+//   const payload = req.body;
+// });
 
 
 
