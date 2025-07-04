@@ -37,6 +37,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        conflictivo: {
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         registrado_por: {
             type: DataType.STRING,
             allowNull: true

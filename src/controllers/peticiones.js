@@ -135,7 +135,7 @@ module.exports = app => {
                 }).then(({ data }) => console.log(data)).catch(err => console.error(err));
             }
 
-            await delay(100);
+            await delay(250);
         }
     }
 

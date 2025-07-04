@@ -145,6 +145,7 @@ module.exports = app => {
 
         let empleadosExternos = [];
         let listaTractosAsignados = [];
+        let listaUltimaLiquidacion = [];
 
         try {
             const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
@@ -165,31 +166,33 @@ module.exports = app => {
             listaTractosAsignados = [];
         }
 
-        // try {
-        //     // Obtener todos los registros de asignaciones de vehículos y operadores
-        //     try {
-        //         // Obtener asignaciones de operadores y vehículos desde Samsara
-        //         const { data } = await Samsara.getDriverVehicleAssignments({ filterBy: 'vehicles', driverIds: '', vehicleIds: '' });
-        //         // Extraer solo id de vehicle y id de driver de todos los registros
-        //         data['data']['data'].forEach(async (element) => {
-        //         var vehiculo = element['gps'].time.split('T')[0];
-
-        //     });
-        //     } catch (err) {
-        //         console.error(err);
-        //     }
-        // }
-        // catch (err) {
-        //     empleadosExternos = [];
-        // }
+        try {
+            listaUltimaLiquidacion = await liquidacion.findAll({
+                attributes: [
+                    'operador',
+                    [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
+                ],
+                where: {
+                    estado: 'COMPLETO'
+                },
+                group: ['operador'],
+                order: [
+                    ['operador', 'DESC']
+                ]
+            });
+            
+        }
+        catch (err) {
+            listaUltimaLiquidacion = [];
+        }
 
         try {
             const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
             const operadores = operadoresResponse.data.Registros || [];
 
             const actividades = await historico.findAll({
-            where: {
-                fecha: {
+                where: {
+                    fecha: {
                         [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
                     }
                 },
@@ -202,10 +205,13 @@ module.exports = app => {
                 const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
                 const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
                 const tractos = listaTractosAsignados.find(e => e.nombre == op.OPERADOR_NOMBRE);
+                const ultimaLiquidacion = listaUltimaLiquidacion.find(e => e.operador == op.OPERADOR_NOMBRE);
 
                 const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
                 const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
                 const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
+                const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
+                const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
 
                 const registros = Array.from({ length: daysInMonth }, (_, index) => {
                     const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
@@ -228,6 +234,8 @@ module.exports = app => {
                     avatar,
                     tractoTitular,
                     tractoActual,
+                    esconflictivo,
+                    fechaliquidacion,
                     registros
                 };
             });
@@ -256,6 +264,7 @@ module.exports = app => {
 
         let empleadosExternos = [];
         let listaTractosAsignados = [];
+        let listaUltimaLiquidacion = [];
 
         try {
             const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
@@ -277,6 +286,25 @@ module.exports = app => {
         }
 
         try {
+            listaUltimaLiquidacion = await liquidacion.findAll({
+                attributes: [
+                    'operador',
+                    [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
+                ],
+                where: {
+                    estado: 'COMPLETO'
+                },
+                group: ['operador'],
+                order: [
+                    ['operador', 'DESC']
+                ]
+            });
+        }
+        catch (err) {
+            listaUltimaLiquidacion = [];
+        }
+
+        try {
             const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
             const operadores = operadoresResponse.data.Registros || [];
 
@@ -295,10 +323,13 @@ module.exports = app => {
                 const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
                 const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
                 const tractos = listaTractosAsignados.find(e => e.nombre == op.OPERADOR_NOMBRE);
+                const ultimaLiquidacion = listaUltimaLiquidacion.find(e => e.operador == op.OPERADOR_NOMBRE);
 
                 const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
                 const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
                 const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
+                const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
+                const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
 
                 const registros = Array.from({ length: daysInMonth }, (_, index) => {
                     const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
@@ -321,6 +352,8 @@ module.exports = app => {
                     avatar,
                     tractoTitular,
                     tractoActual,
+                    esconflictivo,
+                    fechaliquidacion,
                     registros
                 };
             });
@@ -538,6 +571,25 @@ module.exports = app => {
                 order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
             });
 
+            const dopingsResult = await dopope.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totaldopings'],
+                ],
+                where: {
+                    operador: operadorId,
+                    fecha: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'ASC']]
+            });
+
             const liquidacionPorMes = {};
             liquidacionResult.forEach(l => {
                 liquidacionPorMes[l.dataValues.mes] = Number(l.dataValues.totalliquidacion) || 0;
@@ -596,6 +648,11 @@ module.exports = app => {
                 bienestarPorMes[d.dataValues.mes] = Number(d.dataValues.totalbienestar) || 0;
             });
 
+            const dopingsPorMes = {};
+            dopingsResult.forEach(d => {
+                dopingsPorMes[d.dataValues.mes] = Number(d.dataValues.totaldopings) || 0;
+            });
+
             const scoreCard = meses.map(mes => ({
                 mes,
                 totalliquidacion: liquidacionPorMes[mes] || 0,
@@ -609,6 +666,7 @@ module.exports = app => {
                 danos: danosPorMes[mes] || 0,
                 danosunidades: danosUnidadesPorMes[mes] || 0,
                 bienestar: bienestarPorMes[mes] || 0,
+                dopings: dopingsPorMes[mes] || 0,
             }));
 
             res.json({
@@ -803,6 +861,30 @@ module.exports = app => {
     }
 
 
+    
+    app.obtenerDocumentosCartas = (req, res) => {
+        docoperador.findAll({
+            where: {
+            operador: req.params.operador,
+            [Op.or]: [
+                { descripcion: 'Carta' },
+                { descripcion: 'Sistema Disciplinario' }
+            ]
+            }
+        }).then(result => {
+            res.json({
+            OK: true,
+            Cartas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
+
+
 
 
 
@@ -833,10 +915,25 @@ module.exports = app => {
     app.crearAtencionOperador = (req, res) => {
         let body = req.body;
 
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.evidencia.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+        fs.writeFileSync(directorio + body.usuario_creacion.replace(' ', '') + '_' + fechacorta + '_' + body.nombre, big1);
+        
+        doc = directorio + body.usuario_creacion.replace(' ', '') + '_' + fechacorta + '_' + body.nombre;
         let nuevoRegistro = new ateope({
             operador: body.operador, 
             realizo_atencion: body.realizo_atencion, 
             atencion: body.atencion, 
+            evidencia: doc, 
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion
         });
@@ -846,6 +943,7 @@ module.exports = app => {
                 'operador', 
                 'realizo_atencion',
                 'atencion', 
+                'evidencia', 
                 'fecha_creacion', 
                 'usuario_creacion'
             ]
@@ -1443,6 +1541,19 @@ module.exports = app => {
             ]
         })
         .then(result => {
+            if(body.grupo === 'Conflictivo'){
+                let data = new operador({
+                    conflictivo: 1
+                });
+
+                operador.update(data.dataValues, {
+                    where: {
+                        nombre: body.operador
+                    },
+                    fields: ['conflictivo']
+                });
+            }
+
             res.json({
                 OK: true,
                 Actividad: result
@@ -1507,6 +1618,19 @@ module.exports = app => {
             ]
         })
         .then(async result => {
+            if(body.grupo === 'Conflictivo'){
+                let data = new operador({
+                    conflictivo: 1
+                });
+
+                operador.update(data.dataValues, {
+                    where: {
+                        nombre: body.operador
+                    },
+                    fields: ['conflictivo']
+                });
+            }
+
             res.json({
                 OK: true,
                 Actividad: result
