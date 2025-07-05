@@ -159,7 +159,7 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
     operador: operador,
     fecha_cierre: null,
     primer_interaccion: '',
-    aplica: 0
+    aplica: eventoCase === 'Parada no Autorizada' ? 1 : 0
   });
 
   await alerta.create(nuevaAlerta.dataValues, {
@@ -614,22 +614,22 @@ async function ubicacion(idsam) {
   }
 }
 
-// http.listen(app.get('port'), () => {
-//   console.log(`Server on port ${app.get('port')}`.random);
-// });
-
-http.listen(app.get('port'), async () => {
-  try {
-    await ngrok.authtoken(process.env.TOKENNGROK);
-    const url = await ngrok.forward(app.get('port'));
-
-    console.log(`Server on port ${app.get('port')}`.random);
-    console.log(url.url());
-  }
-  catch (error) {
-    console.error('Error al iniciar el túnel Ngrok:', error);
-  }
+http.listen(app.get('port'), () => {
+  console.log(`Server on port ${app.get('port')}`.random);
 });
+
+// http.listen(app.get('port'), async () => {
+//   try {
+//     await ngrok.authtoken(process.env.TOKENNGROK);
+//     const url = await ngrok.forward(app.get('port'));
+
+//     console.log(`Server on port ${app.get('port')}`.random);
+//     console.log(url.url());
+//   }
+//   catch (error) {
+//     console.error('Error al iniciar el túnel Ngrok:', error);
+//   }
+// });
 
 
 

@@ -1419,6 +1419,52 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+    app.aplicaNoAplicaAlerta = (req, res) => {
+        let body = req.body;
+
+        let asignacion = new alerta({
+            estado: body.estado,
+            aplica: body.aplica
+        });
+
+        alerta.update(asignacion.dataValues, {
+            where: {
+                id_alerta: req.params.id_alerta
+            },
+            individualHooks: true, 
+            fields: [
+                'estado',
+                'aplica'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
+
+
+
     async function getUnidadesDivision(uni) {
         try {
             const result = await unidad.findAll({

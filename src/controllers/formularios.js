@@ -590,6 +590,48 @@ module.exports = app => {
                 order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'ASC']]
             });
 
+            const alertasResult = await alerta.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totalalertas'],
+                ],
+                where: {
+                    operador: operadorId,
+                    event: {
+                        [Op.ne]: 'Parada no Autorizada'
+                    },
+                    fecha_creacion: {
+                        [Op.between]: [
+                    moment(`${anio}-01-01 00:00:00`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31 23:59:59`).format('YYYY-MM-DD')
+                        ]
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
+            });
+
+            const alertasPNAResult = await alerta.findAll({
+                attributes: [
+                    'operador',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totalalertas'],
+                ],
+                where: {
+                    operador: operadorId,
+                    event:  'Parada no Autorizada',
+                    fecha_creacion: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01 00:00:00`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31 23:59:59`).format('YYYY-MM-DD')
+                        ]
+                    }
+                },
+                group: ['mes', 'operador'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
+            });
+
             const liquidacionPorMes = {};
             liquidacionResult.forEach(l => {
                 liquidacionPorMes[l.dataValues.mes] = Number(l.dataValues.totalliquidacion) || 0;
@@ -653,6 +695,16 @@ module.exports = app => {
                 dopingsPorMes[d.dataValues.mes] = Number(d.dataValues.totaldopings) || 0;
             });
 
+            const alertasPorMes = {};
+            alertasResult.forEach(d => {
+                alertasPorMes[d.dataValues.mes] = Number(d.dataValues.totalalertas) || 0;
+            });
+
+            const alertasPNAPorMes = {};
+            alertasPNAResult.forEach(d => {
+                alertasPNAPorMes[d.dataValues.mes] = Number(d.dataValues.totalalertas) || 0;
+            });
+
             const scoreCard = meses.map(mes => ({
                 mes,
                 totalliquidacion: liquidacionPorMes[mes] || 0,
@@ -667,6 +719,8 @@ module.exports = app => {
                 danosunidades: danosUnidadesPorMes[mes] || 0,
                 bienestar: bienestarPorMes[mes] || 0,
                 dopings: dopingsPorMes[mes] || 0,
+                alertas: alertasPorMes[mes] || 0,
+                alertasPNA: alertasPNAPorMes[mes] || 0,
             }));
 
             res.json({
@@ -859,8 +913,6 @@ module.exports = app => {
             });
         });
     }
-
-
     
     app.obtenerDocumentosCartas = (req, res) => {
         docoperador.findAll({
@@ -904,16 +956,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
-
-
 
     app.obtenerAtencionesXOperador = (req, res) => {
         ateope.findAll({
@@ -983,8 +1025,6 @@ module.exports = app => {
         });
     }
 
-
-
     app.obtenerQuejasXOperador = (req, res) => {
         queope.findAll({
             where: {
@@ -1047,7 +1087,6 @@ module.exports = app => {
         });
     }
 
-
     app.cerrarQueja = (req, res) => {
         let data = new queope({
             estatus: 'CERRADO',
@@ -1071,26 +1110,6 @@ module.exports = app => {
             });
         });
     }
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     app.obtenerDanosUnidadesOpe = (req, res) => {
         danosunidadoperador.findAll({
@@ -1161,22 +1180,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.obtenerDopings = (req, res) => {
         dopope.findAll({
             order: [['fecha', 'DESC']]
@@ -1242,22 +1245,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.obtenerActividadesDO = (req, res) => {
         actviidaddo.findAll({
             order: [['fecha_inicio', 'DESC']]
@@ -1321,11 +1308,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
 
     app.crearDanoOperador = (req, res) => {
         let body = req.body;
@@ -1393,7 +1375,6 @@ module.exports = app => {
         });
     }
 
-
     app.crearActividadOperador = (req, res) => {
         let body = req.body;
 
@@ -1433,9 +1414,6 @@ module.exports = app => {
             });
         });
     }
-
-
-// ---------------------------------------------------------------------------------------
 
     app.actualizarActividadOperador = (req, res) => {
         let body = req.body;
@@ -1479,23 +1457,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     app.obtenerActividadesDOXOperador = (req, res) => {
         actviidaddo.findAll({
@@ -1588,7 +1549,6 @@ module.exports = app => {
         });
     }
 
-
     app.editarActividadDO = (req, res) => {
         let body = req.body;
 
@@ -1665,20 +1625,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.actualizarTractoTitularOperador = (req, res) => {
         let body = req.body;
 
@@ -1708,32 +1654,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.cerrarReporte = (req, res) => {
         let data = new actviidaddo({
             estatus: 'CERRADO',
@@ -1757,8 +1677,6 @@ module.exports = app => {
             });
         });
     }
-
-
 
     app.obtenerCobros = (req, res) => {
         cobro.findAll({
@@ -2003,6 +1921,391 @@ module.exports = app => {
             res.status(412).json({
                 OK: false,
                 msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerCronogramaActividadDo = (req, res) => {
+        const year = moment().year();
+        const month = moment().month() + 1; // 1-based
+        const monthPadded = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month').endOf('day');
+
+        actviidaddo.findAll({
+            attributes: [
+            'operador',
+            [Sequelize.fn('DATE', Sequelize.col('fecha_inicio')), 'dia'],
+            [Sequelize.fn('COUNT', Sequelize.col('id_actividad_ope_op')), 'total']
+            ],
+            where: {
+            fecha_inicio: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')]
+            }
+            },
+            group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_inicio'))],
+            order: [
+            ['operador', 'ASC'],
+            [Sequelize.fn('DATE', Sequelize.col('fecha_inicio')), 'ASC']
+            ]
+        }).then(result => {
+            // Determina los días del mes
+            const diasEnMes = [];
+            let diaActual = moment(startOfMonth);
+            while (diaActual.isSameOrBefore(endOfMonth, 'day')) {
+            diasEnMes.push(diaActual.format('YYYY-MM-DD'));
+            diaActual.add(1, 'day');
+            }
+
+            // Agrupa resultados por operador y día
+            const agrupado = {};
+            result.forEach(r => {
+            const op = r.operador;
+            const dia = r.dataValues.dia;
+            const total = Number(r.dataValues.total);
+            if (!agrupado[op]) agrupado[op] = {};
+            agrupado[op][dia] = total;
+            });
+
+            // Construye la salida mostrando el total de cada día por operador
+            const salida = Object.entries(agrupado).map(([operador, dias]) => {
+            const detalleDias = diasEnMes.map(dia => ({
+                dia,
+                total: dias[dia] || 0
+            }));
+            return { operador, dias: detalleDias };
+            });
+
+            res.json({
+            OK: true,
+            Cronograma: salida
+            });
+        }).catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
+
+    app.obtenerCronogramaDicisciplana = (req, res) => {
+        const year = moment().year();
+        const month = moment().month() + 1; // 1-based
+        const monthPadded = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month').endOf('day');
+
+        queope.findAll({
+            attributes: [
+            'operador',
+            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'dia'],
+            [Sequelize.fn('COUNT', Sequelize.col('operador')), 'total']
+            ],
+            where: {
+            fecha_creacion: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')]
+            }
+            },
+            group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_creacion'))],
+            order: [
+            ['operador', 'ASC'],
+            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'ASC']
+            ]
+        }).then(result => {
+            // Determina los días del mes
+            const diasEnMes = [];
+            let diaActual = moment(startOfMonth);
+            while (diaActual.isSameOrBefore(endOfMonth, 'day')) {
+            diasEnMes.push(diaActual.format('YYYY-MM-DD'));
+            diaActual.add(1, 'day');
+            }
+
+            // Agrupa resultados por operador y día
+            const agrupado = {};
+            result.forEach(r => {
+            const op = r.operador;
+            const dia = r.dataValues.dia;
+            const total = Number(r.dataValues.total);
+            if (!agrupado[op]) agrupado[op] = {};
+            agrupado[op][dia] = total;
+            });
+
+            // Construye la salida mostrando el total de cada día por operador
+            const salida = Object.entries(agrupado).map(([operador, dias]) => {
+            const detalleDias = diasEnMes.map(dia => ({
+                dia,
+                total: dias[dia] || 0
+            }));
+            return { operador, dias: detalleDias };
+            });
+
+            res.json({
+            OK: true,
+            Cronograma: salida
+            });
+        }).catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
+    
+    app.obtenerCronogramaBienestar = (req, res) => {
+        const year = moment().year();
+        const month = moment().month() + 1; // 1-based
+        const monthPadded = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month').endOf('day');
+
+        ateope.findAll({
+            attributes: [
+            'operador',
+            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'dia'],
+            [Sequelize.fn('COUNT', Sequelize.col('operador')), 'total']
+            ],
+            where: {
+            fecha_creacion: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')]
+            }
+            },
+            group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_creacion'))],
+            order: [
+            ['operador', 'ASC'],
+            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'ASC']
+            ]
+        }).then(result => {
+            // Determina los días del mes
+            const diasEnMes = [];
+            let diaActual = moment(startOfMonth);
+            while (diaActual.isSameOrBefore(endOfMonth, 'day')) {
+            diasEnMes.push(diaActual.format('YYYY-MM-DD'));
+            diaActual.add(1, 'day');
+            }
+
+            // Agrupa resultados por operador y día
+            const agrupado = {};
+            result.forEach(r => {
+            const op = r.operador;
+            const dia = r.dataValues.dia;
+            const total = Number(r.dataValues.total);
+            if (!agrupado[op]) agrupado[op] = {};
+            agrupado[op][dia] = total;
+            });
+
+            // Construye la salida mostrando el total de cada día por operador
+            const salida = Object.entries(agrupado).map(([operador, dias]) => {
+            const detalleDias = diasEnMes.map(dia => ({
+                dia,
+                total: dias[dia] || 0
+            }));
+            return { operador, dias: detalleDias };
+            });
+
+            res.json({
+            OK: true,
+            Cronograma: salida
+            });
+        }).catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
+    
+    app.obtenerCronogramaDanosUnidadOperador = (req, res) => {
+        const year = moment().year();
+        const month = moment().month() + 1; // 1-based
+        const monthPadded = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month').endOf('day');
+
+        danosunidadoperador.findAll({
+            attributes: [
+            'operador',
+            [Sequelize.fn('DATE', Sequelize.col('fecha')), 'dia'],
+            [Sequelize.fn('COUNT', Sequelize.col('operador')), 'total']
+            ],
+            where: {
+            fecha: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')]
+            }
+            },
+            group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha'))],
+            order: [
+            ['operador', 'ASC'],
+            [Sequelize.fn('DATE', Sequelize.col('fecha')), 'ASC']
+            ]
+        }).then(result => {
+            // Determina los días del mes
+            const diasEnMes = [];
+            let diaActual = moment(startOfMonth);
+            while (diaActual.isSameOrBefore(endOfMonth, 'day')) {
+            diasEnMes.push(diaActual.format('YYYY-MM-DD'));
+            diaActual.add(1, 'day');
+            }
+
+            // Agrupa resultados por operador y día
+            const agrupado = {};
+            result.forEach(r => {
+            const op = r.operador;
+            const dia = r.dataValues.dia;
+            const total = Number(r.dataValues.total);
+            if (!agrupado[op]) agrupado[op] = {};
+            agrupado[op][dia] = total;
+            });
+
+            // Construye la salida mostrando el total de cada día por operador
+            const salida = Object.entries(agrupado).map(([operador, dias]) => {
+            const detalleDias = diasEnMes.map(dia => ({
+                dia,
+                total: dias[dia] || 0
+            }));
+            return { operador, dias: detalleDias };
+            });
+
+            res.json({
+            OK: true,
+            Cronograma: salida
+            });
+        }).catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
+    
+    app.obtenerCronogramaDanosOperador = (req, res) => {
+        const year = moment().year();
+        const month = moment().month() + 1; // 1-based
+        const monthPadded = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month').endOf('day');
+
+        opedan.findAll({
+            attributes: [
+            'operador',
+            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'dia'],
+            [Sequelize.fn('COUNT', Sequelize.col('operador')), 'total']
+            ],
+            where: {
+            fecha_creacion: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')]
+            }
+            },
+            group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_creacion'))],
+            order: [
+            ['operador', 'ASC'],
+            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'ASC']
+            ]
+        }).then(result => {
+            // Determina los días del mes
+            const diasEnMes = [];
+            let diaActual = moment(startOfMonth);
+            while (diaActual.isSameOrBefore(endOfMonth, 'day')) {
+            diasEnMes.push(diaActual.format('YYYY-MM-DD'));
+            diaActual.add(1, 'day');
+            }
+
+            // Agrupa resultados por operador y día
+            const agrupado = {};
+            result.forEach(r => {
+            const op = r.operador;
+            const dia = r.dataValues.dia;
+            const total = Number(r.dataValues.total);
+            if (!agrupado[op]) agrupado[op] = {};
+            agrupado[op][dia] = total;
+            });
+
+            // Construye la salida mostrando el total de cada día por operador
+            const salida = Object.entries(agrupado).map(([operador, dias]) => {
+            const detalleDias = diasEnMes.map(dia => ({
+                dia,
+                total: dias[dia] || 0
+            }));
+            return { operador, dias: detalleDias };
+            });
+
+            res.json({
+            OK: true,
+            Cronograma: salida
+            });
+        }).catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
+    
+    app.obtenerCronogramaDopingsOperador = (req, res) => {
+        const year = moment().year();
+        const month = moment().month() + 1; // 1-based
+        const monthPadded = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month').endOf('day');
+
+        dopope.findAll({
+            attributes: [
+            'operador',
+            [Sequelize.fn('DATE', Sequelize.col('fecha')), 'dia'],
+            [Sequelize.fn('COUNT', Sequelize.col('operador')), 'total']
+            ],
+            where: {
+            fecha: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')]
+            }
+            },
+            group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha'))],
+            order: [
+            ['operador', 'ASC'],
+            [Sequelize.fn('DATE', Sequelize.col('fecha')), 'ASC']
+            ]
+        }).then(result => {
+            // Determina los días del mes
+            const diasEnMes = [];
+            let diaActual = moment(startOfMonth);
+            while (diaActual.isSameOrBefore(endOfMonth, 'day')) {
+            diasEnMes.push(diaActual.format('YYYY-MM-DD'));
+            diaActual.add(1, 'day');
+            }
+
+            // Agrupa resultados por operador y día
+            const agrupado = {};
+            result.forEach(r => {
+            const op = r.operador;
+            const dia = r.dataValues.dia;
+            const total = Number(r.dataValues.total);
+            if (!agrupado[op]) agrupado[op] = {};
+            agrupado[op][dia] = total;
+            });
+
+            // Construye la salida mostrando el total de cada día por operador
+            const salida = Object.entries(agrupado).map(([operador, dias]) => {
+            const detalleDias = diasEnMes.map(dia => ({
+                dia,
+                total: dias[dia] || 0
+            }));
+            return { operador, dias: detalleDias };
+            });
+
+            res.json({
+            OK: true,
+            Cronograma: salida
+            });
+        }).catch(error => {
+            res.status(412).json({
+            msg: error.message
             });
         });
     }

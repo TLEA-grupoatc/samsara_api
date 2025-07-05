@@ -37,8 +37,7 @@ module.exports = app => {
     app.get('/obtenerOperadoresConHistoricoConFiltro/:year/:month', Fo.obtenerOperadoresConHistoricoConFiltro);
     
     app.get('/obtenerActividadesDOXOperador/:operador', verificarToken, Fo.obtenerActividadesDOXOperador);
-    
-    
+     
     app.post('/crearActividadDO', verificarToken, Fo.crearActividadDO);
     
     app.put('/editarActividadDO/:id_actividad_ope_op', verificarToken, Fo.editarActividadDO);
@@ -53,55 +52,29 @@ module.exports = app => {
     
     app.get('/obtenerReporteOperadoresAlertas/:fechaInicio/:fechaFin', verificarToken, Fo.obtenerReporteOperadoresAlertas);
     
-    
     app.put('/actualizarTractoTitularOperador/:numero_empleado', verificarToken, Fo.actualizarTractoTitularOperador);
     
     app.get('/obtenerAtenciones', verificarToken, Fo.obtenerAtenciones);
-    app.get('/obtenerQuejas', verificarToken, Fo.obtenerQuejas);
-    app.get('/obtenerActividadesDO', verificarToken, Fo.obtenerActividadesDO);
-    app.get('/obtenerDanosOperador', verificarToken, Fo.obtenerDanosOperador);
     
+    app.get('/obtenerQuejas', verificarToken, Fo.obtenerQuejas);
+    
+    app.get('/obtenerActividadesDO', verificarToken, Fo.obtenerActividadesDO);
+    
+    app.get('/obtenerDanosOperador', verificarToken, Fo.obtenerDanosOperador);
     
     app.post('/crearActividadOperador', verificarToken, Fo.crearActividadOperador);
     
     app.put('/actualizarActividadOperador/:id_historico', verificarToken, Fo.actualizarActividadOperador);
     
-    
     app.post('/crearDanoOperador', verificarToken, Fo.crearDanoOperador);
-
-
-
-
-
-
-
-
 
     app.get('/obtenerDopings', verificarToken, Fo.obtenerDopings);
 
     app.post('/crearDopingOperador', verificarToken, Fo.crearDopingOperador);
-    
-
-
-
-
 
     app.get('/obtenerDanosUnidadesOpe', verificarToken, Fo.obtenerDanosUnidadesOpe);
 
     app.post('/crearDanoUnidadOperador', verificarToken, Fo.crearDanoUnidadOperador);
-    
-
-
-
-
-
-
-
-
-
-
-
-
     
     app.get('/obtenerQuejasXOperador/:operador', verificarToken, Fo.obtenerQuejasXOperador);
     
@@ -113,6 +86,23 @@ module.exports = app => {
     
     app.post('/crearAtencionOperador', verificarToken, Fo.crearAtencionOperador);
 
-
     app.get('/obtenerScoreCardOperador/:operador/:mes', verificarToken, Fo.obtenerScoreCardOperador);
+
+
+
+
+
+
+
+    app.get('/obtenerCronogramaActividadDo', verificarToken, Fo.obtenerCronogramaActividadDo);
+
+    app.get('/obtenerCronogramaDicisciplana', verificarToken, Fo.obtenerCronogramaDicisciplana);
+    
+    app.get('/obtenerCronogramaBienestar', verificarToken, Fo.obtenerCronogramaBienestar);
+    
+    app.get('/obtenerCronogramaDanosOperador', verificarToken, Fo.obtenerCronogramaDanosOperador);
+    
+    app.get('/obtenerCronogramaDanosUnidadOperador', verificarToken, Fo.obtenerCronogramaDanosUnidadOperador);
+    
+    app.get('/obtenerCronogramaDopingsOperador', verificarToken, Fo.obtenerCronogramaDopingsOperador);
 }

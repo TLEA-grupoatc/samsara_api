@@ -82,5 +82,8 @@ module.exports = app => {
     app.get('/obtenerEnlazarOpeSam', Peticion.obtenerEnlazarOpeSam);
 
 
+    app.put('/aplicaNoAplicaAlerta/:id_alerta', verificarToken, Peticion.aplicaNoAplicaAlerta);
+
+
     app.get('/obtenerTiempoDeRespuesta/:division/:fechainicio/:fechafin', verificarToken, Peticion.obtenerTiempoDeRespuesta);
 }

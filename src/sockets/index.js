@@ -10,16 +10,16 @@ module.exports = app => {
             client.broadcast.emit('SHOW_ALERTS', data);
         });
 
+        client.on('SHOW_ALERTS_APLICADAS', (data, callback)=> {            
+            client.broadcast.emit('SHOW_ALERTS_APLICADAS', data);
+        });
+
         client.on('SHOW_PRENOMINAS', (data, callback)=> {            
             client.broadcast.emit('SHOW_PRENOMINAS', data);
         });
 
         client.on('SHOW_LIQUIDACIONES', (data, callback)=> {            
             client.broadcast.emit('SHOW_LIQUIDACIONES', data);
-        });
-
-        client.on('SHOW_GASTOS', (data, callback)=> {            
-            client.broadcast.emit('SHOW_GASTOS', data);
         });
 
         client.on('SHOW_GASTOS', (data, callback)=> {            
