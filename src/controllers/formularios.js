@@ -1958,8 +1958,7 @@ module.exports = app => {
             },
             group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_inicio'))],
             order: [
-            ['operador', 'ASC'],
-            [Sequelize.fn('DATE', Sequelize.col('fecha_inicio')), 'ASC']
+            ['operador', 'ASC']
             ]
         }).then(result => {
             // Determina los días del mes
@@ -2020,8 +2019,7 @@ module.exports = app => {
             },
             group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_creacion'))],
             order: [
-            ['operador', 'ASC'],
-            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'ASC']
+            ['operador', 'ASC']
             ]
         }).then(result => {
             // Determina los días del mes
@@ -2082,8 +2080,7 @@ module.exports = app => {
             },
             group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_creacion'))],
             order: [
-            ['operador', 'ASC'],
-            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'ASC']
+            ['operador', 'ASC']
             ]
         }).then(result => {
             // Determina los días del mes
@@ -2144,8 +2141,7 @@ module.exports = app => {
             },
             group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha'))],
             order: [
-            ['operador', 'ASC'],
-            [Sequelize.fn('DATE', Sequelize.col('fecha')), 'ASC']
+            ['operador', 'ASC']
             ]
         }).then(result => {
             // Determina los días del mes
@@ -2206,8 +2202,7 @@ module.exports = app => {
             },
             group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_creacion'))],
             order: [
-            ['operador', 'ASC'],
-            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'ASC']
+            ['operador', 'ASC']
             ]
         }).then(result => {
             // Determina los días del mes
@@ -2268,8 +2263,7 @@ module.exports = app => {
             },
             group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha'))],
             order: [
-            ['operador', 'ASC'],
-            [Sequelize.fn('DATE', Sequelize.col('fecha')), 'ASC']
+            ['operador', 'ASC']
             ]
         }).then(result => {
             // Determina los días del mes
