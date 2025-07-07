@@ -146,6 +146,15 @@ module.exports = app => {
         let empleadosExternos = [];
         let listaTractosAsignados = [];
         let listaUltimaLiquidacion = [];
+        let listaViajes = [];
+
+        try {
+            const response = await axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos');
+            listaViajes = response.data.Registros || [];
+        }
+        catch (err) {
+            listaViajes = [];
+        }
 
         try {
             const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
@@ -206,12 +215,16 @@ module.exports = app => {
                 const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
                 const tractos = listaTractosAsignados.find(e => e.nombre == op.OPERADOR_NOMBRE);
                 const ultimaLiquidacion = listaUltimaLiquidacion.find(e => e.operador == op.OPERADOR_NOMBRE);
+                const viajes = listaViajes.find(e => e.operador == op.OPERADOR_NOMBRE);
 
                 const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
                 const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
                 const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
                 const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
                 const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
+                
+                const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
+                const viajesCortos = viajes && viajes.viajeCorto ? viajes.viajeCorto : 0;
 
                 const registros = Array.from({ length: daysInMonth }, (_, index) => {
                     const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
@@ -235,6 +248,8 @@ module.exports = app => {
                     tractoTitular,
                     tractoActual,
                     esconflictivo,
+                    viajesLargos,
+                    viajesCortos,
                     fechaliquidacion,
                     registros
                 };
@@ -265,6 +280,15 @@ module.exports = app => {
         let empleadosExternos = [];
         let listaTractosAsignados = [];
         let listaUltimaLiquidacion = [];
+                let listaViajes = [];
+
+        try {
+            const response = await axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos');
+            listaViajes = response.data.Registros || [];
+        }
+        catch (err) {
+            listaViajes = [];
+        }
 
         try {
             const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
@@ -324,12 +348,16 @@ module.exports = app => {
                 const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
                 const tractos = listaTractosAsignados.find(e => e.nombre == op.OPERADOR_NOMBRE);
                 const ultimaLiquidacion = listaUltimaLiquidacion.find(e => e.operador == op.OPERADOR_NOMBRE);
+                const viajes = listaViajes.find(e => e.operador == op.OPERADOR_NOMBRE);
 
                 const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
                 const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
                 const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
                 const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
                 const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
+
+                const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
+                const viajesCortos = viajes && viajes.viajeCorto ? viajes.viajeCorto : 0;
 
                 const registros = Array.from({ length: daysInMonth }, (_, index) => {
                     const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
@@ -353,6 +381,8 @@ module.exports = app => {
                     tractoTitular,
                     tractoActual,
                     esconflictivo,
+                    viajesLargos,
+                    viajesCortos,
                     fechaliquidacion,
                     registros
                 };
@@ -1939,8 +1969,8 @@ module.exports = app => {
 
 
     app.obtenerCronogramaActividadDo = (req, res) => {
-        const year = moment().year();
-        const month = moment().month() + 1; // 1-based
+        const year = req.params.year ? parseInt(req.params.year) : moment().year();
+        const month = req.params.month ? parseInt(req.params.month) : moment().month() + 1; // 1-based
         const monthPadded = month.toString().padStart(2, '0');
         const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
         const endOfMonth = moment(startOfMonth).endOf('month').endOf('day');

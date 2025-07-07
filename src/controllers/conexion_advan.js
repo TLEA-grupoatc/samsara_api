@@ -239,6 +239,56 @@ module.exports = app => {
 
 
 
+    app.obtenerViajesCortsLargos = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+            const today = new Date();
+            const primerDiaMes = moment(today).startOf('month').format('YYYY-MM-DD');
+            const ultimoDiaMes = moment(today).endOf('month').format('YYYY-MM-DD');
+
+            console.log(primerDiaMes);
+            console.log(ultimoDiaMes);
+            // Primero agrupamos la tabla BITACORAS por operador y clave_bitacora
+            let subquery = `
+                SELECT 
+                    BT.CLAVE_BITACORA,
+                    OP.OPERADOR_NOMBRE as operador
+                FROM vorden_bitacoras AS BT
+                INNER JOIN OPERADOR AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE
+                WHERE BT.STATUS_BITACORA IN (0,1) 
+                AND BT.FECHA_BITACORA BETWEEN '${primerDiaMes}T00:00:00.000Z' AND '${ultimoDiaMes}T23:59:59.000Z'
+                GROUP BY BT.CLAVE_BITACORA, OP.OPERADOR_NOMBRE
+            `;
+
+            // Luego, con ese resultado, agrupamos y contamos los viajes cortos y largos usando SUM
+            let query = `
+                SELECT 
+                    sub.operador,
+                    SUM(CASE WHEN BTD.km > 100 AND BTD.km <= 500 THEN 1 ELSE 0 END) as viajeCorto,
+                    SUM(CASE WHEN BTD.km > 501 THEN 1 ELSE 0 END) as viajeLargo
+                FROM (${subquery}) AS sub
+                INNER JOIN vbitacora_detalle AS BTD ON BTD.CLAVE_BITACORA = sub.CLAVE_BITACORA
+                GROUP BY sub.operador
+                ORDER BY sub.operador
+            `;
+
+            let result = await pool.request().query(query);
+
+            sql.close();
+            
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+
 
 
 

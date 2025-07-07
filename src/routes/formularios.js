@@ -94,15 +94,15 @@ module.exports = app => {
 
 
 
-    app.get('/obtenerCronogramaActividadDo', verificarToken, Fo.obtenerCronogramaActividadDo);
+    app.get('/obtenerCronogramaActividadDo/:year/:month', verificarToken, Fo.obtenerCronogramaActividadDo);
 
-    app.get('/obtenerCronogramaDicisciplana', verificarToken, Fo.obtenerCronogramaDicisciplana);
+    app.get('/obtenerCronogramaDicisciplana/:year/:month', verificarToken, Fo.obtenerCronogramaDicisciplana);
     
-    app.get('/obtenerCronogramaBienestar', verificarToken, Fo.obtenerCronogramaBienestar);
+    app.get('/obtenerCronogramaBienestar/:year/:month', verificarToken, Fo.obtenerCronogramaBienestar);
     
-    app.get('/obtenerCronogramaDanosOperador', verificarToken, Fo.obtenerCronogramaDanosOperador);
+    app.get('/obtenerCronogramaDanosOperador/:year/:month', verificarToken, Fo.obtenerCronogramaDanosOperador);
     
-    app.get('/obtenerCronogramaDanosUnidadOperador', verificarToken, Fo.obtenerCronogramaDanosUnidadOperador);
+    app.get('/obtenerCronogramaDanosUnidadOperador/:year/:month', verificarToken, Fo.obtenerCronogramaDanosUnidadOperador);
     
-    app.get('/obtenerCronogramaDopingsOperador', verificarToken, Fo.obtenerCronogramaDopingsOperador);
+    app.get('/obtenerCronogramaDopingsOperador/:year/:month', verificarToken, Fo.obtenerCronogramaDopingsOperador);
 }

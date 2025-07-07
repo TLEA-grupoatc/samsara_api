@@ -46,4 +46,24 @@ module.exports = app => {
 
 
     app.get('/foliosReparto', ca.foliosReparto);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.get('/obtenerViajesCortsLargos', ca.obtenerViajesCortsLargos);
 }
