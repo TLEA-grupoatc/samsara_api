@@ -623,15 +623,16 @@ module.exports = app => {
             const alertasResult = await alerta.findAll({
                 attributes: [
                     'operador',
-                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'mes'],
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('eventTime')), 'mes'],
                     [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totalalertas'],
                 ],
                 where: {
                     operador: operadorId,
+                    aplica: 1,
                     event: {
                         [Op.ne]: 'Parada no Autorizada'
                     },
-                    fecha_creacion: {
+                    eventTime: {
                         [Op.between]: [
                     moment(`${anio}-01-01 00:00:00`).format('YYYY-MM-DD'),
                             moment(`${anio}-12-31 23:59:59`).format('YYYY-MM-DD')
@@ -639,19 +640,20 @@ module.exports = app => {
                     }
                 },
                 group: ['mes', 'operador'],
-                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('eventTime')), 'ASC']]
             });
 
             const alertasPNAResult = await alerta.findAll({
                 attributes: [
                     'operador',
-                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'mes'],
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('eventTime')), 'mes'],
                     [historico.sequelize.fn('COUNT', historico.sequelize.col('operador')), 'totalalertas'],
                 ],
                 where: {
                     operador: operadorId,
                     event:  'Parada no Autorizada',
-                    fecha_creacion: {
+                    aplica: 1,
+                    eventTime: {
                         [Op.between]: [
                             moment(`${anio}-01-01 00:00:00`).format('YYYY-MM-DD'),
                             moment(`${anio}-12-31 23:59:59`).format('YYYY-MM-DD')
@@ -659,7 +661,7 @@ module.exports = app => {
                     }
                 },
                 group: ['mes', 'operador'],
-                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha_creacion')), 'ASC']]
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('eventTime')), 'ASC']]
             });
 
             const liquidacionPorMes = {};

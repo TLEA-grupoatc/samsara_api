@@ -53,10 +53,11 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
   const filePath = './webhookAPITLEA_payload.txt';
 
   fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
-    if (err) {
+    if(err) {
       console.error('Error writing payload to file:', err);
       // res.status(500).send('Error saving payload');
-    } else {
+    } 
+    else {
       // res.status(200).send('Payload saved');
     }
   });
@@ -71,11 +72,9 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
   var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
   var eventoformat2 = eventoformat2.split(' event was')[0];
 
-
   var operador = '';
   var numero_operador = null;
 
-  // Obtener el nombre del conductor asignado al vehículo
   try {
     const { data } = await Samsara.getDriverVehicleAssignments({ filterBy: 'vehicles', vehicleIds: payload.event.device.id });
     if (data && data.data && data.data.length > 0 && data.data[0].driver && data.data[0].driver.name) {
@@ -84,7 +83,6 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
   } catch (err) {
     console.error(err);
   }
-
 
   if(payload.event.alertConditionId == 'DeviceLocationStoppedInGeofence') {
     validacionEvento = 'Parada no Autorizada';
@@ -149,7 +147,7 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
     eventType: payload.eventType,
     alertConditionId: payload.event.alertConditionDescription,
     webhookId: payload.webhookId,
-    event: eventoCase,
+    event: eventoCase == null ? '' : eventoCase,
     eventDescription: payload.event.details,
     eventTime: formato,
     alertEventURL: payload.event.alertEventUrl,
