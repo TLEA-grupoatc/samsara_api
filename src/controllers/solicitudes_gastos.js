@@ -764,7 +764,7 @@ module.exports = app => {
             aprobado_por: req.params.aprobado_por,
             aprobado_por_gerente: req.params.estado === 'Por Aprobar Gerente' ? null : 'No Aplica',
             fecha_jun: hoy,
-            pendientedeaprobar: req.params.estado,
+            pendientedeaprobar: req.params.pendientedeaprobar,
             estatus: req.params.estado
         });
 

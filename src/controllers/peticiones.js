@@ -449,6 +449,62 @@ module.exports = app => {
         });
     }
 
+
+    app.crearDocumentoUnidad = (req, res) => {
+        let body = req.body;
+        var directorio = 'documentos/';
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.archivo.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        var fechacorta = body.fecha.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+        fs.writeFileSync(directorio + body.usuario + '_' + body.unidad + '_' + fechacorta + '_' + body.nombre, big1);
+        
+        doc = directorio + body.usuario + '_' + body.unidad + '_' + fechacorta + '_' + body.nombre;
+
+        let nuevoDocumento = new docunidad({
+            unidad: body.unidad,
+            nombre: body.nombre,
+            descripcion: body.descripcion,
+            tipo: body.tipo,
+            archivo: doc,
+            comentario: body.comentario,
+            fecha: body.fecha,
+            usuario: body.usuario
+        });
+
+        docunidad.create(nuevoDocumento.dataValues, {
+            fields: [
+                'unidad',
+                'nombre', 
+                'descripcion', 
+                'tipo', 
+                'archivo',
+                'comentario',
+                'fecha',
+                'usuario'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Documento: result
+            });
+        }).catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
     app.totalUnidadesConParoMotor = (req, res) => {
         unidad.count({
             where: {
@@ -568,7 +624,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.obtenerReporteJson = async (req, res) => {
         const fechainicio = req.params.fechainicio + 'T00:00:00Z';
