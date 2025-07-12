@@ -764,6 +764,7 @@ module.exports = app => {
             aprobado_por: req.params.aprobado_por,
             aprobado_por_gerente: req.params.estado === 'Por Aprobar Gerente' ? null : 'No Aplica',
             fecha_jun: hoy,
+            pendientedeaprobar: req.params.estado,
             estatus: req.params.estado
         });
 
@@ -772,7 +773,7 @@ module.exports = app => {
                 id_gastos: req.params.id_gastos
             },
             individualHooks: true, 
-            fields: ['aprobado_por', 'aprobado_por_gerente' ,'fecha_jun', 'estatus']
+            fields: ['aprobado_por', 'aprobado_por_gerente' ,'fecha_jun', 'pendientedeaprobar', 'estatus']
         }).then(result => {
             res.json({
                 OK: true,

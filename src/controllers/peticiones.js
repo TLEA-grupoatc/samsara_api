@@ -8,6 +8,7 @@ module.exports = app => {
     Samsara.auth(process.env.KEYSAM);
 
     const unidad = app.database.models.Unidades;
+    const docunidad = app.database.models.DocsUnidades;
     const reporte = app.database.models.Reportes;
     const alerta = app.database.models.Alertas;
     const seguimiento = app.database.models.Seguimientos;
@@ -173,45 +174,45 @@ module.exports = app => {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        for(const op of listaadvan) {
-            const operador = operadores.find(o => o.name === op.operador);
-            const tracto = tractos.find(t => t.name === op.economico);
+        // for(const op of listaadvan) {
+        //     const operador = operadores.find(o => o.name === op.operador);
+        //     const tracto = tractos.find(t => t.name === op.economico);
             
-            op.id_operador = operador ? operador.id_operador : null;
-            op.id_unidad = tracto ? tracto.id_unidad : null;
-            op.fecha = fechaHoy;
+        //     op.id_operador = operador ? operador.id_operador : null;
+        //     op.id_unidad = tracto ? tracto.id_unidad : null;
+        //     op.fecha = fechaHoy;
             
-            let data = new operador({
-                tracto_actual: op.economico,
-                fecha_actividad: moment().format('YYYY-MM-DD')
-            });
+        //     // let data = new operador({
+        //     //     tracto_actual: op.economico,
+        //     //     fecha_actividad: moment().format('YYYY-MM-DD')
+        //     // });
         
-            console.log(op.operador, op.economico);
             
-            operador.update(data.dataValues, {
-                where: {
-                    nombre: op.operador
-                },
-                fields: ['tracto_actual', 'fecha_actividad']
-            });
+        //     listafinal.push(op);
+        //     // operador.update(data.dataValues, {
+        //     //     where: {
+        //     //         nombre: op.operador
+        //     //     },
+        //     //     fields: ['tracto_actual', 'fecha_actividad']
+        //     // });
             
-            // if(op.id_operador && op.id_unidad) {
-            //     listafinal.push(op);
-            //     await Samsara.createDriverVehicleAssignment({
-            //         driverId: op.id_operador,
-            //         vehicleId: op.id_unidad
-            //     }).then(({ data }) => console.log(data)).catch(err => console.error(err));
-            // }
-            // else {
-            //     listanovalidos.push(op);
-            // }
+        //     // if(op.id_operador && op.id_unidad) {
+        //     //     listafinal.push(op);
+        //     //     await Samsara.createDriverVehicleAssignment({
+        //     //         driverId: op.id_operador,
+        //     //         vehicleId: op.id_unidad
+        //     //     }).then(({ data }) => console.log(data)).catch(err => console.error(err));
+        //     // }
+        //     // else {
+        //     //     listanovalidos.push(op);
+        //     // }
 
-            await delay(100);
-        }
+        //     // await delay(100);
+        // }
 
         res.json({
             OK: true,
-            listafinal: listafinal,
+            listafinal: listaadvan,
             novalidos: listanovalidos
         })
     }

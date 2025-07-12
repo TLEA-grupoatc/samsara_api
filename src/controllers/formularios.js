@@ -1250,6 +1250,7 @@ module.exports = app => {
             operador: body.operador, 
             fecha: body.fecha, 
             evidencia: doc, 
+            resultado: body.resultado, 
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion
         });
@@ -1259,6 +1260,7 @@ module.exports = app => {
                 'operador', 
                 'fecha',
                 'evidencia',
+                'resultado',
                 'fecha_creacion', 
                 'usuario_creacion'
             ]

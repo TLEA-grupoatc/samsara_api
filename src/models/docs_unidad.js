@@ -1,39 +1,43 @@
 module.exports = (sequelize, DataType) => {
-    const DopingsOperadores = sequelize.define('DopingsOperadores',{
-        id_doping:{
+    const DocsUnidades = sequelize.define('DocsUnidades',{
+        id:{
             type: DataType.INTEGER,
             autoIncrement: true,
             primaryKey: true
         },
-        operador:{
+        unidad:{
             type: DataType.STRING,
             allowNull: true
+        },
+        nombre:{
+            type: DataType.STRING,
+            allowNull: false
+        },
+        descripcion:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        tipo:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        archivo:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        usuario:{
+            type: DataType.STRING,
+            allowNull: false
         },
         fecha:{
-            type: DataType.STRING,
-            allowNull: true
-        },
-        evidencia:{
-            type: DataType.STRING,
-            allowNull: false
-        },
-        resultado:{
-            type: DataType.INTEGER,
-            allowNull: false
-        },
-        fecha_creacion:{
-            type: DataType.STRING,
-            allowNull: false
-        },
-        usuario_creacion:{
             type: DataType.STRING,
             allowNull: false
         }
     },
     {
-        tableName: 'operadordoping',        
+        tableName: 'docs_unidades',        
         timestamps: false
     });
 
-    return DopingsOperadores;
+    return DocsUnidades;
 }
