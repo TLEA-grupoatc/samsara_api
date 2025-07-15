@@ -27,7 +27,7 @@ module.exports = app => {
             where: {
                 estatus: 'Por Depositar'
             },
-            order: [['fecha_solicitud', 'DESC']]
+            order: ['fecha_solicitud', 'DESC']
         }).then(result => {
             app.io.emit('SHOW_GASTOS_PORDEPOSITAR', { Gastos: result });
         }).catch(error => {
