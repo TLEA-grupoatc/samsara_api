@@ -221,6 +221,7 @@ module.exports = app => {
                 const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
                 const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
                 const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
+                const conexperiencia = tractos && tractos.experiencia ? tractos.experiencia : 0;
                 const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
                 
                 const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
@@ -248,6 +249,7 @@ module.exports = app => {
                     tractoTitular,
                     tractoActual,
                     esconflictivo,
+                    conexperiencia,
                     viajesLargos,
                     viajesCortos,
                     fechaliquidacion,
@@ -354,6 +356,7 @@ module.exports = app => {
                 const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
                 const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
                 const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
+                const conexperiencia = tractos && tractos.experiencia ? tractos.experiencia : 0;
                 const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
 
                 const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
@@ -381,6 +384,7 @@ module.exports = app => {
                     tractoTitular,
                     tractoActual,
                     esconflictivo,
+                    conexperiencia,
                     viajesLargos,
                     viajesCortos,
                     fechaliquidacion,
@@ -453,7 +457,7 @@ module.exports = app => {
                 where: {
                     nombre: operadorId,
                     actividad: {
-                        [Op.notIn]: ['SINV', 'ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'LIQ', 'POSB', 'MTTO', 'ESP']
+                        [Op.notIn]: ['ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'DESC', 'LIQ', 'POSB', 'MTTO', 'ESP', 'RETRA', 'PERM', 'LICENCIA']
                     },
                     fecha: {
                         [Op.between]: [
@@ -690,12 +694,23 @@ module.exports = app => {
             });
 
             const porcentajeDiasLaboradoPorMes = {};
+            // diaslaboradosResult.forEach(d => {
+            //     const mes = d.dataValues.mes;
+            //     const totalDiasLaborados = Number(d.dataValues.totaldiaslaborados) || 0;
+            //     const diasEnMes = moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
+            //     porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
+            // });
             diaslaboradosResult.forEach(d => {
                 const mes = d.dataValues.mes;
                 const totalDiasLaborados = Number(d.dataValues.totaldiaslaborados) || 0;
-                const diasEnMes = moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
+
+                const hoy = moment();
+                const esMesActual = hoy.month() + 1 === Number(mes) && hoy.year() === Number(anio);
+                const diasEnMes = esMesActual ? hoy.date() : moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
+
                 porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
             });
+
 
             const quejasPorMes = {};
             quejasResult.forEach(d => {
@@ -1961,7 +1976,93 @@ module.exports = app => {
 
 
 
+   app.actualizarConflictivoOperador = (req, res) => {
+        let body = req.body;
 
+        let nuevoRegistro = new operador({
+            conflictivo: body.conflictivo
+        });
+
+        operador.update(nuevoRegistro.dataValues, {
+            where: {
+                numero_empleado: req.params.numero_empleado
+            },
+            fields: [
+                'conflictivo'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Tracto: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+   app.actualizarExperienciaOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new operador({
+            experiencia: body.experiencia
+        });
+
+        operador.update(nuevoRegistro.dataValues, {
+            where: {
+                numero_empleado: req.params.numero_empleado
+            },
+            fields: [
+                'experiencia'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Tracto: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    
+   app.actualizarClaseOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new operador({
+            clase: body.clase
+        });
+
+        operador.update(nuevoRegistro.dataValues, {
+            where: {
+                numero_empleado: req.params.numero_empleado
+            },
+            fields: [
+                'clase'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Tracto: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
 
 
 

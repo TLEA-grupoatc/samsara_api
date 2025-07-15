@@ -41,6 +41,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        experiencia: {
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        clase: {
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         registrado_por: {
             type: DataType.STRING,
             allowNull: true

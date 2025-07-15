@@ -54,6 +54,12 @@ module.exports = app => {
     
     app.put('/actualizarTractoTitularOperador/:numero_empleado', verificarToken, Fo.actualizarTractoTitularOperador);
     
+    app.put('/actualizarConflictivoOperador/:numero_empleado', verificarToken, Fo.actualizarConflictivoOperador);
+    
+    app.put('/actualizarExperienciaOperador/:numero_empleado', verificarToken, Fo.actualizarExperienciaOperador);
+    
+    app.put('/actualizarClaseOperador/:numero_empleado', verificarToken, Fo.actualizarClaseOperador);
+    
     app.get('/obtenerAtenciones', verificarToken, Fo.obtenerAtenciones);
     
     app.get('/obtenerQuejas', verificarToken, Fo.obtenerQuejas);

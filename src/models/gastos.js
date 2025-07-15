@@ -108,6 +108,10 @@ module.exports = (sequelize, DataType) => {
         id_liquidacion: {
             type: DataType.INTEGER,
             allowNull: true
+        },
+        horario: {
+            type: DataType.INTEGER,
+            allowNull: true
         }
     },
     

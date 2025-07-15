@@ -509,7 +509,8 @@ module.exports = app => {
         gasto.findAll({
             where: {
                 estatus: 'Por Depositar',
-            }
+            },
+            order: ['fecha_solicitud', 'DESC']
         }).then(result => {
             res.json({
                 OK: true,
@@ -581,6 +582,8 @@ module.exports = app => {
     app.crearSolicitudGastos = (req, res) => {
         let body = req.body;
         var archi = body.docs;
+        var today = new Date();
+        const hora = moment(today).format('HH:mm');
         
         for(let inf of body.info) {
             let nuevoRegistro = new gasto({
@@ -603,8 +606,22 @@ module.exports = app => {
                 aprobado_por: inf.aprobado_por,
                 aprobado_por_gerente: inf.aprobado_por_gerente,
                 estatus: inf.estatus,
-                fecha_creacion: inf.fecha_creacion
+                fecha_creacion: inf.fecha_creacion,
+                horario: obtenerHorarioID(hora)
             });
+
+            function obtenerHorarioID(hora) {
+                const [h, m] = hora.split(":").map(Number);
+                const minutos = h * 60 + m;
+
+                if (minutos >= 60 && minutos < 600) return 1;   // 01:00 - 09:59
+                if (minutos >= 600 && minutos < 720) return 2;  // 10:00 - 11:59
+                if (minutos >= 720 && minutos <= 990) return 3;  // 12:00 - 16:30
+                if (minutos >= 991 && minutos <= 1439) return 4;  // 16:31 - 23:59
+
+                return 4;
+            }
+
 
             gasto.create(nuevoRegistro.dataValues, {
                 individualHooks: true, 
@@ -628,7 +645,8 @@ module.exports = app => {
                     'aprobado_por', 
                     'aprobado_por_gerente', 
                     'estatus',
-                    'fecha_creacion'
+                    'fecha_creacion',
+                    'horario'
                 ]
             })
             .then(async result => {
@@ -695,6 +713,8 @@ module.exports = app => {
 
     app.crearSolicitudGastosComida = (req, res) => {
         let body = req.body;
+        var today = new Date();
+        const hora = moment(today).format('HH:mm');
 
         let nuevoRegistro = new gasto({
             fecha_solicitud: body.fecha_solicitud, 
@@ -715,8 +735,21 @@ module.exports = app => {
             aprobado_por: body.aprobado_por,
             aprobado_por_gerente: body.aprobado_por_gerente,
             estatus: body.estatus,
-            fecha_creacion: body.fecha_creacion
+            fecha_creacion: body.fecha_creacion,
+            horario: obtenerHorarioID(hora)
         });
+
+        function obtenerHorarioID(hora) {
+            const [h, m] = hora.split(":").map(Number);
+            const minutos = h * 60 + m;
+
+            if (minutos >= 60 && minutos < 600) return 1;   // 01:00 - 09:59
+            if (minutos >= 600 && minutos < 720) return 2;  // 10:00 - 11:59
+            if (minutos >= 720 && minutos <= 990) return 3;  // 12:00 - 16:30
+            if (minutos >= 991 && minutos <= 1439) return 4;  // 16:31 - 23:59
+
+            return 4;
+        }
 
         gasto.create(nuevoRegistro.dataValues, {
             individualHooks: true, 
@@ -739,7 +772,8 @@ module.exports = app => {
                 'aprobado_por', 
                 'aprobado_por_gerente', 
                 'estatus',
-                'fecha_creacion'
+                'fecha_creacion',
+                'horario'
             ]
         })
         .then(async result => {
@@ -1376,7 +1410,8 @@ module.exports = app => {
             aprobado_por_gerente: body.aprobado_por_gerente,
             id_doc_gastos: body.id_doc_gastos,
             estatus: body.estatus,
-            fecha_creacion: body.fecha_creacion
+            fecha_creacion: body.fecha_creacion,
+            horario: body.horario
         });
 
         gasto.update(data.dataValues, {
@@ -1403,7 +1438,8 @@ module.exports = app => {
                 'aprobado_por_gerente', 
                 'id_doc_gastos', 
                 'estatus',
-                'fecha_creacion'
+                'fecha_creacion',
+                'horario'
             ]
         })
         .then(async result => {
