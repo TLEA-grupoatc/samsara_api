@@ -509,8 +509,7 @@ module.exports = app => {
         gasto.findAll({
             where: {
                 estatus: 'Por Depositar',
-            },
-            order: ['fecha_solicitud', 'DESC']
+            }
         }).then(result => {
             res.json({
                 OK: true,

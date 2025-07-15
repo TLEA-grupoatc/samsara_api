@@ -26,8 +26,7 @@ module.exports = app => {
         gasto.findAll({
             where: {
                 estatus: 'Por Depositar'
-            },
-            order: ['fecha_solicitud', 'DESC']
+            }
         }).then(result => {
             app.io.emit('SHOW_GASTOS_PORDEPOSITAR', { Gastos: result });
         }).catch(error => {
