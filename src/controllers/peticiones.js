@@ -2,6 +2,7 @@ const dotenv = require('dotenv').config();
 const cron = require('node-cron');
 const moment = require('moment');
 const _ = require('lodash');
+const fs = require("fs");
 
 module.exports = app => {
     const Samsara = require("@api/samsara-dev-rel");

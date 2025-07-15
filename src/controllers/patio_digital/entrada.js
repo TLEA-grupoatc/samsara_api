@@ -1,0 +1,935 @@
+const { QueryTypes } = require('sequelize');
+const path = require('path');
+const fs = require('fs');
+const moment = require("moment");
+const axios = require('axios');
+
+module.exports = app => {
+
+    const sequelize = app.database.sequelize;
+    
+    const Agenda = app.database.models.Agenda;
+    const ReprogramacionesArribos = app.database.models.Reprogramaciones_arribos;
+    const Pickandup = app.database.models.PickAndUp;
+    const Entrada = app.database.models.Entrada;
+
+    const Usuarios = app.database.models.Usuarios;
+
+    app.ObtenerProgramacionAgenda = async (request, response) => {
+
+        const base = request.params.base;
+
+        let horariosYUnidades = {
+            primerTurno: [],
+            segundoTurno: [],
+            tercerTurno: [],
+            programacionesAnteriores: []
+        }
+
+        const diaActual = moment().format('YYYY-MM-DD');
+
+        try {
+
+            const agenda = await agendaDiaActual(sequelize, base);
+
+            // console.log(agenda, diaActual);
+
+            agenda.forEach(programacion => {
+
+                if (programacion.horario_arribo === 1 && programacion.fecha_programada === diaActual) {
+                    horariosYUnidades.primerTurno.push(programacion);
+                } else if (programacion.horario_arribo === 2 && programacion.fecha_programada === diaActual) {
+                    horariosYUnidades.segundoTurno.push(programacion);
+                } else if (programacion.horario_arribo === 3 && programacion.fecha_programada === diaActual) {
+                    horariosYUnidades.tercerTurno.push(programacion);
+                } else {
+                    horariosYUnidades.programacionesAnteriores.push(programacion);
+                }
+                
+            });
+
+            return response.status(200).json({ 
+                OK: true, 
+                result: horariosYUnidades,
+            });
+            
+        } catch (err) {
+            console.error('Error al obtener programaciones:', err);
+            return res.status(500).json({ 
+                OK: false,
+                msg: err,
+            });
+        }
+    }
+
+    app.ObtenerBusquedaEntrada = async(request, response) => {
+        try {
+            const { search } = request.body;
+            const { page = 1, limit = 100 } = request.query;
+            const offset = (page - 1) * limit;
+    
+            const query = `
+                SELECT 
+                    PAU.base,
+                    PAU.operador, 
+                    E.alcoholimetro, 
+                    PAU.unidad,
+                    E.placas,
+                    E.rem_1,
+                    E.rem_2,
+                    E.kilometraje,
+                    E.tarjeta_iave,
+                    E.foto_tarjeta_iave,
+                    E.tarjeta_ug,
+                    E.foto_tarjeta_ug,
+                    PAU.cargado,
+                    PAU.division,
+                    E.comentarios,
+                    E.fecha_entrada,
+                    E.fk_usuario
+                FROM 
+                    pd_entrada E
+                    LEFT JOIN pd_pickandup PAU ON E.id_entrada = PAU.fk_entrada
+                WHERE (
+                    PAU.unidad LIKE :search 
+                    OR PAU.operador LIKE :search 
+                    OR DATE_FORMAT(E.fecha_entrada, '%d/%m/%Y') LIKE :search
+                )
+                ORDER BY 
+                    E.id_entrada DESC 
+                LIMIT :limit 
+                -- OFFSET :offset
+            `;
+
+            const results = await sequelize.query(query, {
+                replacements: {
+                    search: `%${search}%`,
+                    limit: parseInt(limit),
+                    offset: parseInt(offset)
+                },
+                type: QueryTypes.SELECT
+            });
+
+            // console.log(results)
+
+            response.status(200).json({
+                page: parseInt(page),
+                limit: parseInt(limit),
+                data: results
+            });
+
+        } catch (error) {
+            console.error('Error al buscar', error);
+            response.status(500).json({ error: 'Error interno del servidor' });
+        }
+    };
+    
+    app.ObtenerEntradas = async (request, response) => {
+
+        const base = request.params.base;
+
+        try {
+            const query = `
+                SELECT
+                    PAU.idpickandup, 
+                    E.id_entrada,
+                    PAU.base,
+                    PAU.operador,
+                    PAU.cargado,
+                    PAU.division,
+                    PAU.unidad,
+                    E.alcoholimetro,
+                    E.placas,
+                    E.rem_1,
+                    E.rem_2,
+                    E.kilometraje,
+                    E.tarjeta_iave,
+                    E.tarjeta_ug,
+                    E.comentarios,
+                    E.fecha_entrada,
+                    E.fk_usuario
+                FROM 
+                    pd_entrada AS E
+                    LEFT JOIN pd_pickandup AS PAU ON E.id_entrada = PAU.fk_entrada
+                WHERE
+                    PAU.base = :base
+                ORDER BY
+                    id_entrada DESC
+                LIMIT 100
+            `;
+
+            const result = await sequelize.query(query, {
+                replacements: { base },
+                type: QueryTypes.SELECT
+            });
+
+            response.status(200).json({
+                OK: true,
+                result
+            });
+        } catch (error) {
+            response.status(500).send('Error al obtener los registros: ' + error.message);
+        }
+    };
+
+    app.ObtenerDetallesEntrada = async (req, res) => {
+        
+        try {
+
+            const idpickandup = req.params.id;
+
+            const detalles = await Pickandup.findOne({
+                where: { idpickandup: idpickandup },
+                attributes: [
+                    'idpickandup',
+                    'base',
+                    'unidad',
+                    'operador',
+                    'unidad_negocio',
+                    'division',
+                    'cargado',
+                ],
+                include: [
+                    {
+                        model: Entrada,
+                        include: { model: Usuarios, attributes: ['id_usuario', 'nombre_empleado']}
+                    },
+                ],
+            });
+            
+            return res.json({
+                OK: true, 
+                result: detalles
+            });
+        } catch (err) {
+            console.error('Error en obtener detalles de entrada:', err);
+            return res.status(500).json({ 
+                OK: false,
+                msg: err,
+            });
+        }
+    }
+
+    app.obtenerUnidadEnCaseta = async (req, res) => {
+
+        // let t;
+        const base = req.params.base;
+
+        try {
+            // t = await Sequelize.transaction();
+            const unidadEnCaseta = await Pickandup.findOne({
+                attributes: ['unidad', 'operador', 'estatus', 'fk_entrada', 'fk_intercambios_entrada'],
+                where: {
+                    base: base,
+                    estatus: 'en_caseta_entrada'
+                }
+            });
+
+            // await t.commit();
+            return res.status(200).json({
+                OK: true,
+                msg: '',
+                result: unidadEnCaseta
+            });
+
+        } catch (error) {
+            // if (t) await t.rollback();
+            console.error('Error al :', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.opcionesFormulario = async (req, res) => {
+        
+        try {
+            
+            const operadoresRaw = await listadoOperadors();
+            const operadores = Array.isArray(operadoresRaw)
+                ? operadoresRaw.map(({ OPERADOR_NOMBRE }) => ({
+                    operador: OPERADOR_NOMBRE,
+                }))
+                : [];
+
+            // await sql.connect(sqlConfig)
+
+            // const unidades = await sql.query`
+            //     SELECT
+            //         TRACTO_CLAVE AS value,
+            //         REPLACE(TRACTO_NUM_ECO, ' ', '') AS label,
+            //         CASE
+            //             WHEN NEGOCIO_CLAVE = 'NOD' THEN 1
+            //             WHEN NEGOCIO_CLAVE = 'NOD2' THEN 2
+            //             WHEN NEGOCIO_CLAVE = 'NOD3' THEN 3
+            //             WHEN NEGOCIO_CLAVE = 'NOD4' THEN 4
+            //             WHEN NEGOCIO_CLAVE = 'NOD5' THEN 5
+            //             ELSE 0
+            //         END AS unidad_neg,
+            //         CASE
+            //             WHEN NEGOCIO_CLAVE = 'NOD' THEN 1
+            //             WHEN NEGOCIO_CLAVE = 'NOD2' THEN 1
+            //             WHEN NEGOCIO_CLAVE = 'NOD3' THEN 2
+            //             WHEN NEGOCIO_CLAVE = 'NOD4' THEN 2
+            //             WHEN NEGOCIO_CLAVE = 'NOD5' THEN 3
+            //             ELSE 0
+            //         END AS division
+            //     FROM
+            //         TRACTO
+            //     WHERE
+            //         TRACTO_NUM_ECO LIKE 'TLEA%' OR TRACTO_NUM_ECO LIKE 'C%';
+            // `;
+
+            const unidades = await listadoTracto();
+
+
+            return res.json({ 
+                OK: true, 
+                result: {
+                    operadores,
+                    unidades: unidades
+                }
+            });
+        } catch (err) {
+            console.error('Error en obtener catalogo de operadores:', err);
+            return res.status(500).json({ 
+                OK: false,
+                msg: err,
+            });
+        }
+    }
+
+    app.checkUnidadProgramada = async (req, res) => {
+
+        try {
+
+            const unidad = req.params.unidad;
+
+            const [agenda] = await sequelize.query(
+                `
+                SELECT
+                    PAU.idpickandup,
+                    PAU.operador,
+                    PAU.division,
+                    PAU.unidad_negocio,
+                    PAU.cargado,
+                    PAU.fk_entrada,
+                    PAU.fk_agenda AS id_agenda
+                FROM
+                    pd_pickandup PAU
+                    -- LEFT JOIN pd_agenda A ON PAU.fk_agenda = A.id_agenda
+                WHERE
+                    PAU.unidad = :unidad
+                ORDER
+                    BY PAU.idpickandup DESC
+                LIMIT 1
+                `,
+                {
+                    replacements: { unidad },
+                    type: sequelize.QueryTypes.SELECT
+                }
+            );
+
+            // console.log('Agenda:', agenda);
+            
+            if(agenda && agenda.id_agenda !== null && !agenda.fk_entrada) {
+                return res.json({
+                    OK: true,
+                    result: agenda
+                });
+            }
+            
+            return res.json({ 
+                OK: true,
+                result: null
+            });
+        } catch (err) {
+            console.error('Error en :', err);
+            return res.status(500).json({ 
+                OK: false,
+                msg: err,
+            });
+        }
+    }
+
+    app.crearInitEntrada = async (req, res) => {
+
+        // let t;
+        const {
+            idpickandup,
+            id_agenda,
+            unidad,
+            operador,
+            base,
+        } = req.body
+        try {
+            // console.log(req.body);
+
+            const estatus = 'en_caseta_entrada'
+
+            if(idpickandup && id_agenda){
+                await Pickandup.update(
+                    {estatus: estatus},
+                    { where:{ idpickandup: idpickandup } }
+                )
+
+                return res.status(200).json({
+                    OK: true,
+                    msg: 'Ingreso en caseta confirmada',
+                    result: null
+                });
+            }
+
+            if(!idpickandup){
+                const unidadEnCaseta = await Pickandup.create(
+                    {
+                        base: base,
+                        unidad: unidad,
+                        operador: operador,
+                        estatus: estatus
+                    },
+                )
+
+                return res.status(200).json({
+                    OK: true,
+                    msg: 'Ingreso en caseta confirmada',
+                    result: unidadEnCaseta.idpickandup
+                });
+            }
+
+        } catch (error) {
+            // if (t) await t.rollback();
+            console.error('Error al :', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+    
+    app.CreateNewInto = async (req, res) => {
+
+        let t;
+
+        // console.log(req.files)
+
+        try {
+
+            t = await sequelize.transaction();
+            const {
+                idpickandup,
+                id_agenda,
+                base,
+                operador,
+                cargado,
+                division,
+                
+                fk_usuario,
+                fecha_entrada,
+                fecha_hora_inicio,
+                fecha_hora_fin,
+                alcoholimetro,
+                placas,
+                rem_1,
+                rem_2,
+                placas_rem_1,
+                placas_rem_2,
+                kilometraje,
+                tarjeta_iave,
+                tarjeta_ug,
+                comentarios,
+
+                departamento_responsable,
+                reporte_descripcion,
+
+                check_defensa,
+                check_motor_bateria_filtros,
+                check_llantas_rines,
+                check_piso_tracto,
+                check_tanques_combustible,
+                check_cabina_interior,
+                check_compartimiento_herramientas,
+                check_tanques_de_aire,
+                check_compartimientos_baterias,
+                check_mofles,
+                check_quinta_rueda,
+                check_debajo_del_chasis,
+                check_llantas_rines_remolque,
+                check_estructura_nodriza,
+                check_rampas,
+                check_caja_herramientas_remolque,
+                check_lona,
+                check_libre_de_plagas,
+                check_libre_de_semillas_hojas,
+
+                observacion_defensa,
+                observacion_motor_bateria_filtros,
+                observacion_llantas_rines,
+                observacion_piso_tracto,
+                observacion_tanques_combustible,
+                observacion_cabina_interior,
+                observacion_compartimiento_herramientas,
+                observacion_tanques_de_aire,
+                observacion_compartimientos_baterias,
+                observacion_mofles,
+                observacion_quinta_rueda,
+                observacion_debajo_del_chasis,
+                observacion_llantas_rines_remolque,
+                observacion_estructura_nodriza,
+                observacion_rampas,
+                observacion_caja_herramientas_remolque,
+                observacion_lona,
+                observacion_libre_de_plagas,
+                observacion_libre_de_semillas_hojas,
+
+                firma_guardia,
+                firma_operador
+            } = req.body;
+
+            // console.log('Datos recibidos:', req.body);
+
+            const fotosFilesChecklist = req.files;
+
+            let DatosEntrada;
+    
+            const toBoolean = (value) => value === 'true';
+    
+            const nowBoolean = {
+                alcoholimetro: toBoolean(alcoholimetro),
+                tarjeta_iave: toBoolean(tarjeta_iave),
+                tarjeta_ug: toBoolean(tarjeta_ug),
+                cargado: toBoolean(cargado),
+                check_defensa: toBoolean(check_defensa),
+                check_motor_bateria_filtros: toBoolean(check_motor_bateria_filtros),
+                check_llantas_rines: toBoolean(check_llantas_rines),
+                check_piso_tracto: toBoolean(check_piso_tracto),
+                check_tanques_combustible: toBoolean(check_tanques_combustible),
+                check_cabina_interior: toBoolean(check_cabina_interior),
+                check_compartimiento_herramientas: toBoolean(check_compartimiento_herramientas),
+                check_tanques_de_aire: toBoolean(check_tanques_de_aire),
+                check_compartimientos_baterias: toBoolean(check_compartimientos_baterias),
+                check_mofles: toBoolean(check_mofles),
+                check_quinta_rueda: toBoolean(check_quinta_rueda),
+                check_debajo_del_chasis: toBoolean(check_debajo_del_chasis),
+                check_llantas_rines_remolque: toBoolean(check_llantas_rines_remolque),
+                check_estructura_nodriza: toBoolean(check_estructura_nodriza),
+                check_rampas: toBoolean(check_rampas),
+                check_caja_herramientas_remolque: toBoolean(check_caja_herramientas_remolque),
+                check_lona: toBoolean(check_lona),
+                check_libre_de_plagas: toBoolean(check_libre_de_plagas),
+                check_libre_de_semillas_hojas: toBoolean(check_libre_de_semillas_hojas)
+            };
+    
+            Object.assign(req.body, nowBoolean);
+    
+            DatosEntrada = {
+                alcoholimetro: nowBoolean.alcoholimetro,
+                placas: placas,
+                rem_1: rem_1,
+                rem_2: rem_2,
+                placas_rem_1: placas_rem_1,
+                placas_rem_2: placas_rem_2,
+                departamento_responsable: departamento_responsable,
+                reporte_descripcion: reporte_descripcion,
+
+                kilometraje: kilometraje,
+                tarjeta_iave: nowBoolean.tarjeta_iave,
+                tarjeta_ug: nowBoolean.tarjeta_ug,
+                comentarios: comentarios,
+                fecha_entrada: fecha_entrada,
+                fecha_hora_inicio: fecha_hora_inicio,
+                fecha_hora_fin: fecha_hora_fin,
+                fk_usuario: fk_usuario,
+                check_defensa: nowBoolean.check_defensa,
+                check_motor_bateria_filtros: nowBoolean.check_motor_bateria_filtros,
+                check_llantas_rines: nowBoolean.check_llantas_rines,
+                check_piso_tracto: nowBoolean.check_piso_tracto,
+                check_tanques_combustible: nowBoolean.check_tanques_combustible,
+                check_cabina_interior: nowBoolean.check_cabina_interior,
+                check_compartimiento_herramientas: nowBoolean.check_compartimiento_herramientas,
+                check_tanques_de_aire: nowBoolean.check_tanques_de_aire,
+                check_compartimientos_baterias: nowBoolean.check_compartimientos_baterias,
+                check_mofles: nowBoolean.check_mofles,
+                check_quinta_rueda: nowBoolean.check_quinta_rueda,
+                check_debajo_del_chasis: nowBoolean.check_debajo_del_chasis,
+                check_llantas_rines_remolque: nowBoolean.check_llantas_rines_remolque,
+                check_estructura_nodriza: nowBoolean.check_estructura_nodriza,
+                check_rampas: nowBoolean.check_rampas,
+                check_caja_herramientas_remolque: nowBoolean.check_caja_herramientas_remolque,
+                check_lona: nowBoolean.check_lona,
+                check_libre_de_plagas: nowBoolean.check_libre_de_plagas,
+                check_libre_de_semillas_hojas: nowBoolean.check_libre_de_semillas_hojas,
+
+                observacion_defensa,
+                observacion_motor_bateria_filtros,
+                observacion_llantas_rines,
+                observacion_piso_tracto,
+                observacion_tanques_combustible,
+                observacion_cabina_interior,
+                observacion_compartimiento_herramientas,
+                observacion_tanques_de_aire,
+                observacion_compartimientos_baterias,
+                observacion_mofles,
+                observacion_quinta_rueda,
+                observacion_debajo_del_chasis,
+                observacion_llantas_rines_remolque,
+                observacion_estructura_nodriza,
+                observacion_rampas,
+                observacion_caja_herramientas_remolque,
+                observacion_lona,
+                observacion_libre_de_plagas,
+                observacion_libre_de_semillas_hojas,
+            }
+
+            // console.log('Datos de entrada:', DatosEntrada); 
+
+            const fotosChecklist = [
+                'reporte_operador',
+                
+                'foto_unidad_1',
+                'foto_unidad_2',
+                'foto_unidad_3',
+                'foto_unidad_4',
+                'foto_unidad_5',
+                'foto_unidad_6',
+
+                'foto_hallazgo',
+                'foto_alcoholimetro',
+                'foto_tarjeta_iave',
+                'foto_tarjeta_ug',
+                'foto_defensa',
+                'foto_motor_bateria_filtros',
+                'foto_llantas_rines',
+                'foto_piso_tracto',
+                'foto_tanques_combustible',
+                'foto_cabina_interior',
+                'foto_compartimiento_herramientas',
+                'foto_tanques_de_aire',
+                'foto_compartimientos_baterias',
+                'foto_mofles',
+                'foto_quinta_rueda',
+                'foto_debajo_del_chasis',
+                'foto_llantas_rines_remolque',
+                'foto_estructura_nodriza',
+                'foto_rampas',
+                'foto_caja_herramientas_remolque',
+                'foto_lona',
+                'foto_libre_de_plagas',
+                'foto_libre_de_semillas_hojas',
+                'firma_guardia',
+                'firma_operador'
+            ];
+    
+            const uploadedFotos = {};
+            if (Array.isArray(fotosFilesChecklist)) {
+                for (const doc of fotosFilesChecklist) {
+                    uploadedFotos[doc.fieldname] = [doc];
+                }
+            } else {
+                uploadedFotos = documentosEvidencias || {};
+            }
+
+            for (let foto of fotosChecklist) {
+                const archivoRecibido = uploadedFotos?.[foto]?.[0]?.filename;
+                if (archivoRecibido) {
+                    DatosEntrada[foto] = archivoRecibido;
+                }
+            }
+
+            if(firma_guardia){
+                DatosEntrada['firma_guardia'] = saveBase64File(firma_guardia, 'firma_guardia');
+            }
+
+            if(firma_operador){
+                DatosEntrada['firma_operador'] = saveBase64File(firma_operador, 'firma_operador');
+            }
+    
+            const EntradaCreada = await Entrada.create(DatosEntrada, { transaction: t });
+
+            let pickandupData;
+            let estatus;
+
+            estatus = 'entrada';
+
+            // Validacion para saber si ya se cumplio con intercambios y guardias
+
+            // const unidadEnCaseta = await Pickandup.findOne({
+            //     attributes: ['unidad', 'operador', 'estatus', 'fk_entrada', 'fk_intercambios_entrada'],
+            //     where: {
+            //         base: base,
+            //         idpickandup: idpickandup
+            //     }
+            // });
+            // if(!unidadEnCaseta.fk_entrada || unidadEnCaseta.fk_intercambios_entrada) {
+            //     estatus = 'en_caseta_entrada'
+            // } else {
+            //     estatus = 'entrada'
+            // }
+
+            const check_id_agenda = id_agenda === 'null' ? null : id_agenda
+            
+            if(check_id_agenda){
+                const reprogramacionAnteriorCheck = await ReprogramacionesArribos.findAll({
+                    where: { fk_agenda: check_id_agenda },
+                    attributes: ['id_reprogramacion_arribo'],
+                    order: [['id_reprogramacion_arribo', 'DESC']],
+                    limit: 1,
+                    transaction: t
+                });
+
+                // console.log(reprogramacionAnteriorCheck)
+                const fecha_reprogramacion = moment(reprogramacionAnteriorCheck[0]?.dataValues?.fecha_arribo_reprogramado).format('YYYY-MM-DD');
+                const fecha_entrada_unidad = moment(fecha_entrada).format('YYYY-MM-DD');
+                const checkCumplimiento = moment(fecha_reprogramacion).isSameOrBefore(fecha_entrada_unidad);
+                
+                if(reprogramacionAnteriorCheck.length > 0){
+
+                    const id_reprogramacion_arribo = reprogramacionAnteriorCheck[0]?.dataValues?.id_reprogramacion_arribo;
+                    
+                    if(checkCumplimiento){
+                        await ReprogramacionesArribos.update(
+                            { cumplimiento_arribo_reprogramacion: 'cumplio_arribo' },
+                            {
+                                where: {id_reprogramacion_arribo: id_reprogramacion_arribo},
+                                transaction: t
+                            }
+                        )
+                    }
+                }
+
+                if(reprogramacionAnteriorCheck.length === 0){
+                    if(checkCumplimiento){
+                        // console.log(id_agenda)
+                        await Agenda.update(
+                            { cumplimiento_arribo: 'cumplio_arribo' },
+                            {
+                                where:{id_agenda: check_id_agenda},
+                                transaction: t
+                            }
+                        )
+                    }
+                }
+
+                pickandupData = {
+                    fk_entrada: EntradaCreada.id_entrada,
+                    base: base,
+                    operador: operador,
+                    cargado: nowBoolean.cargado,
+                    estatus: estatus,
+                }
+
+                await Pickandup.update(
+                    pickandupData,
+                    { where: {idpickandup: idpickandup}, transaction: t }
+                )
+            } else {                
+                pickandupData = {
+                    base: base,
+                    operador: operador,
+                    cargado: nowBoolean.cargado,
+                    division: division === 'null' ? null : division,
+                    fk_entrada: EntradaCreada.id_entrada,
+                    estatus: estatus,
+                }
+                await Pickandup.update(
+                    pickandupData,
+                    { where: {idpickandup: idpickandup}, transaction: t }
+                );
+            }
+    
+            await t.commit();
+            // if (t) await t.rollback();
+            return res.status(200).json({
+                OK: true,
+                msg: 'Entrada registrada correctamente',
+                Entrada: EntradaCreada
+            });
+        } catch (error) {
+            if (t) await t.rollback();
+            console.error('Error en crear entrada:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    };
+
+    app.unidadEnCasetaCancelada = async (req, res) => {
+
+        // let t;
+        const idpickandup = req.params.idpickandup;
+        const id_agenda = req.params.id_agenda;
+
+        // console.log(idpickandup);
+        // console.log(typeof id_agenda, id_agenda);
+        
+        try {
+            // t = await Sequelize.transaction();
+
+            let pickandupActualizado;
+
+            if(id_agenda !== 'null'){
+
+                pickandupActualizado = await Pickandup.update(
+                    { estatus: 'programado' },
+                    { where: { idpickandup: idpickandup } }
+                )
+
+            } else {
+                pickandupActualizado = await Pickandup.destroy({
+                    where: {
+                        idpickandup: idpickandup,
+                    },
+                });
+            }
+
+            // await t.commit();
+            return res.status(200).json({
+                OK: true,
+                msg: 'Cancelado correctamente',
+                result: pickandupActualizado
+            });
+
+        } catch (error) {
+            // if (t) await t.rollback();
+            console.error('Error al :', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    return app;
+}
+
+const saveBase64File = (base64Data, type) => {
+
+  const evidenciaEntregadasPath = path.join(__dirname, '../../../uploads/fotos_checklist');
+
+  if (!fs.existsSync(evidenciaEntregadasPath)) {
+    fs.mkdirSync(evidenciaEntregadasPath, { recursive: true });
+  }
+
+  const matches = base64Data.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+  if (!matches || matches.length !== 3) {
+    throw new Error('Formato base64 inválido');
+  }
+
+  const DateFormated = moment().format('DD.MM.YYYY_hh.mm');
+
+  const mimeType = matches[1];
+  const extension = mimeType.split('/')[1];
+
+  const buffer = Buffer.from(matches[2], 'base64');
+  let filename = `${type}_${DateFormated}.${extension}`;
+  
+  const filePath = path.join(evidenciaEntregadasPath, filename);
+  fs.writeFileSync(filePath, buffer);
+  return filename;
+}
+
+const listadoOperadors = async () => {
+    try {
+        const response = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
+        return response.data.Registros;
+    } catch (error) {
+        console.error('Error consultando la API de operadores:', error.message);
+        return null;
+    }
+}
+
+const listadoTracto = async () => {
+    try {
+        const response = await axios.get('https://servidorlocal.ngrok.app/catalogoTracto');
+        return response.data.result;
+    } catch (error) {
+        console.error('Error consultando la API de operadores:', error.message);
+        return null;
+    }
+}
+
+//#region Consultas SQL
+
+const agendaDiaActual = async (sequelize, base) => {
+
+    try {
+
+        const agendaDiaActual = await sequelize.query(
+        `
+            WITH
+                reprogramadas_arribo_hoy AS (
+                    SELECT
+                        RA.fk_agenda AS id_agenda,
+                        RA.id_reprogramacion_arribo AS id_reprogramacion_arribo,
+                        RA.fecha_arribo_reprogramado AS fecha_programada,
+                        RA.cumplimiento_arribo_reprogramacion AS cumplimiento,
+                        RA.horario_arribo_reprogramado AS horario_arribo
+                    FROM
+                        (
+                            SELECT *,
+                                ROW_NUMBER() OVER (PARTITION BY fk_agenda ORDER BY id_reprogramacion_arribo DESC) AS rn
+                            FROM pd_reprogramaciones_arribos
+                        ) RA
+                        LEFT JOIN pd_agenda CA ON RA.fk_agenda = CA.id_agenda
+                    WHERE
+                        CA.base = :base
+                        AND RA.fecha_arribo_reprogramado <= current_date()
+                        AND RA.rn = 1
+                ),
+                programadas_hoy AS (
+                    SELECT
+                        CA.id_agenda,
+                        NULL AS id_reprogramacion_arribo,
+                        CA.fecha_arribo_programado AS fecha_programada,
+                        CA.cumplimiento_arribo AS cumplimiento,
+                        CA.horario_arribo_programado AS horario_arribo
+                    FROM
+                        pd_agenda CA
+                    WHERE
+                        CA.base = :base
+                        AND DATE(CA.fecha_arribo_programado) <= current_date()
+                        AND cumplimiento_arribo IS NULL
+                ),
+                   
+                union_arribos AS (
+                    SELECT * FROM reprogramadas_arribo_hoy
+                    UNION
+                    SELECT * FROM programadas_hoy
+                )
+                
+                SELECT
+                    PAU.idpickandup,
+                    UA.id_agenda,
+                    PAU.unidad,
+                    PAU.operador,
+                    PAU.division,
+                    PAU.unidad_negocio,
+                    PAU.cargado,
+                    DATE(UA.fecha_programada) AS fecha_programada,
+                    UA.horario_arribo
+                FROM
+                    union_arribos UA
+                    LEFT JOIN pd_pickandup PAU ON UA.id_agenda = PAU.fk_agenda
+                WHERE
+                    PAU.estatus = 'programado';
+        `,
+        {
+            replacements: {
+                base: base,
+            },
+            type: sequelize.QueryTypes.SELECT,
+        }
+        );
+
+        return agendaDiaActual;
+        
+    } catch (error) {
+        console.error('Error en obtener agenda dia actual:', error);
+        throw new Error(error);
+    }
+}
+
+//#endregion
+

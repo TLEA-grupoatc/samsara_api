@@ -46,7 +46,7 @@ module.exports = (sequelize, DataType) => {
             allowNull: true
         },
         clase: {
-            type: DataType.INTEGER,
+            type: DataType.STRING,
             allowNull: true
         },
         registrado_por: {

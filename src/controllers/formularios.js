@@ -222,6 +222,7 @@ module.exports = app => {
                 const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
                 const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
                 const conexperiencia = tractos && tractos.experiencia ? tractos.experiencia : 0;
+                const conclase = tractos && tractos.clase ? tractos.clase : '';
                 const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
                 
                 const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
@@ -250,6 +251,7 @@ module.exports = app => {
                     tractoActual,
                     esconflictivo,
                     conexperiencia,
+                    conclase,
                     viajesLargos,
                     viajesCortos,
                     fechaliquidacion,
@@ -357,6 +359,7 @@ module.exports = app => {
                 const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
                 const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
                 const conexperiencia = tractos && tractos.experiencia ? tractos.experiencia : 0;
+                const conclase = tractos && tractos.clase ? tractos.clase : '';
                 const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
 
                 const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
@@ -385,6 +388,7 @@ module.exports = app => {
                     tractoActual,
                     esconflictivo,
                     conexperiencia,
+                    conclase,
                     viajesLargos,
                     viajesCortos,
                     fechaliquidacion,

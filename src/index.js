@@ -22,6 +22,20 @@ app.use(express.static('./public'));
 app.set('port', 3010);
 app.use(express.urlencoded({extended: false}));         
 app.use('/documentos', express.static('documentos'));
+
+// #region PD carpeta statica
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "https://apisamsara.tlea.online"]);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+}, express.static('uploads'));
+//#endregion PD carpeta statica
+
 app.use(express.json({ limit: "100mb" }));
 app.use(bodyParser.json());
 app.use(express.json());
@@ -29,7 +43,7 @@ app.use(cookieParser());
 app.io = socketIO;
 app.use(cors());
 
-consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('middlewares').then('controllers').then('routes').then('sockets').into(app); 
+consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('middlewares').then('controllers').then('routes').then('sockets').into(app);
 
 const alerta = app.database.models.Alertas;
 const geogaso = app.database.models.GeoGaso;

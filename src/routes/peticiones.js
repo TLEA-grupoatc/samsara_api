@@ -81,7 +81,7 @@ module.exports = app => {
     
     app.get('/obtenerEnlazarOpeSam', Peticion.obtenerEnlazarOpeSam);
 
-    app.get('/crearDocumentoUnidad', Peticion.crearDocumentoUnidad);
+    app.post('/crearDocumentoUnidad', verificarToken, Peticion.crearDocumentoUnidad);
 
 
     app.put('/aplicaNoAplicaAlerta/:id_alerta', verificarToken, Peticion.aplicaNoAplicaAlerta);

@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte de Daños</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      width: 800px;
+      margin: auto;
+      padding: 20px;
+      font-size: 9pt;
+    }
+    h4 {
+      text-align: center;
+      margin-bottom: 5px;
+      font-size: 13pt;
+    }
+    .header-meta {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      font-size: 10pt;
+    }
+    table {
+      width: 100%;
+      font-size: 12pt;
+      border-collapse: collapse;
+    }
+    td, th {
+      padding: 4px;
+    }
+    .section {
+      margin-top: 15px;
+    }
+    .evidencias {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .evidencias img {
+      width: 200px;
+      height: auto;
+      border: 1px solid #000;
+    }
+    .piezas-table {
+      border: 1px solid black;
+      margin-top: 10px;
+      font-size: 9pt;
+    }
+    .piezas-table th, .piezas-table td {
+      border: 1px solid black;
+      text-align: left;
+    }
+    .firmas {
+      margin-top: 40px;
+    }
+    .firmas td {
+      text-align: center;
+      padding-top: 40px;
+    }
+    .titulo-tabla {
+        display: flex;
+        width: 99%;
+        font-weight: 600;
+        background-color: #ffc000;
+        text-align: center;
+        justify-content: center;
+        padding: 4px 3px;
+        border: solid 0.5px #000;
+        font-size: 10pt;
+    }
+    .cargo-operador {
+        background-color: #ffc000;
+        padding: 5px;
+        font-weight: 600;
+
+    }
+    .piezas-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    .tabla-piezas-encabezados {
+        background-color: #ffc000;
+        text-align: center;
+        justify-content: center;
+    }
+    .datos-table {
+      font-size: 9.5pt;
+    }
+
+  </style>
+</head>
+<body>
+  <h4>Reporte de Daños Equipos y Tractores Traslados</h2>
+  <div class="header-meta">
+    <span>F.MTO.40</span>
+  </div>
+  <div class="header-meta">
+    <span>Rev. 2-02/17</span>
+  </div>
+
+
+  <div class="section">
+    <table class="datos-table">
+      <tr>
+        <td><strong>Fecha:</strong> {{fecha_reporte}}</td>
+        <td><strong>Folio Intercambio:</strong> {{folio_intercambio}}</td>
+      </tr>
+      <tr>
+        <td><strong>Unidad:</strong> {{unidad}}</td>
+      </tr>
+      <tr>
+        <td><strong>Remolque:</strong> {{rem_1}}</td>
+        <td><strong>Nombre del Operador:</strong> {{operador}}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <span class="titulo-tabla">Descripción</span>
+    <div style="min-height: 60px; border: 1px solid #000; padding: 5px;">
+      <p style="word-break: break-word;">
+        {{descripcion}}
+      </p>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="titulo-tabla">Fotografías de evidencia de los daño encontrados:</span>
+    <div class="evidencias" style="min-height:60px; border: 1px solid #000; padding: 5px;">
+      {{#each imagenes}}
+        <img src="{{this}}" alt="Evidencia" style="max-height: 180px; max-width:270px;"/>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="cargo-operador">Aplica cargo a operador:</span> {{#if aplica_cargo_operador}}SI{{else}}NO{{/if}}
+  </div>
+
+  <br>
+
+  <div>
+      <strong>Piezas reportadas:</strong>
+      <table class="piezas-table">
+          <thead>
+              <tr>
+              <th class="tabla-piezas-encabezados" style="max-width: 20px;">Cantidad</th>
+              <th class="tabla-piezas-encabezados" style="max-width: 70px;">Pieza</th>
+              <th class="tabla-piezas-encabezados" style="max-width: 50px;">Costo</th>
+              </tr>
+          </thead>
+          <tbody>
+              {{#each piezas_reporte_danos}}
+              <tr>
+              <td style="max-width: 20px;">{{this.cantidad}}</td>
+              <td style="max-width: 70px;">{{this.pieza}}</td>
+              <td style="max-width: 50px;">${{this.costo}}</td>
+              </tr>
+              {{/each}}
+          </tbody>
+      </table>
+  </div>
+
+  <br>
+
+  <span class="cargo-operador">Reporte de llanta</span>
+  <br>
+  <br>
+  {{#if llanta_numero}}
+  <div>
+      <strong>Número de llanta:</strong> {{llanta_numero}}<br>
+      <strong>Fecha de Fabricación:</strong> {{llanta_fecha_fabricacion}}<br>
+      <strong>Milímetros de vida:</strong> {{llanta_milimetraje}}<br>
+      <strong>Observaciones:</strong> <p style="word-break: break-word;">{{llanta_observaciones}}</p>
+  </div>
+  {{else}}
+  <span>N/A</span>
+  {{/if}}
+
+
+  <table class="firmas">
+    <tr>
+      <td>_________________________<br>Operador</td>
+      <td>_________________________<br>Jefe de Unidad</td>
+    </tr>
+  </table>
+</body>
+</html>
