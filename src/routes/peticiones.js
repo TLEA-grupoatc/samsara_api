@@ -88,4 +88,17 @@ module.exports = app => {
 
 
     app.get('/obtenerTiempoDeRespuesta/:division/:fechainicio/:fechafin', verificarToken, Peticion.obtenerTiempoDeRespuesta);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    app.get('/resumenAlertasOperadores/:fechainicio/:fechafin', Peticion.resumenAlertasOperadores);
 }

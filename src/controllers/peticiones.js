@@ -1483,6 +1483,73 @@ module.exports = app => {
 
 
 
+    app.resumenAlertasOperadores = (req, res) => {
+        alerta.findAll({
+            attributes: [
+                [alerta.sequelize.fn('COUNT', alerta.sequelize.col('id_alerta')), 'namas'], // Cambié de SUM a COUNT
+                'operador',
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Advertencia de Colisión Frontal' THEN '' END")), 'eventuno'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Accidente' THEN '' END")), 'eventdos'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Distancia de seguimiento' THEN '' END")), 'eventtres'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Frenado brusco' THEN '' END")), 'eventcuatro'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Giro brusco' THEN '' END")), 'eventcinco'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Cámara obstruida' THEN '' END")), 'eventseis'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Uso del móvil' THEN '' END")), 'eventsiete'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'GPS Desconectado' THEN '' END")), 'eventocho'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Exceso de Velocidad' THEN '' END")), 'eventnueve'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Salida de carril' THEN '' END")), 'eventdiez'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Somnoliento' THEN '' END")), 'eventonce'],
+            ],
+            where: {
+                eventTime: {
+                    [Op.between]: [req.params.fechainicio, req.params.fechafin],
+                }
+            },
+            group: ['operador'],
+            order: [
+                ['operador', 'ASC']
+            ],
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                ResumenAlertas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
