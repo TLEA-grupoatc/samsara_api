@@ -1501,6 +1501,9 @@ module.exports = app => {
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Somnoliento' THEN '' END")), 'eventonce'],
             ],
             where: {
+                operador: {
+                    [Op.ne]: ''
+                },
                 eventTime: {
                     [Op.between]: [req.params.fechainicio, req.params.fechafin],
                 }
