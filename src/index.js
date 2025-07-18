@@ -121,6 +121,8 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
     case 'Alto omitido': eventoCase = 'Alto omitido'; break;
     case 'Rolling Stop': eventoCase = 'Alto omitido'; break;
 
+    case 'Evento severo': eventoCase = 'Somnolencia'; break;
+
     case 'Botón de pánico': eventoCase = 'Botón de pánico'; break;
 
     case 'Colisión': eventoCase = 'Accidente'; break;

@@ -1498,7 +1498,7 @@ module.exports = app => {
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'GPS Desconectado' THEN '' END")), 'eventocho'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Exceso de Velocidad' THEN '' END")), 'eventnueve'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Salida de carril' THEN '' END")), 'eventdiez'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Somnoliento' THEN '' END")), 'eventonce'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Somnolencia' THEN '' END")), 'eventonce'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Parada no Autorizada' THEN '' END")), 'eventdoce'],
             ],
             where: {
