@@ -10,6 +10,7 @@ module.exports = app => {
 
     const unidad = app.database.models.Unidades;
     const docunidad = app.database.models.DocsUnidades;
+    const historalgob = app.database.models.HistorialGobenadas;
     const reporte = app.database.models.Reportes;
     const alerta = app.database.models.Alertas;
     const seguimiento = app.database.models.Seguimientos;
@@ -21,6 +22,70 @@ module.exports = app => {
     const axios = require('axios');
 
     const { parseISO, format,  startOfWeek, differenceInCalendarWeeks, es } = require('date-fns');
+
+
+
+
+
+    app.reporteInmovilizadores = async (req, res) => {
+        var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
+        
+        const reporte = [];
+        const tractosResult = await Samsara.listVehicles({ limit: '512' });
+
+        for (const element of tractosResult.data.data) {
+            if (element.name && element.name.startsWith('C-')) {
+                element.name = element.name.replace('C-', 'C');
+            }
+
+            try {
+                const immobilizerResponse = await Samsara.getEngineImmobilizerStates({
+                    vehicleIds: element.id,
+                    startTime: fechaHoy
+                });
+
+                // Si la API devuelve múltiples resultados, buscamos el que coincide con el tracto
+                const data = Array.isArray(immobilizerResponse)
+                    ? immobilizerResponse.find(r => r.vehicleId === element.id)
+                    : (immobilizerResponse?.vehicleId === element.id ? immobilizerResponse : null);
+
+                if(!data) {
+                    console.warn(`No se encontró información del inmovilizador para unidad ${element.id}`);
+    
+                    continue;
+                }
+
+                reporte.push({
+                    id_unidad: element.id,
+                    name: element.name,
+                    isConnectedToVehicle: data.isConnectedToVehicle,
+                    happenedAtTime: data.happenedAtTime,
+                    relayStates: data.relayStates.map(relay => ({
+                        id: relay.id,
+                        isOpen: relay.isOpen
+                    }))
+                });
+
+            } catch (error) {
+                console.error(`Error al obtener inmovilizador para ${element.name}`, error.message);
+
+            }
+        }
+
+        res.json({
+            ok: true,
+            reporte
+        });
+
+    }
+
+
+
+
+
+
+
+
 
     app.obtenerParaGuardarUnidades = (req, res) => {
         var tractos = []
@@ -499,6 +564,48 @@ module.exports = app => {
         }).catch(error => {
             res.status(412).json({
                 OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.verDocumentosUnidad = (req, res) => {
+        docunidad.findAll({
+            where: {
+                unidad: req.params.unidad
+            },
+            order: [
+                ['fecha', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Documentos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.verHisorialGobernas = (req, res) => {
+        historalgob.findAll({
+            where: {
+                unidad: req.params.unidad
+            },
+            order: [
+                ['fecha', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Historial: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
                 msg: error.message
             });
         });

@@ -194,7 +194,8 @@ module.exports = app => {
                 include: [
                     {
                         model: Salida,
-                        include: { model: Usuarios, attributes: ['id_usuario', 'nombre_empleado']}
+                        include: { model: Usuarios, attributes: ['id_usuario', 'nombre_empleado']},
+                        include: { model: Usuarios, as: 'UsuarioAutoSalidaHallazgo', attributes: ['id_usuario', 'nombre_empleado']}
                     },
                 ]
             });
@@ -247,14 +248,23 @@ module.exports = app => {
             const idpickandup = req.body.idpickandup;
             const fk_usuario = req.body.fk_usuario_auto_salida_omision;
 
+            const estatus = 'salida_omision_autorizada'
+
             const salidaAutorizada = Pickandup.update(
                 {
                     autorizacion_salida_con_omision: true,
                     fk_usuario_auto_salida_omision: fk_usuario,
-                    estatus: 'salida_omision_autorizada'
+                    estatus: estatus
                 },
                 { where: { idpickandup: idpickandup } }
-            )
+            );
+
+            await Pickandup.update(
+                {
+                    estatus: estatus
+                },
+                { where: {idpickandup: idpickandup}, transaction: t }
+            );
 
             return res.json({
                 OK: true,
@@ -477,6 +487,7 @@ module.exports = app => {
             }
 
             // Si tiene un reporte o hallazgo no llega a las firmas
+            // console.log(firma_guardia, firma_operador)
             const checkHallazgos = (firma_guardia !== 'undefined' || firma_operador !== 'undefined');
 
             const estatus = checkHallazgos ? 'salida_salida' : 'salida_hallazgo';
@@ -485,11 +496,10 @@ module.exports = app => {
 
             const salidaCreada = await Salida.create(DatosSalida, { transaction: t });
 
-            // console.log(salidaCreada)
             await Pickandup.update(
                 {
                     fk_salida: salidaCreada.id_salida,
-                    estatus: estatus
+                    estatus: salidaCreada.estatus
                 },
                 { where: {idpickandup: idpickandup}, transaction: t }
             )
@@ -571,10 +581,15 @@ module.exports = app => {
         
         const id_salida = req.body.id_salida;
         const fk_usuario = req.body.fk_usuario_auto_salida_hallazgo;
+        const idpickandup = req.body.idpickandup;
 
-        const estatus = 'salida_pte_firma'
+        const estatus = 'salida_pte_firma';
+
+        let t
 
         try {
+            t = await sequelize.transaction();
+
             const salidaAutorizada = await Salida.update(
                 {
                     estatus: estatus,
@@ -582,15 +597,27 @@ module.exports = app => {
                     autorizacion_salida_con_hallazgo: true
                 },
                 {
-                    where: {id_salida: id_salida}
+                    where: { id_salida: id_salida },
+                    transaction: t 
                 }
-            )
+            );
+
+            await Pickandup.update(
+                {
+                    estatus: estatus
+                },
+                { where: {idpickandup: idpickandup}, transaction: t }
+            );
             
+            await t.commit();
+
             return res.json({ 
-                OK: true, 
+                OK: true,
+                msg: 'Autorizada correctamente',
                 result: salidaAutorizada
             });
         } catch (err) {
+            if (t) await t.rollback();
             console.error('Error en autorizar salida con hallazgos:', err);
             return res.status(500).json({ 
                 OK: false,
@@ -680,7 +707,6 @@ module.exports = app => {
 
             await Pickandup.update(
                 {
-                    fk_salida: id_salida,
                     estatus: estatus
                 },
                 { where: {idpickandup: idpickandup}, transaction: t }

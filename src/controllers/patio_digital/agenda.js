@@ -1,5 +1,6 @@
 const moment = require("moment");
 const { Op } = require('sequelize');
+
 const axios = require('axios');
 
 
@@ -289,7 +290,7 @@ module.exports = app => {
         try {
             t = await sequelize.transaction();
 
-             const programacion = new Agenda({    
+            const programacion = new Agenda({
                 base: base,
                 fk_usuario: id_usuario,
                 turno: turno,
@@ -362,7 +363,7 @@ module.exports = app => {
                 turno: arribo.turno,
                 horario_arribo_programado: arribo.horario_arribo_programado,
                 comentarios: arribo.comentarios,
-                fk_motivo_programacion_arribo: arribo.motivo,
+                fk_motivo_programacion_arribo: arribo.id_motivo_programacion_arribo,
             }
             
             if(arribo.cancelada){
@@ -486,50 +487,6 @@ module.exports = app => {
             if (t) await t.rollback();
 
             console.error('Error en Programar Arribo:', error);
-            return res.status(500).json({ 
-                OK: false,
-                msg: error,
-            });
-        }
-    }
-
-    app.catalogoTracto = async (req, res) => {
-        try {
-
-            await sql.connect(sqlConfig);
-
-            const unidades = await sql.query`
-                SELECT
-                    TRACTO_CLAVE AS value,
-                    REPLACE(TRACTO_NUM_ECO, ' ', '') AS label,
-                    CASE
-                        WHEN NEGOCIO_CLAVE = 'NOD' THEN 1
-                        WHEN NEGOCIO_CLAVE = 'NOD2' THEN 2
-                        WHEN NEGOCIO_CLAVE = 'NOD3' THEN 3
-                        WHEN NEGOCIO_CLAVE = 'NOD4' THEN 4
-                        WHEN NEGOCIO_CLAVE = 'NOD5' THEN 5
-                        ELSE 0
-                    END AS unidad_neg,
-                    CASE
-                        WHEN NEGOCIO_CLAVE = 'NOD' THEN 1
-                        WHEN NEGOCIO_CLAVE = 'NOD2' THEN 1
-                        WHEN NEGOCIO_CLAVE = 'NOD3' THEN 2
-                        WHEN NEGOCIO_CLAVE = 'NOD4' THEN 2
-                        WHEN NEGOCIO_CLAVE = 'NOD5' THEN 3
-                        ELSE 0
-                    END AS division
-                FROM
-                    TRACTO
-                WHERE
-                    TRACTO_NUM_ECO LIKE 'TLEA%' OR TRACTO_NUM_ECO LIKE 'C%';
-            `;
-
-            return res.json({ 
-                OK: true, 
-                result: unidades.recordset,
-            });
-        } catch (error) {
-            console.error('Error en obtenerArribosProgramados:', error);
             return res.status(500).json({ 
                 OK: false,
                 msg: error,

@@ -461,7 +461,7 @@ module.exports = app => {
                 where: {
                     nombre: operadorId,
                     actividad: {
-                        [Op.notIn]: ['ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'DESC', 'LIQ', 'POSB', 'MTTO', 'ESP', 'RETRA', 'PERM', 'LICENCIA']
+                        [Op.notIn]: ['ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'DESC', 'LIQ', 'POSB', 'MTTO', 'ESP', 'RETRA', 'PERM', 'LICENCIA', 'ISS-LOG', 'DNLAB']
                     },
                     fecha: {
                         [Op.between]: [

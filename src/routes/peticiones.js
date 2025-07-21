@@ -80,9 +80,12 @@ module.exports = app => {
     // app.get('/enlazarUnidadAOperadorSamsara', Peticion.enlazarUnidadAOperadorSamsara);
     
     app.get('/obtenerEnlazarOpeSam', Peticion.obtenerEnlazarOpeSam);
-
+    
     app.post('/crearDocumentoUnidad', verificarToken, Peticion.crearDocumentoUnidad);
 
+    app.get('/verDocumentosUnidad/:unidad', verificarToken, Peticion.verDocumentosUnidad);
+    
+    app.get('/verHisorialGobernas/:unidad', verificarToken, Peticion.verHisorialGobernas);
 
     app.put('/aplicaNoAplicaAlerta/:id_alerta', verificarToken, Peticion.aplicaNoAplicaAlerta);
 
@@ -101,4 +104,11 @@ module.exports = app => {
     
     
     app.get('/resumenAlertasOperadores/:fechainicio/:fechafin', Peticion.resumenAlertasOperadores);
+
+
+
+
+
+
+    app.get('/reporteInmovilizadores', Peticion.reporteInmovilizadores);
 }

@@ -1,7 +1,7 @@
 module.exports = app => {
     
     const { verificarToken } = app.middlewares.auth;
-    const { EconomicoSinProgramacionAnterior } = app.middlewares.patio_digital.agenda;
+    const { EconomicoSinProgramacionAnterior, checkLimiteMantenimiento } = app.middlewares.patio_digital.agenda;
 
     const Agenda = app.controllers.patio_digital.agenda;
 
@@ -11,9 +11,9 @@ module.exports = app => {
 
     app.get('/calendario-arribos/opciones-formulario', Agenda.opcionesParaFormulario)
     
-    app.post('/calendario-arribos/programar-arribo', [verificarToken, EconomicoSinProgramacionAnterior], Agenda.programarArribo);
+    app.post('/calendario-arribos/programar-arribo', [verificarToken, EconomicoSinProgramacionAnterior, checkLimiteMantenimiento], Agenda.programarArribo);
     
-    app.patch('/calendario-arribos/actualizar-arribo', [verificarToken], Agenda.actualizarArribo);
+    app.patch('/calendario-arribos/actualizar-arribo', [verificarToken, checkLimiteMantenimiento], Agenda.actualizarArribo);
     
     app.get('/calendario-arribos/pruebaAdvan', Agenda.pruebaAdvan);
 
