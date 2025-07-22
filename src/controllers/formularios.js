@@ -223,6 +223,7 @@ module.exports = app => {
                 const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
                 const conexperiencia = tractos && tractos.experiencia ? tractos.experiencia : 0;
                 const conclase = tractos && tractos.clase ? tractos.clase : '';
+                const conlicencia = tractos && tractos.licencia ? tractos.licencia : '';
                 const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
                 
                 const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
@@ -252,6 +253,7 @@ module.exports = app => {
                     esconflictivo,
                     conexperiencia,
                     conclase,
+                    conlicencia,
                     viajesLargos,
                     viajesCortos,
                     fechaliquidacion,
@@ -360,6 +362,7 @@ module.exports = app => {
                 const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
                 const conexperiencia = tractos && tractos.experiencia ? tractos.experiencia : 0;
                 const conclase = tractos && tractos.clase ? tractos.clase : '';
+                const conlicencia = tractos && tractos.licencia ? tractos.licencia : '';
                 const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
 
                 const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
@@ -389,6 +392,7 @@ module.exports = app => {
                     esconflictivo,
                     conexperiencia,
                     conclase,
+                    conlicencia,
                     viajesLargos,
                     viajesCortos,
                     fechaliquidacion,
@@ -2126,6 +2130,36 @@ module.exports = app => {
         });
     }
 
+
+        
+   app.actualizarLicenciaOperador = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new operador({
+            licencia: body.licencia
+        });
+
+        operador.update(nuevoRegistro.dataValues, {
+            where: {
+                numero_empleado: req.params.numero_empleado
+            },
+            fields: [
+                'licencia'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Tracto: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
 
 
 

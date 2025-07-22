@@ -60,6 +60,8 @@ module.exports = app => {
     
     app.put('/actualizarClaseOperador/:numero_empleado', verificarToken, Fo.actualizarClaseOperador);
     
+    app.put('/actualizarLicenciaOperador/:numero_empleado', verificarToken, Fo.actualizarLicenciaOperador);
+    
     app.get('/obtenerAtenciones', verificarToken, Fo.obtenerAtenciones);
     
     app.get('/obtenerQuejas', verificarToken, Fo.obtenerQuejas);

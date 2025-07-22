@@ -49,6 +49,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        licencia: {
+            type: DataType.STRING,
+            allowNull: true
+        },
         registrado_por: {
             type: DataType.STRING,
             allowNull: true
