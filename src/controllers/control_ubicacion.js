@@ -110,7 +110,6 @@ module.exports = app => {
 
         ubiporeco.findAll({
             where: {
-                movimiento:"Entro a Geocerca",
                 hora_entrada: {
                     [Op.between]: [fortosevenday + ' 00:00:00', fortoday + ' 23:59:59'],
                 }

@@ -6,6 +6,7 @@ module.exports = app => {
 
 
     app.get('/getUbicacionPorEconomico', cu.getUbicacionPorEconomico);
+    
     app.get('/getUbicacionPorEconomicoADG', cu.getUbicacionPorEconomicoADG);
     
     app.get('/getUbicacionPorEconomicoAgrupado', cu.getUbicacionPorEconomicoAgrupado);
