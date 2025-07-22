@@ -29,57 +29,164 @@ module.exports = app => {
 
     app.reporteInmovilizadores = async (req, res) => {
         var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
-        
-        const reporte = [];
+
+        // const tractosResult = await Samsara.listVehicles({ limit: '512' });
+
+        // Obtener todos los tractos
         const tractosResult = await Samsara.listVehicles({ limit: '512' });
 
-        for (const element of tractosResult.data.data) {
-            if (element.name && element.name.startsWith('C-')) {
-                element.name = element.name.replace('C-', 'C');
-            }
-
-            try {
-                const immobilizerResponse = await Samsara.getEngineImmobilizerStates({
-                    vehicleIds: element.id,
-                    startTime: fechaHoy
-                });
-
-                // Si la API devuelve múltiples resultados, buscamos el que coincide con el tracto
-                const data = Array.isArray(immobilizerResponse)
-                    ? immobilizerResponse.find(r => r.vehicleId === element.id)
-                    : (immobilizerResponse?.vehicleId === element.id ? immobilizerResponse : null);
-
-                if(!data) {
-                    console.warn(`No se encontró información del inmovilizador para unidad ${element.id}`);
-    
-                    continue;
+        // Filtrar tractos que empiezan con 'C-' y ajustar el nombre
+            const tractosFiltrados = tractosResult.data.data.map(element => {
+                if (element.name && element.name.startsWith('C') && !element.name.startsWith('C-')) {
+                    return {
+                        ...element,
+                        name: element.name.replace(/^C/, 'C-')
+                    };
                 }
+                return element;
+            });
+        // Extraer IDs en un solo string separado por comas
+        const vehicleIds = tractosFiltrados.map(t => t.id).join(',');
 
-                reporte.push({
-                    id_unidad: element.id,
-                    name: element.name,
-                    isConnectedToVehicle: data.isConnectedToVehicle,
-                    happenedAtTime: data.happenedAtTime,
-                    relayStates: data.relayStates.map(relay => ({
-                        id: relay.id,
-                        isOpen: relay.isOpen
-                    }))
-                });
+        // Hacer solo una llamada a getEngineImmobilizerStates con todos los IDs
+        let immobilizerData = [];
+        try {
+            const immobilizerResponse = await Samsara.getEngineImmobilizerStates({
+                // vehicleIds,
+                vehicleIds: '281474983153054,281474983153055,281474983153056,281474983153919,281474986276846,281474986277769,281474986342766,281474986343418,281474986344183,281474986344653,281474986345232,281474986346077,281474986389542,281474986459989,281474986474380,281474986475533,281474986511784,281474986618174,281474986618333,281474986618649,281474986668160,281474986723697,281474986769420,281474986769821,281474986866803,281474986867401,281474986875752,281474986875788,281474986987819,281474987116567,281474987116740,281474987118224,281474987118390,281474987119299,281474987119414,281474987171333,281474987171437,281474987172105,281474987172126,281474987173095,281474987248141,281474987248459,281474987262015,281474987262730,281474987262924,281474987263224,281474987288211,281474987288937,281474987289621,281474987290459,281474987290475,281474987371159,281474987372575,281474987373640,281474987375124,281474987375848,281474987376634,281474987377322,281474987386323,281474987386882,281474987396083,281474987454558,281474987454753,281474987455044,281474987455208,281474987488411,281474987488609,281474987532863,281474987533981,281474987535490,281474987537550,281474987547710,281474987549216,281474987552404,281474987571639,281474987571812,281474987572072,281474987572228,281474987572429,281474987572577,281474987572742,281474987572860,281474987573000,281474987573159,281474987591732,281474987604275,281474987608346,281474987610600,281474987611025,281474987611652,281474987626879,281474987640910,281474987641186,281474987641803,281474987641851,281474987642695,281474987642993,281474987643314,281474987644855,281474987645131,281474987657388,281474987657939,281474987658797,281474987659113,281474987659722,281474987664336,281474987684281,281474987684834,281474987685316,281474987685818,281474987704285,281474987720813,281474987722887,281474987752702,281474987753968,281474987754308,281474987754953,281474987755203,281474987755524,281474987755821,281474987784636,281474987798161,281474987809747,281474987811203,281474987813689,281474987814701,281474987815196,281474987847114,281474987872655,281474987883494,281474987884548,281474987885312,281474987886147,281474987887319,281474987888190,281474987889442,281474987889506,281474987890428,281474987890445,281474987891138,281474987900335,281474987900994,281474987921001,281474987921339,281474987921493,281474987941713,281474987941810,281474987941965,281474987942085,281474987942221,281474987971048,281474987971604,281474987972456,281474987973878,281474987974896,281474987975345,281474988005872,281474988006086,281474988006606,281474988007367,281474988007751,281474988008930,281474988030924,281474988030968,281474988031137,281474988031284,281474988031462,281474988059179,281474988110598,281474988161494,281474988162938,281474988225644,281474988227800,281474988248441,281474988248700,281474988249206,281474988260144,281474988260610,281474988261558,281474988261714,281474988297302,281474988302571,281474988343459,281474988454992,281474988538064,281474988538113,281474988538121,281474988538467,281474988538503,281474988538647,281474988538927,281474988539208,281474988539249,281474988539480,281474988539482,281474988539486,281474988539499,281474988540388,281474988540472,281474988540576,281474988580652,281474988782191,281474988837966,281474988949372,281474988949643,281474988949926,281474988950157,281474988950348,281474988995735,281474989006904,281474989107051,281474989107103,281474989107387,281474989107424,281474989107681,281474989107694,281474989107858,281474989107868,281474989112351,281474989112358,281474989112520,281474989112548,281474989112694,281474989112753,281474989112909,281474989112954,281474989126310,281474989146026,281474989269431,281474989296293,281474989301846,281474989313403,281474989313611,281474989313614,281474989359721,281474989360038,281474989360683,281474989361841,281474989362451,281474989362938,281474989363208,281474989471567,281474989479502,281474989480041,281474989480852,281474989481444,281474989482546,281474989483168,281474989483791,281474989595073,281474989774589,281474989890292,281474989947461,281474989983319,281474990069178,281474991149028,281474991224412,281474991447223,281474991449338,281474991450084,281474991451123,281474991451532,281474991451951,281474991730607,281474991838226,281474991862656,281474991876766,281474991877451,281474991878022,281474991879693,281474991894096,281474991931769,281474991932804,281474992144250,281474992144719,281474992160335,281474992219388,281474992226486,281474992486686,281474992549798,281474992568977,281474992569501,281474992573060,281474992573641,281474992607329,281474992865497,281474992903253,281474992903450,281474992940817,281474992941480,281474992942075,281474997217669,281474997218824,281474997219217,281474997220390,281474997220664,281474997224987,281474997225229,281474997225630,281474997225905,281474997226116,281474997226444,281474997227034,281474997270046,281474997271107,281474997272294',
+                startTime: fechaHoy + 'Z'
+            });
 
-            } catch (error) {
-                console.error(`Error al obtener inmovilizador para ${element.name}`, error.message);
-
-            }
+            // Asegúrate de que sea un arreglo, dependiendo de la respuesta de la API
+            immobilizerData = Array.isArray(immobilizerResponse) ? immobilizerResponse : [immobilizerResponse];
+        } catch (error) {
+            console.error(`Error al obtener datos de inmovilizadores`, error);
         }
 
-        res.json({
-            ok: true,
-            reporte
+        // Unir los datos
+        const reporte = tractosFiltrados.map(tracto => {
+            const match = immobilizerData.find(data => data.vehicleId === tracto.id);
+
+            return {
+                id_unidad: tracto.id,
+                name: tracto.name,
+                isConnectedToVehicle: match?.isConnectedToVehicle ?? null,
+                happenedAtTime: match?.happenedAtTime ?? null,
+                relayStates: match?.relayStates?.map(relay => ({
+                    id: relay.id,
+                    isOpen: relay.isOpen
+                })) ?? []
+            };
         });
 
+
+        res.json({
+            OK: true,
+            reporte: reporte
+        })
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // const chunkArray = (arr, size) => {
+    //     const result = [];
+    //     for (let i = 0; i < arr.length; i += size) {
+    //         result.push(arr.slice(i, i + size));
+    //     }
+    //     return result;
+    // };
+
+    // app.reporteInmovilizadores = async (req, res) => {
+    //     const moment = require('moment');
+    //     const fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
+    //     console.log(fechaHoy + 'Z');
+        
+
+    //     try {
+    //         const tractosResult = await Samsara.listVehicles({ limit: '512' });
+
+    //         // Mapear todos los tractos y transformar nombres de 'C' a 'C-'
+    //         const tractosFiltrados = tractosResult.data.data.map(element => {
+    //             if (element.name && element.name.startsWith('C') && !element.name.startsWith('C-')) {
+    //                 return {
+    //                     ...element,
+    //                     name: element.name.replace(/^C/, 'C-')
+    //                 };
+    //             }
+    //             return element;
+    //         });
+
+    //         // Extraer IDs
+    //         const allIds = tractosFiltrados.map(t => t.id);
+    //         const idChunks = chunkArray(allIds, 100); // dividir en bloques de 100
+
+    //         console.log(allIds);
+            
+
+    //         let allImmobilizerData = [];
+
+    //         for (const chunk of idChunks) {
+    //             try {
+    //                 const response = await Samsara.getEngineImmobilizerStates({
+    //                     vehicleIds: chunk.join(','),
+    //                     // vehicleIds: '281474988162938,281474988248700', debe ser este acomodo para que funcione
+    //                     startTime: fechaHoy + 'Z'
+    //                 });
+
+    //                 const data = response?.data ?? response;
+    //                 allImmobilizerData.push(...(Array.isArray(data) ? data : [data]));
+    //             } catch (error) {
+    //                 console.error('Error en chunk:', chunk, error);
+    //             }
+    //         }
+
+    //         // Obtener último estado por vehículo
+    //         const latestStates = allImmobilizerData.reduce((acc, item) => {
+    //             const prev = acc[item.vehicleId];
+    //             if (!prev || new Date(item.happenedAtTime) > new Date(prev.happenedAtTime)) {
+    //                 acc[item.vehicleId] = item;
+    //             }
+    //             return acc;
+    //         }, {});
+
+    //         // Armar reporte final
+    //         const reporte = tractosFiltrados.map(tracto => {
+    //             const match = latestStates[tracto.id];
+    //             return {
+    //                 id_unidad: tracto.id,
+    //                 name: tracto.name,
+    //                 isConnectedToVehicle: match?.isConnectedToVehicle ?? null,
+    //                 happenedAtTime: match?.happenedAtTime ?? null,
+    //                 relayStates: match?.relayStates?.map(relay => ({
+    //                     id: relay.id,
+    //                     isOpen: relay.isOpen
+    //                 })) ?? []
+    //             };
+    //         });
+
+    //         res.json({ 
+    //             OK: true, 
+    //             reporte 
+    //         });
+
+    //     } catch (err) {
+    //         console.error('Error general en reporteInmovilizadores', err);
+    //         res.status(500).json({ OK: false, error: 'Error al generar el reporte' });
+    //     }
+    // };
 
 
 
