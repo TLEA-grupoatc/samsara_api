@@ -845,7 +845,7 @@ module.exports = app => {
         reporte.findAll({
             attributes: [
             'unidad',
-            [Sequelize.fn('MAX', Sequelize.col('location')), 'location']
+            [Sequelize.fn('MAX', Sequelize.col('location')), 'location'],
             [Sequelize.fn('DATE', Sequelize.col('fechaodo')), 'fecha'],
             [Sequelize.fn('MIN', Sequelize.col('odometer')), 'odometro_inicio'],
             [Sequelize.fn('MAX', Sequelize.col('odometer')), 'odometro_fin']
