@@ -69,6 +69,8 @@ module.exports = app => {
     app.get('/obtenerDanosOperador', verificarToken, Fo.obtenerDanosOperador);
     
     app.post('/crearActividadOperador', verificarToken, Fo.crearActividadOperador);
+
+    app.post('/crearActividadOperadorIndividual', verificarToken, Fo.crearActividadOperadorIndividual);
     
     app.put('/actualizarActividadOperador/:id_historico', verificarToken, Fo.actualizarActividadOperador);
     

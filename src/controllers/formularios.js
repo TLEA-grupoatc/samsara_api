@@ -1430,61 +1430,91 @@ module.exports = app => {
 
 
 
-app.crearActividadOperador = async (req, res) => {
-    const body = req.body.todo;
+    app.crearActividadOperador = async (req, res) => {
+        const body = req.body.todo;
 
-    console.log(body);
-    
+        console.log(body);
+        
 
-    try {
-        const promesas = body.map(element => {
-            const nuevoRegistro = {
-                numero_empleado: element.operadorNumExterno,
-                unidad: element.operadorTerminal,
-                nombre: element.operadorNombre,
-                estado: 'LABORANDO',
-                actividad: element.actividad,
-                comentarios: element.comentarios,
-                fecha: element.fecha_actividad,
-                usuario: element.usuario
-            };
+        try {
+            const promesas = body.map(element => {
+                const nuevoRegistro = {
+                    numero_empleado: element.operadorNumExterno,
+                    unidad: element.operadorTerminal,
+                    nombre: element.operadorNombre,
+                    estado: 'LABORANDO',
+                    actividad: element.actividad,
+                    comentarios: element.comentarios,
+                    fecha: element.fecha_actividad,
+                    usuario: element.usuario
+                };
 
-            if(element.id_historico == undefined || element.id_historico == null) {
-                return historico.create(nuevoRegistro, {
-                    fields: Object.keys(nuevoRegistro)
-                });
-            } else {
-                return historico.update(nuevoRegistro, {
-                    where: { id_historico: element.id_historico },
-                    fields: Object.keys(nuevoRegistro)
-                });
-            }
+                if(element.id_historico == undefined || element.id_historico == null) {
+                    return historico.create(nuevoRegistro, {
+                        fields: Object.keys(nuevoRegistro)
+                    });
+                } else {
+                    return historico.update(nuevoRegistro, {
+                        where: { id_historico: element.id_historico },
+                        fields: Object.keys(nuevoRegistro)
+                    });
+                }
+            });
+
+            const result = await Promise.all(promesas);
+
+            res.json({
+                OK: true,
+                Actividad: result
+            });
+        } catch (error) {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        }
+    };
+
+
+    app.crearActividadOperadorIndividual = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new historico({
+            numero_empleado: body.numero_empleado, 
+            unidad: body.unidad, 
+            nombre: body.nombre, 
+            estado: body.estado, 
+            actividad: body.actividad, 
+            comentarios: body.comentarios, 
+            fecha: body.fecha, 
+            usuario: body.usuario
         });
 
-        const result = await Promise.all(promesas);
-
-        res.json({
-            OK: true,
-            Actividad: result
-        });
-    } catch (error) {
-        res.status(412).json({
-            OK: false,
-            msg: error.message
+        historico.create(nuevoRegistro.dataValues, {
+            fields: [
+                'numero_empleado', 
+                'unidad', 
+                'nombre', 
+                'estado', 
+                'actividad', 
+                'comentarios', 
+                'fecha', 
+                'usuario'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Actividad: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
         });
     }
-};
-
-
-
-
-
-
-
-
-
-
-
 
     app.actualizarActividadOperador = (req, res) => {
         let body = req.body;
@@ -1500,8 +1530,44 @@ app.crearActividadOperador = async (req, res) => {
             usuario: body.usuario
         });
 
-
+        historico.update(nuevoRegistro.dataValues, {
+            where: {
+                id_historico: req.params.id_historico
+            },
+            fields: [
+                'numero_empleado', 
+                'unidad', 
+                'nombre', 
+                'estado', 
+                'actividad', 
+                'comentarios', 
+                'fecha', 
+                'usuario'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Actividad: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
     }
+
+
+
+
+
+
+
+
+
+
 
     app.obtenerActividadesDOXOperador = (req, res) => {
         actviidaddo.findAll({
