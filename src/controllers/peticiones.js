@@ -616,6 +616,7 @@ module.exports = app => {
 
     //     await getAllImmobilizerData();
     // }
+
     app.reporteInmovilizadores = async (req, res) => {
         var listatractos = [
             '281474983153054',
@@ -933,8 +934,8 @@ module.exports = app => {
                 try {
                     const response = await Samsara.getEngineImmobilizerStates({
                         vehicleIds: lt,
-                        startTime: '2025-07-21T00:00:00Z',
-                        endTime: '2025-07-22T23:59:59Z'
+                        startTime: '2025-07-10T00:00:00Z',
+                        endTime: '2025-07-31T23:59:59Z'
                     });
 
                     const data = response?.data ?? response;

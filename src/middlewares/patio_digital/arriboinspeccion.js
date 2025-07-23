@@ -9,7 +9,7 @@ module.exports = app => {
         
         const fechaActual = moment().format('DD_MM_yyyy_HH_mm_ss');
 
-        const evidenciaInspeccionPath = path.join(__dirname, '../../uploads/inspeccion/reportedanos');
+        const evidenciaInspeccionPath = path.join(__dirname, '../../../uploads/inspeccion/reportedanos');
         
         if (!fs.existsSync(evidenciaInspeccionPath)) {
             fs.mkdirSync(evidenciaInspeccionPath, { recursive: true });

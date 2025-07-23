@@ -11,7 +11,7 @@ module.exports = app => {
         const idpickandup = req.params.idpickandup;
         const id_evidencias = req.params.id_evidencias;
 
-        const evidenciaEntregadasPath = path.join(__dirname, '../../uploads/evidenciasunidades');
+        const evidenciaEntregadasPath = path.join(__dirname, '../../../uploads/evidenciasunidades');
         
         if (!fs.existsSync(evidenciaEntregadasPath)) {
             fs.mkdirSync(evidenciaEntregadasPath, { recursive: true });
