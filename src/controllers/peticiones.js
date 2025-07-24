@@ -934,7 +934,7 @@ module.exports = app => {
         var fechahora = fecha + 'Z';
 
         Samsara.getVehicleStats({
-            time: fechahora,
+            // time: fechahora,
             tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
             types: 'ecuSpeedMph,gps,obdOdometerMeters'
         }).then(result => {
