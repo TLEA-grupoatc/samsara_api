@@ -438,6 +438,11 @@ module.exports = app => {
                 kilometraje,
                 tarjeta_iave,
                 tarjeta_ug,
+
+                motivo_ingreso,
+
+                camara_cabina,
+
                 comentarios,
 
                 departamento_responsable,
@@ -499,6 +504,7 @@ module.exports = app => {
                 alcoholimetro: toBoolean(alcoholimetro),
                 tarjeta_iave: toBoolean(tarjeta_iave),
                 tarjeta_ug: toBoolean(tarjeta_ug),
+                camara_cabina: toBoolean(camara_cabina),
                 cargado: toBoolean(cargado),
                 check_defensa: toBoolean(check_defensa),
                 check_motor_bateria_filtros: toBoolean(check_motor_bateria_filtros),
@@ -536,6 +542,11 @@ module.exports = app => {
                 kilometraje: kilometraje,
                 tarjeta_iave: nowBoolean.tarjeta_iave,
                 tarjeta_ug: nowBoolean.tarjeta_ug,
+
+                motivo_ingreso: motivo_ingreso,
+
+                camara_cabina: nowBoolean.camara_cabina,
+
                 comentarios: comentarios,
                 fecha_entrada: fecha_entrada,
                 fecha_hora_inicio: fecha_hora_inicio,
@@ -586,6 +597,7 @@ module.exports = app => {
 
             const fotosChecklist = [
                 'reporte_operador',
+                'foto_camara_cabina',
                 
                 'foto_unidad_1',
                 'foto_unidad_2',
@@ -644,6 +656,8 @@ module.exports = app => {
             if(firma_operador){
                 DatosEntrada['firma_operador'] = saveBase64File(firma_operador, 'firma_operador');
             }
+
+            // console.log('Datos de entrada:', DatosEntrada); 
     
             const EntradaCreada = await Entrada.create(DatosEntrada, { transaction: t });
 

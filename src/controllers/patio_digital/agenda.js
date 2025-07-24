@@ -290,7 +290,7 @@ module.exports = app => {
         try {
             t = await sequelize.transaction();
 
-            const programacion = new Agenda({
+             const programacion = new Agenda({    
                 base: base,
                 fk_usuario: id_usuario,
                 turno: turno,
@@ -651,46 +651,65 @@ const ctdUnidadesProgramadasArriboHoy = async (sequelize, base) => {
         
         const ctdUnidadesProgramadasArriboHoy = await sequelize.query(
         `
-            WITH
+           WITH
             reprogramadas_arribo_hoy AS (
-            SELECT
-                DATE(RA.fecha_arribo_reprogramado) AS fecha_programada,
-                RA.fk_agenda AS id_agenda
-            FROM
-                pd_reprogramaciones_arribos RA
-                LEFT JOIN pd_agenda CA ON RA.fk_agenda = CA.id_agenda
-            WHERE
-                CA.base = :base
-                AND DATE(RA.fecha_arribo_reprogramado) = current_date()
-                AND (RA.cumplimiento_arribo_reprogramacion NOT IN ('cancelado', 'reprogramado') OR RA.cumplimiento_arribo_reprogramacion IS NULL)
-            GROUP BY 
-                RA.fecha_arribo_reprogramado,
-                RA.fk_agenda
+                SELECT
+                    DATE(RA.fecha_arribo_reprogramado) AS fecha_programada,
+                    RA.fk_agenda AS id_agenda,
+                    PAU.unidad_negocio
+                FROM
+                    pd_reprogramaciones_arribos RA
+                    LEFT JOIN pd_agenda CA ON RA.fk_agenda = CA.id_agenda
+                    LEFT JOIN pd_pickandup PAU ON CA.id_agenda = PAU.fk_agenda
+                WHERE
+                    CA.base = :base
+                    AND DATE(RA.fecha_arribo_reprogramado) = current_date()
+                    AND (
+                        RA.cumplimiento_arribo_reprogramacion NOT IN ('cancelado', 'reprogramado')
+                        OR RA.cumplimiento_arribo_reprogramacion IS NULL
+                    )
+                GROUP BY 
+                    RA.fecha_arribo_reprogramado,
+                    RA.fk_agenda,
+                    PAU.unidad_negocio
             ),
             programadas_hoy AS (
-            SELECT
-                DATE(CA.fecha_arribo_programado) AS fecha_programada,
-                CA.id_agenda
-            FROM
-                pd_agenda CA
-            WHERE
-                CA.base = :base
-                AND DATE(CA.fecha_arribo_programado) = current_date()
-                AND (CA.cumplimiento_arribo NOT IN ('cancelado', 'reprogramado') OR CA.cumplimiento_arribo IS NULL)
-            GROUP BY
-                CA.fecha_arribo_programado,
-                CA.id_agenda
+                SELECT
+                    DATE(CA.fecha_arribo_programado) AS fecha_programada,
+                    CA.id_agenda,
+                    PAU.unidad_negocio
+                FROM
+                    pd_agenda CA
+                    LEFT JOIN pd_pickandup PAU ON CA.id_agenda = PAU.fk_agenda
+                WHERE
+                    CA.base = :base
+                    AND DATE(CA.fecha_arribo_programado) = current_date()
+                    AND (
+                        CA.cumplimiento_arribo NOT IN ('cancelado', 'reprogramado')
+                        OR CA.cumplimiento_arribo IS NULL
+                    )
+                GROUP BY
+                    CA.fecha_arribo_programado,
+                    CA.id_agenda,
+                    PAU.unidad_negocio
             ),
             union_arribos AS (
-            SELECT * FROM reprogramadas_arribo_hoy
-            UNION
-            SELECT * FROM programadas_hoy
+                SELECT * FROM reprogramadas_arribo_hoy
+                UNION
+                SELECT * FROM programadas_hoy
             )
             SELECT 
-            fecha_programada,
-            COUNT(DISTINCT id_agenda) AS total_arribos
-            FROM union_arribos
-            GROUP BY fecha_programada;
+                fecha_programada,
+                unidad_negocio,
+                COUNT(DISTINCT id_agenda) AS total_arribos
+            FROM 
+                union_arribos
+            GROUP BY 
+                fecha_programada,
+                unidad_negocio
+            ORDER BY
+                fecha_programada,
+                unidad_negocio;
         `,
         {
             replacements: {
@@ -700,7 +719,7 @@ const ctdUnidadesProgramadasArriboHoy = async (sequelize, base) => {
         }
         );
 
-    return Number(ctdUnidadesProgramadasArriboHoy[0]?.total_arribos);
+    return ctdUnidadesProgramadasArriboHoy;
 
     } catch (error) {
         console.error('Error en obtener ctdUnidadesProgramadasSemanaActual:', error);

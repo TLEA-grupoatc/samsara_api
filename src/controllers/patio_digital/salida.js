@@ -263,7 +263,7 @@ module.exports = app => {
                 {
                     estatus: estatus
                 },
-                { where: {idpickandup: idpickandup}, transaction: t }
+                { where: {idpickandup: idpickandup} }
             );
 
             return res.json({

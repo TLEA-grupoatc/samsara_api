@@ -58,6 +58,15 @@ module.exports = (sequelize, DataType) => {
         foto_tarjeta_ug: {
             type: DataType.STRING(100)
         },
+        motivo_ingreso:  {
+            type: DataType.STRING(100)
+        },
+        camara_cabina: {
+            type: DataType.BOOLEAN
+        },
+        foto_camara_cabina: {
+            type: DataType.STRING(100)
+        },
         comentarios: {
             type: DataType.STRING(200)
         },
