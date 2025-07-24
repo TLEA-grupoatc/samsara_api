@@ -945,29 +945,22 @@ module.exports = app => {
                 var miakmparavalidad = miakm.toFixed();
 
                 if(paraValidadfecha == validarfecha && miakmparavalidad >= 10) {
-                    // Convert UTC time to local time (subtract 6 hours for -06:00 offset)
-                    const utcDate = new Date(element['ecuSpeedMph'].time);
-                    const localDate = new Date(utcDate.getTime() - (6 * 60 * 60 * 1000));
-                    const localTime = localDate.toISOString().replace('Z', '-06:00');
+                    // Restar 6 horas a las fechas relevantes
+                    const momentFechaKm = moment(element['ecuSpeedMph'].time).subtract(6, 'hours');
+                    const momentFechaGps = moment(element['gps'].time).subtract(6, 'hours');
+                    const momentFechaOdo = moment(element['obdOdometerMeters'].time).subtract(6, 'hours');
 
-                    const utcDate2 = new Date(element['gps'].time);
-                    const localDate2 = new Date(utcDate2.getTime() - (6 * 60 * 60 * 1000));
-                    const localTime2 = localDate2.toISOString().replace('Z', '-06:00');
-
-                    const utcDate3 = new Date(element['obdOdometerMeters'].time);
-                    const localDate3 = new Date(utcDate3.getTime() - (6 * 60 * 60 * 1000));
-                    const localTime3 = localDate3.toISOString().replace('Z', '-06:00');
-
+                   
                     let nuevoReporte = new reporte({
                         id_unidad: element.id,
                         unidad: element.name,
-                        fechahorakm: localTime,
+                        fechahorakm: momentFechaKm.toISOString(),
                         km: miakm.toFixed(),
-                        fechahoragps: localTime2,
+                        fechahoragps: momentFechaGps.toISOString(),
                         latitud: element['gps'].latitude,
                         longitud: element['gps'].longitude,
                         location: element['gps'].reverseGeo.formattedLocation,
-                        fechaodo: localTime3,
+                        fechaodo: momentFechaOdo.toISOString(),
                         odometer: element['obdOdometerMeters'].value
                     });
     
