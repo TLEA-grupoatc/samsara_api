@@ -1090,7 +1090,7 @@ module.exports = app => {
             ],
             where: {
                 fechahoragps: {
-                    [Op.gt]: fechainicio
+                    [Op.between]: [fechainicio, fechaHoy]
                 }
             },
             group: ['unidad']
