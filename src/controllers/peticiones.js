@@ -1093,8 +1093,7 @@ module.exports = app => {
                     [Op.gt]: fechainicio
                 }
             },
-            group: ['unidad'],
-            order: ['unidad', 'ASC']
+            group: ['unidad']
         }).then(result => {
             res.json({
                 OK: true,
