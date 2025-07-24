@@ -944,7 +944,7 @@ module.exports = app => {
 
                 var miakmparavalidad = miakm.toFixed();
 
-                if(miakmparavalidad >= 10) {
+                if(paraValidadfecha == validarfecha && miakmparavalidad >= 10) {
                     let nuevoReporte = new reporte({
                         id_unidad: element.id,
                         unidad: element.name,
@@ -1106,6 +1106,7 @@ module.exports = app => {
             });
         });
     }
+
 
     app.obtenerDetalleReporte = (req, res) => {
         reporte.findAll({
