@@ -52,9 +52,10 @@ module.exports = app => {
 
 
     app.get('/obtenerSeguimientoUsuario/:fechainicio/:fechafin/:usuario', verificarToken, Peticion.obtenerSeguimientoUsuario);
-
+    
+    app.get('/obtenerReporteUltimaLocacion', Peticion.obtenerReporteUltimaLocacion);
+    
     app.put('/primeraInteraccionSeguimiento/:id_seguimiento', verificarToken, Peticion.primeraInteraccionSeguimiento);
-
 
     app.get('/obtenerGeocercas', verificarToken, Peticion.obtenerGeocercas);
 

@@ -2042,7 +2042,7 @@ module.exports = app => {
 
 
 
-   app.actualizarConflictivoOperador = (req, res) => {
+    app.actualizarConflictivoOperador = (req, res) => {
         let body = req.body;
 
         let nuevoRegistro = new operador({
@@ -2071,7 +2071,7 @@ module.exports = app => {
         });
     }
 
-   app.actualizarExperienciaOperador = (req, res) => {
+    app.actualizarExperienciaOperador = (req, res) => {
         let body = req.body;
 
         let nuevoRegistro = new operador({
@@ -2101,7 +2101,7 @@ module.exports = app => {
     }
 
     
-   app.actualizarClaseOperador = (req, res) => {
+    app.actualizarClaseOperador = (req, res) => {
         let body = req.body;
 
         let nuevoRegistro = new operador({
@@ -2132,7 +2132,7 @@ module.exports = app => {
 
 
         
-   app.actualizarLicenciaOperador = (req, res) => {
+    app.actualizarLicenciaOperador = (req, res) => {
         let body = req.body;
 
         let nuevoRegistro = new operador({
