@@ -1085,7 +1085,7 @@ module.exports = app => {
 
     app.obtenerReporteUltimaLocacion = async (req, res) => {
         var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
-        const fechainicio = moment(fechaHoy).subtract(2, 'minutes').format('YYYY-MM-DDTHH:mm:ssZ');
+        const fechainicio = moment(fechaHoy).subtract(5, 'minutes').format('YYYY-MM-DDTHH:mm:ssZ');
 
         reporte.findAll({
             attributes: [
