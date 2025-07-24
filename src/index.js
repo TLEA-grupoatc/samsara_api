@@ -416,20 +416,6 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
 app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
-
-  const filePath = './webhookupe.txt';
-
-  fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
-    if(err) {
-      console.error('Error writing payload to file:', err);
-      // res.status(500).send('Error saving payload');
-    } 
-    else {
-      // res.status(200).send('Payload saved');
-    }
-  });
-
-
   if(payload.data.conditions[0].description === 'Asset starts moving') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['deviceMovement']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
