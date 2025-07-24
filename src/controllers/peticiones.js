@@ -945,22 +945,21 @@ module.exports = app => {
                 var miakmparavalidad = miakm.toFixed();
 
                 if(paraValidadfecha == validarfecha && miakmparavalidad >= 10) {
-                    // Restar 6 horas a las fechas relevantes
+         
                     const momentFechaKm = moment(element['ecuSpeedMph'].time).subtract(6, 'hours');
                     const momentFechaGps = moment(element['gps'].time).subtract(6, 'hours');
                     const momentFechaOdo = moment(element['obdOdometerMeters'].time).subtract(6, 'hours');
-
                    
                     let nuevoReporte = new reporte({
                         id_unidad: element.id,
                         unidad: element.name,
-                        fechahorakm: momentFechaKm.toISOString(),
+                        fechahorakm: momentFechaKm.toISOString().replace('.000Z', 'Z'),
                         km: miakm.toFixed(),
-                        fechahoragps: momentFechaGps.toISOString(),
+                        fechahoragps: momentFechaGps.toISOString().replace('.000Z', 'Z'),
                         latitud: element['gps'].latitude,
                         longitud: element['gps'].longitude,
                         location: element['gps'].reverseGeo.formattedLocation,
-                        fechaodo: momentFechaOdo.toISOString(),
+                        fechaodo: momentFechaOdo.toISOString().replace('.000Z', 'Z'),
                         odometer: element['obdOdometerMeters'].value
                     });
     
