@@ -1099,17 +1099,18 @@ module.exports = app => {
                 let geocerca = null;
 
                 try {
-                    const ubicacion = await ubiporeco.findOne({
+                    const ubicacion = await ubiporeco.findAll({
                         where: {
                             id_samsara: element.id
                         },
                         order: [
                             ['hora_entrada', 'DESC']
-                        ]
+                        ],
+                        limit: 1
                     });
 
-                    if (ubicacion) {
-                        geocerca = ubicacion.dataValues.geocerca;
+                    if (ubicacion && ubicacion.length > 0) {
+                        geocerca = ubicacion[0].dataValues.geocerca;
                     }
                 } catch (err) {
                     geocerca = null;
@@ -1133,6 +1134,7 @@ module.exports = app => {
             }
             res.json({
                 OK: true,
+                Total: resultados.length,
                 Reporte: resultados
             });
         });
