@@ -15,6 +15,7 @@ module.exports = app => {
     const alerta = app.database.models.Alertas;
     const seguimiento = app.database.models.Seguimientos;
     const ope = app.database.models.Operadores;
+        const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -934,7 +935,6 @@ module.exports = app => {
         var fechahora = fecha + 'Z';
 
         Samsara.getVehicleStats({
-            // time: fechahora,
             tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
             types: 'ecuSpeedMph,gps,obdOdometerMeters'
         }).then(result => {
@@ -1084,52 +1084,56 @@ module.exports = app => {
     }
 
     app.obtenerReporteUltimaLocacion = async (req, res) => {
-        var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
-        var paraValidadfecha = moment(new Date()).format('YYYY-MM-DD');
-        var fechahora = fecha + 'Z';
-
         Samsara.getVehicleStats({
-            // time: fechahora,
             tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
-            types: 'ecuSpeedMph,gps,obdOdometerMeters'
-        }).then(result => {
+            types: 'ecuSpeedMph,gps,obdOdometerMeters,fuelPercents'
+        }).then(async result => {
             var resultados = [];
-            result['data']['data'].forEach(async (element) => {
-                var validarfecha = element['ecuSpeedMph'].time.split('T')[0];
+            const elements = result['data']['data'];
+
+            for (const element of elements) {
                 var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
+                const momentFechaKm = moment(element['ecuSpeedMph'].time).subtract(6, 'hours');
+                const momentFechaGps = moment(element['gps'].time).subtract(6, 'hours');
+                const momentFechaOdo = moment(element['obdOdometerMeters'].time).subtract(6, 'hours');
+                let geocerca = null;
 
-                var miakmparavalidad = miakm.toFixed();
-
-                // if(paraValidadfecha == validarfecha && miakmparavalidad >= 10) {
-         
-                    const momentFechaKm = moment(element['ecuSpeedMph'].time).subtract(6, 'hours');
-                    const momentFechaGps = moment(element['gps'].time).subtract(6, 'hours');
-                    const momentFechaOdo = moment(element['obdOdometerMeters'].time).subtract(6, 'hours');
-                   
-                    let nuevoReporte = new reporte({
-                        id_unidad: element.id,
-                        unidad: element.name,
-                        fechahorakm: momentFechaKm.toISOString().replace('.000Z', 'Z'),
-                        km: miakm.toFixed(),
-                        fechahoragps: momentFechaGps.toISOString().replace('.000Z', 'Z'),
-                        latitud: element['gps'].latitude,
-                        longitud: element['gps'].longitude,
-                        location: element['gps'].reverseGeo.formattedLocation,
-                        fechaodo: momentFechaOdo.toISOString().replace('.000Z', 'Z'),
-                        odometer: element['obdOdometerMeters'].value
+                try {
+                    const ubicacion = await ubiporeco.findOne({
+                        where: {
+                            id_samsara: element.id
+                        },
+                        order: [
+                            ['hora_entrada', 'DESC']
+                        ]
                     });
-                    resultados.push(nuevoReporte);
-                // }
-            });
 
+                    if (ubicacion) {
+                        geocerca = ubicacion.dataValues.geocerca;
+                    }
+                } catch (err) {
+                    geocerca = null;
+                }
+
+                resultados.push({
+                    id_unidad: element.id,
+                    unidad: element.name,
+                    fechahorakm: momentFechaKm.toISOString().replace('.000Z', 'Z'),
+                    km: miakm.toFixed(),
+                    fechahoragps: momentFechaGps.toISOString().replace('.000Z', 'Z'),
+                    latitud: element['gps'].latitude,
+                    longitud: element['gps'].longitude,
+                    location: element['gps'].reverseGeo.formattedLocation,
+                    geocerca: geocerca,
+                    fechaodo: momentFechaOdo.toISOString().replace('.000Z', 'Z'),
+                    odometer: element['obdOdometerMeters'].value,
+                    estadounidad: miakm.toFixed() >= 10 ? 'En Movimiento' : 'Detenido',
+                    fuelpercent: element['fuelPercent'] ? element['fuelPercent']['value'] : 0
+                });
+            }
             res.json({
                 OK: true,
                 Reporte: resultados
-            });
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
             });
         });
     }
