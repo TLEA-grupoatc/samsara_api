@@ -1091,30 +1091,24 @@ module.exports = app => {
             var resultados = [];
             const elements = result['data']['data'];
 
-            for (const element of elements) {
+                    // function delay(ms) {
+            // return new Promise(resolve => setTimeout(resolve, ms));
+        // }
+
+            for(const element of elements) {
                 var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
                 const momentFechaKm = moment(element['ecuSpeedMph'].time).subtract(6, 'hours');
                 const momentFechaGps = moment(element['gps'].time).subtract(6, 'hours');
                 const momentFechaOdo = moment(element['obdOdometerMeters'].time).subtract(6, 'hours');
+                
+                const fechaActual = moment().format('YYYY-MM-DDTHH:mm:ssZ');
+                const fechaDosMinutosAntes = moment().subtract(10, 'minutes').format('YYYY-MM-DDTHH:mm:ssZ');
                 let geocerca = null;
 
-                try {
-                    const ubicacion = await ubiporeco.findAll({
-                        where: {
-                            id_samsara: element.id
-                        },
-                        order: [
-                            ['hora_entrada', 'DESC']
-                        ],
-                        limit: 1
-                    });
-
-                    if (ubicacion && ubicacion.length > 0) {
-                        geocerca = ubicacion[0].dataValues.geocerca;
-                    }
-                } catch (err) {
-                    geocerca = null;
-                }
+                // Calcular horas transcurridas en formato mexicano (UTC-6)
+                const fechaActualMX = moment().utcOffset('-06:00');
+                const fechaGpsMX = moment(momentFechaGps).utcOffset('-06:00');
+                const horasTranscurridas = fechaActualMX.diff(fechaGpsMX, 'hours', true);
 
                 resultados.push({
                     id_unidad: element.id,
@@ -1129,7 +1123,8 @@ module.exports = app => {
                     fechaodo: momentFechaOdo.toISOString().replace('.000Z', 'Z'),
                     odometer: element['obdOdometerMeters'].value,
                     estadounidad: miakm.toFixed() >= 10 ? 'En Movimiento' : 'Detenido',
-                    fuelpercent: element['fuelPercent'] ? element['fuelPercent']['value'] : 0
+                    fuelpercent: element['fuelPercent'] ? element['fuelPercent']['value'] : 0,
+                    horas: horasTranscurridas.toFixed() -6
                 });
             }
             res.json({
