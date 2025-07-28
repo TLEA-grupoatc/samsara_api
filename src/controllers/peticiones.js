@@ -437,7 +437,7 @@ module.exports = app => {
                     odometer: element['obdOdometerMeters'].value,
                     estadounidad: miakm.toFixed() >= 10 ? 'En Movimiento' : 'Detenido',
                     fuelpercent: element['fuelPercent'] ? element['fuelPercent']['value'] : 0,
-                    horas: horasTranscurridas.toFixed()
+                    horas: horasTranscurridas.toFixed() -6
                 });
             }
             res.json({
