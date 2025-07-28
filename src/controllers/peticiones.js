@@ -423,6 +423,8 @@ module.exports = app => {
                 const fechaGpsMX = moment(momentFechaGps).utcOffset('-06:00');
                 const horasTranscurridas = fechaActualMX.diff(fechaGpsMX, 'hours', true);
 
+                var horasfinales = horasTranscurridas - 6;
+
                 resultados.push({
                     id_unidad: element.id,
                     unidad: element.name,
@@ -437,7 +439,7 @@ module.exports = app => {
                     odometer: element['obdOdometerMeters'].value,
                     estadounidad: miakm.toFixed() >= 10 ? 'En Movimiento' : 'Detenido',
                     fuelpercent: element['fuelPercent'] ? element['fuelPercent']['value'] : 0,
-                    horas: horasTranscurridas.toFixed(2) -6
+                    horas: horasfinales.toFixed(2)
                 });
             }
             res.json({
