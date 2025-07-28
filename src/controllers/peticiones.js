@@ -28,6 +28,19 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.reporteInmovilizadores = async (req, res) => {
         var listatractos = [
             '281474983153054',
@@ -345,7 +358,7 @@ module.exports = app => {
                 try {
                     const response = await Samsara.getEngineImmobilizerStates({
                         vehicleIds: lt,
-                        startTime: '2025-07-10T00:00:00Z',
+                        startTime: '2025-07-26T00:00:00Z',
                         endTime: '2025-12-31T23:59:59Z'
                     });
 
@@ -382,6 +395,161 @@ module.exports = app => {
         await getAllImmobilizerData();
 
     }
+
+    app.obtenerReporteUltimaLocacion = async (req, res) => {
+        Samsara.getVehicleStats({
+            tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
+            types: 'ecuSpeedMph,gps,obdOdometerMeters,fuelPercents'
+        }).then(async result => {
+            var resultados = [];
+            const elements = result['data']['data'];
+
+                    // function delay(ms) {
+            // return new Promise(resolve => setTimeout(resolve, ms));
+        // }
+
+            for(const element of elements) {
+                var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
+                const momentFechaKm = moment(element['ecuSpeedMph'].time).subtract(6, 'hours');
+                const momentFechaGps = moment(element['gps'].time).subtract(6, 'hours');
+                const momentFechaOdo = moment(element['obdOdometerMeters'].time).subtract(6, 'hours');
+                
+                const fechaActual = moment().format('YYYY-MM-DDTHH:mm:ssZ');
+                const fechaDosMinutosAntes = moment().subtract(10, 'minutes').format('YYYY-MM-DDTHH:mm:ssZ');
+                let geocerca = null;
+
+                // Calcular horas transcurridas en formato mexicano (UTC-6)
+                const fechaActualMX = moment().utcOffset('-06:00');
+                const fechaGpsMX = moment(momentFechaGps).utcOffset('-06:00');
+                const horasTranscurridas = fechaActualMX.diff(fechaGpsMX, 'hours', true);
+
+                resultados.push({
+                    id_unidad: element.id,
+                    unidad: element.name,
+                    fechahorakm: momentFechaKm.toISOString().replace('.000Z', 'Z'),
+                    km: miakm.toFixed(),
+                    fechahoragps: momentFechaGps.toISOString().replace('.000Z', 'Z'),
+                    latitud: element['gps'].latitude,
+                    longitud: element['gps'].longitude,
+                    location: element['gps'].reverseGeo.formattedLocation,
+                    geocerca: geocerca,
+                    fechaodo: momentFechaOdo.toISOString().replace('.000Z', 'Z'),
+                    odometer: element['obdOdometerMeters'].value,
+                    estadounidad: miakm.toFixed() >= 10 ? 'En Movimiento' : 'Detenido',
+                    fuelpercent: element['fuelPercent'] ? element['fuelPercent']['value'] : 0,
+                    horas: horasTranscurridas.toFixed()
+                });
+            }
+            res.json({
+                OK: true,
+                Total: resultados.length,
+                Reporte: resultados
+            });
+        });
+    }
+
+
+
+    app.obtenerReporteULYI = async (req, res) => {
+        try {
+            // 1. Obtener los vehículos y sus stats
+            const vehiculosResult = await Samsara.getVehicleStats({
+                tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
+                types: 'ecuSpeedMph,gps,obdOdometerMeters,fuelPercents'
+            });
+
+            const elements = vehiculosResult?.data?.data || vehiculosResult?.data || [];
+
+            // 2. Obtener el estado del inmovilizador para cada vehículo
+            const allImmobilizerData = [];
+            const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+            for (const element of elements) {
+                try {
+                    const response = await Samsara.getEngineImmobilizerStates({
+                        vehicleIds: element.id,
+                        startTime: '2025-07-25T00:00:00Z',
+                        endTime: '2025-12-31T23:59:59Z'
+                    });
+                    const data = response?.data ?? response;
+                    allImmobilizerData.push(...(Array.isArray(data) ? data : [data]));
+                } catch (error) {
+                    console.error(`Error con tracto ${element.id}:`, error);
+                }
+                await sleep(500);
+            }
+
+            // Agrupar por vehicleId y seleccionar el más reciente
+            const agrupadoPorVehiculo = {};
+            allImmobilizerData.forEach(item => {
+                const id = item.vehicleId;
+                const fecha = new Date(item.happenedAtTime);
+                if (!agrupadoPorVehiculo[id] || new Date(agrupadoPorVehiculo[id].happenedAtTime) < fecha) {
+                    agrupadoPorVehiculo[id] = item;
+                }
+            });
+            const reporteimmobilzadores = Object.values(agrupadoPorVehiculo);
+
+            // 3. Armar el reporte final
+            const resultados = elements.map(element => {
+                const miakm = Number(element['ecuSpeedMph']?.value ?? 0) * 1.609;
+                const momentFechaKm = moment(element['ecuSpeedMph']?.time).subtract(6, 'hours');
+                const momentFechaGps = moment(element['gps']?.time).subtract(6, 'hours');
+                const momentFechaOdo = moment(element['obdOdometerMeters']?.time).subtract(6, 'hours');
+                const fechaActualMX = moment().utcOffset('-06:00');
+                const fechaGpsMX = moment(momentFechaGps).utcOffset('-06:00');
+                const horasTranscurridas = fechaActualMX.diff(fechaGpsMX, 'hours', true);
+
+                // Buscar el estado del inmovilizador más reciente para este vehículo
+                const estadoInmovilizador = agrupadoPorVehiculo[element.id] || null;
+
+                return {
+                    id_unidad: element.id,
+                    unidad: element.name,
+                    fechahorakm: momentFechaKm.isValid() ? momentFechaKm.toISOString().replace('.000Z', 'Z') : null,
+                    km: miakm.toFixed(),
+                    fechahoragps: momentFechaGps.isValid() ? momentFechaGps.toISOString().replace('.000Z', 'Z') : null,
+                    latitud: element['gps']?.latitude ?? null,
+                    longitud: element['gps']?.longitude ?? null,
+                    location: element['gps']?.reverseGeo?.formattedLocation ?? null,
+                    geocerca: null,
+                    fechaodo: momentFechaOdo.isValid() ? momentFechaOdo.toISOString().replace('.000Z', 'Z') : null,
+                    odometer: element['obdOdometerMeters']?.value ?? null,
+                    estadounidad: miakm >= 10 ? 'En Movimiento' : 'Detenido',
+                    fuelpercent: element['fuelPercent']?.value ?? 0,
+                    horas: (horasTranscurridas - 6).toFixed(),
+                    estadoInmovilizador
+                };
+            });
+
+            res.json({
+                OK: true,
+                Total: resultados.length,
+                Reporte: resultados
+            });
+        } catch (error) {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     app.obtenerParaGuardarUnidades = (req, res) => {
@@ -1083,57 +1251,7 @@ module.exports = app => {
         });
     }
 
-    app.obtenerReporteUltimaLocacion = async (req, res) => {
-        Samsara.getVehicleStats({
-            tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
-            types: 'ecuSpeedMph,gps,obdOdometerMeters,fuelPercents'
-        }).then(async result => {
-            var resultados = [];
-            const elements = result['data']['data'];
 
-                    // function delay(ms) {
-            // return new Promise(resolve => setTimeout(resolve, ms));
-        // }
-
-            for(const element of elements) {
-                var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
-                const momentFechaKm = moment(element['ecuSpeedMph'].time).subtract(6, 'hours');
-                const momentFechaGps = moment(element['gps'].time).subtract(6, 'hours');
-                const momentFechaOdo = moment(element['obdOdometerMeters'].time).subtract(6, 'hours');
-                
-                const fechaActual = moment().format('YYYY-MM-DDTHH:mm:ssZ');
-                const fechaDosMinutosAntes = moment().subtract(10, 'minutes').format('YYYY-MM-DDTHH:mm:ssZ');
-                let geocerca = null;
-
-                // Calcular horas transcurridas en formato mexicano (UTC-6)
-                const fechaActualMX = moment().utcOffset('-06:00');
-                const fechaGpsMX = moment(momentFechaGps).utcOffset('-06:00');
-                const horasTranscurridas = fechaActualMX.diff(fechaGpsMX, 'hours', true);
-
-                resultados.push({
-                    id_unidad: element.id,
-                    unidad: element.name,
-                    fechahorakm: momentFechaKm.toISOString().replace('.000Z', 'Z'),
-                    km: miakm.toFixed(),
-                    fechahoragps: momentFechaGps.toISOString().replace('.000Z', 'Z'),
-                    latitud: element['gps'].latitude,
-                    longitud: element['gps'].longitude,
-                    location: element['gps'].reverseGeo.formattedLocation,
-                    geocerca: geocerca,
-                    fechaodo: momentFechaOdo.toISOString().replace('.000Z', 'Z'),
-                    odometer: element['obdOdometerMeters'].value,
-                    estadounidad: miakm.toFixed() >= 10 ? 'En Movimiento' : 'Detenido',
-                    fuelpercent: element['fuelPercent'] ? element['fuelPercent']['value'] : 0,
-                    horas: horasTranscurridas.toFixed() -6
-                });
-            }
-            res.json({
-                OK: true,
-                Total: resultados.length,
-                Reporte: resultados
-            });
-        });
-    }
 
 
     app.obtenerDetalleReporte = (req, res) => {

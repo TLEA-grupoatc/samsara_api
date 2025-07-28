@@ -52,8 +52,28 @@ module.exports = app => {
 
 
     app.get('/obtenerSeguimientoUsuario/:fechainicio/:fechafin/:usuario', verificarToken, Peticion.obtenerSeguimientoUsuario);
+
+
+
+
+
+
+
+
+
+    app.get('/reporteInmovilizadores', Peticion.reporteInmovilizadores);
     
     app.get('/obtenerReporteUltimaLocacion', Peticion.obtenerReporteUltimaLocacion);
+
+    app.get('/obtenerReporteULYI', Peticion.obtenerReporteULYI);
+
+
+
+
+
+
+
+
     
     app.put('/primeraInteraccionSeguimiento/:id_seguimiento', verificarToken, Peticion.primeraInteraccionSeguimiento);
 
@@ -111,5 +131,5 @@ module.exports = app => {
 
 
 
-    app.get('/reporteInmovilizadores', Peticion.reporteInmovilizadores);
+
 }
