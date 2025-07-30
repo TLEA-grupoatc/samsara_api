@@ -357,7 +357,7 @@ module.exports = app => {
             try {
                 console.log(batch);
                 
-            const startDate = moment().subtract(3, 'days').format('YYYY-MM-DDTHH:mm:ss[Z]');
+            const startDate = moment().subtract(2, 'days').format('YYYY-MM-DDTHH:mm:ss[Z]');
             const response = await Samsara.getEngineImmobilizerStates({
                 vehicleIds: batch,
                 startTime: startDate
@@ -383,6 +383,7 @@ module.exports = app => {
 
         res.json({
             OK: true,
+            Total: allResults.length,
             Resultados: allResults
         });
     }

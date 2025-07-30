@@ -478,6 +478,27 @@ module.exports = app => {
                 order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'DESC']]
             });
 
+            const diasDescansadosResult = await historico.findAll({
+                attributes: [
+                    'nombre',
+                    [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'mes'],
+                    [historico.sequelize.fn('COUNT', historico.sequelize.col('actividad')), 'totaldiasdescansados'],
+                ],
+                where: {
+                    nombre: operadorId,
+                    actividad: 'DESC',
+                    fecha: {
+                        [Op.between]: [
+                            moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                            moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                        ],
+                    }
+                },
+                group: ['mes', 'nombre'],
+                order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'DESC']]
+            });
+
+
             const cartasAcuerdoResult = await docoperador.findAll({
                 attributes: [
                     'operador',
@@ -719,6 +740,24 @@ module.exports = app => {
                 porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
             });
 
+            const porcentajeDiasDescansadosPorMes = {};
+            // diaslaboradosResult.forEach(d => {
+            //     const mes = d.dataValues.mes;
+            //     const totalDiasLaborados = Number(d.dataValues.totaldiaslaborados) || 0;
+            //     const diasEnMes = moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
+            //     porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
+            // });
+            diasDescansadosResult.forEach(d => {
+                const mes = d.dataValues.mes;
+                const totalDiasDescansados = Number(d.dataValues.totaldiasdescansados) || 0;
+
+                const hoy = moment();
+                const esMesActual = hoy.month() + 1 === Number(mes) && hoy.year() === Number(anio);
+                const diasEnMes = esMesActual ? hoy.date() : moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
+
+                porcentajeDiasDescansadosPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasDescansados / diasEnMes) * 100).toFixed(2)) : 0;
+            });
+
 
             const quejasPorMes = {};
             quejasResult.forEach(d => {
@@ -776,6 +815,7 @@ module.exports = app => {
                 dopings: dopingsPorMes[mes] || 0,
                 alertas: alertasPorMes[mes] || 0,
                 alertasPNA: alertasPNAPorMes[mes] || 0,
+                diasDescansados: porcentajeDiasDescansadosPorMes[mes] || 0,
             }));
 
             res.json({
