@@ -352,12 +352,12 @@ module.exports = app => {
         ];
         let allResults = [];
 
-        for (let i = 0; i < listatractos.length; i += 5) {
-            const batch = listatractos.slice(i, i + 5);
+        for (let i = 0; i < listatractos.length; i += 2) {
+            const batch = listatractos.slice(i, i + 2);
             try {
                 console.log(batch);
                 
-            const startDate = moment().subtract(14, 'days').format('YYYY-MM-DDTHH:mm:ss[Z]');
+            const startDate = moment().subtract(5, 'days').format('YYYY-MM-DDTHH:mm:ss[Z]');
             const response = await Samsara.getEngineImmobilizerStates({
                 vehicleIds: batch,
                 startTime: startDate
