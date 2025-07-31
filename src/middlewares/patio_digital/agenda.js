@@ -101,7 +101,7 @@ module.exports = app => {
                         result: cantidadUnidades,
                     });
                 }
-                console.log(unidadesprogramadas)
+                // console.log(unidadesprogramadas)
             }
 
             next();

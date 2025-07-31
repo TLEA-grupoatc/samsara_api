@@ -335,11 +335,39 @@ module.exports = app => {
             observacion_libre_de_plagas,
             observacion_libre_de_semillas_hojas,
 
+            
+            foto_unidad_1,
+            foto_unidad_2,
+            foto_unidad_3,
+            foto_unidad_4,
+            foto_unidad_5,
+            foto_unidad_6,
+            
+            foto_defensa,
+            foto_motor_bateria_filtros,
+            foto_llantas_rines,
+            foto_piso_tracto,
+            foto_tanques_combustible,
+            foto_cabina_interior,
+            foto_compartimiento_herramientas,
+            foto_tanques_de_aire,
+            foto_compartimientos_baterias,
+            foto_mofles,
+            foto_quinta_rueda,
+            foto_debajo_del_chasis,
+            foto_llantas_rines_remolque,
+            foto_estructura_nodriza,
+            foto_rampas,
+            foto_caja_herramientas_remolque,
+            foto_lona,
+            foto_libre_de_plagas,
+            foto_libre_de_semillas_hojas,
+
+            foto_hallazgo,
+
             firma_guardia,
             firma_operador
         } = req.body;
-
-        const salida_fotos = req.files
 
         // console.log(req.body);
         // console.log(req.files);
@@ -352,32 +380,6 @@ module.exports = app => {
 
             t = await sequelize.transaction();
 
-            const toBoolean = (value) => value === 'true';
-
-            const nowBoolean = {
-                check_defensa: toBoolean(check_defensa),
-                check_motor_bateria_filtros: toBoolean(check_motor_bateria_filtros),
-                check_llantas_rines: toBoolean(check_llantas_rines),
-                check_piso_tracto: toBoolean(check_piso_tracto),
-                check_tanques_combustible: toBoolean(check_tanques_combustible),
-                check_cabina_interior: toBoolean(check_cabina_interior),
-                check_compartimiento_herramientas: toBoolean(check_compartimiento_herramientas),
-                check_tanques_de_aire: toBoolean(check_tanques_de_aire),
-                check_compartimientos_baterias: toBoolean(check_compartimientos_baterias),
-                check_mofles: toBoolean(check_mofles),
-                check_quinta_rueda: toBoolean(check_quinta_rueda),
-                check_debajo_del_chasis: toBoolean(check_debajo_del_chasis),
-                check_llantas_rines_remolque: toBoolean(check_llantas_rines_remolque),
-                check_estructura_nodriza: toBoolean(check_estructura_nodriza),
-                check_rampas: toBoolean(check_rampas),
-                check_caja_herramientas_remolque: toBoolean(check_caja_herramientas_remolque),
-                check_lona: toBoolean(check_lona),
-                check_libre_de_plagas: toBoolean(check_libre_de_plagas),
-                check_libre_de_semillas_hojas: toBoolean(check_libre_de_semillas_hojas)
-            };
-
-            Object.assign(req.body, nowBoolean);
-
             DatosSalida = {
                 fecha_salida: fecha_salida,
                 fecha_hora_inicio: fecha_hora_inicio,
@@ -389,25 +391,25 @@ module.exports = app => {
                 placas_rem_2: placas_rem_2,
                 comentarios: comentarios,
                 fk_usuario: fk_usuario,
-                check_defensa: nowBoolean.check_defensa,
-                check_motor_bateria_filtros: nowBoolean.check_motor_bateria_filtros,
-                check_llantas_rines: nowBoolean.check_llantas_rines,
-                check_piso_tracto: nowBoolean.check_piso_tracto,
-                check_tanques_combustible: nowBoolean.check_tanques_combustible,
-                check_cabina_interior: nowBoolean.check_cabina_interior,
-                check_compartimiento_herramientas: nowBoolean.check_compartimiento_herramientas,
-                check_tanques_de_aire: nowBoolean.check_tanques_de_aire,
-                check_compartimientos_baterias: nowBoolean.check_compartimientos_baterias,
-                check_mofles: nowBoolean.check_mofles,
-                check_quinta_rueda: nowBoolean.check_quinta_rueda,
-                check_debajo_del_chasis: nowBoolean.check_debajo_del_chasis,
-                check_llantas_rines_remolque: nowBoolean.check_llantas_rines_remolque,
-                check_estructura_nodriza: nowBoolean.check_estructura_nodriza,
-                check_rampas: nowBoolean.check_rampas,
-                check_caja_herramientas_remolque: nowBoolean.check_caja_herramientas_remolque,
-                check_lona: nowBoolean.check_lona,
-                check_libre_de_plagas: nowBoolean.check_libre_de_plagas,
-                check_libre_de_semillas_hojas: nowBoolean.check_libre_de_semillas_hojas,
+                check_defensa: check_defensa,
+                check_motor_bateria_filtros: check_motor_bateria_filtros,
+                check_llantas_rines: check_llantas_rines,
+                check_piso_tracto: check_piso_tracto,
+                check_tanques_combustible: check_tanques_combustible,
+                check_cabina_interior: check_cabina_interior,
+                check_compartimiento_herramientas: check_compartimiento_herramientas,
+                check_tanques_de_aire: check_tanques_de_aire,
+                check_compartimientos_baterias: check_compartimientos_baterias,
+                check_mofles: check_mofles,
+                check_quinta_rueda: check_quinta_rueda,
+                check_debajo_del_chasis: check_debajo_del_chasis,
+                check_llantas_rines_remolque: check_llantas_rines_remolque,
+                check_estructura_nodriza: check_estructura_nodriza,
+                check_rampas: check_rampas,
+                check_caja_herramientas_remolque: check_caja_herramientas_remolque,
+                check_lona: check_lona,
+                check_libre_de_plagas: check_libre_de_plagas,
+                check_libre_de_semillas_hojas: check_libre_de_semillas_hojas,
                 observacion_defensa,
                 observacion_motor_bateria_filtros,
                 observacion_llantas_rines,
@@ -428,67 +430,47 @@ module.exports = app => {
                 observacion_libre_de_plagas,
                 observacion_libre_de_semillas_hojas,
             }
-
+            
             const fotosChecklist = [
-                'foto_hallazgo',
-
-                'foto_unidad_1',
-                'foto_unidad_2',
-                'foto_unidad_3',
-                'foto_unidad_4',
-                'foto_unidad_5',
-                'foto_unidad_6',
-
-                'foto_defensa',
-                'foto_motor_bateria_filtros',
-                'foto_llantas_rines',
-                'foto_piso_tracto',
-                'foto_tanques_combustible',
-                'foto_cabina_interior',
-                'foto_compartimiento_herramientas',
-                'foto_tanques_de_aire',
-                'foto_compartimientos_baterias',
-                'foto_mofles',
-                'foto_quinta_rueda',
-                'foto_debajo_del_chasis',
-                'foto_llantas_rines_remolque',
-                'foto_estructura_nodriza',
-                'foto_rampas',
-                'foto_caja_herramientas_remolque',
-                'foto_lona',
-                'foto_libre_de_plagas',
-                'foto_libre_de_semillas_hojas',
-                'firma_guardia',
-                'firma_operador'
+                { campo: 'foto_unidad_1', base64: foto_unidad_1 },
+                { campo: 'foto_unidad_2', base64: foto_unidad_2 },
+                { campo: 'foto_unidad_3', base64: foto_unidad_3 },
+                { campo: 'foto_unidad_4', base64: foto_unidad_4 },
+                { campo: 'foto_unidad_5', base64: foto_unidad_5 },
+                { campo: 'foto_unidad_6', base64: foto_unidad_6 },
+                { campo: 'foto_hallazgo', base64: foto_hallazgo },
+                { campo: 'foto_defensa', base64: foto_defensa },
+                { campo: 'foto_motor_bateria_filtros', base64: foto_motor_bateria_filtros },
+                { campo: 'foto_llantas_rines', base64: foto_llantas_rines },
+                { campo: 'foto_piso_tracto', base64: foto_piso_tracto },
+                { campo: 'foto_tanques_combustible', base64: foto_tanques_combustible },
+                { campo: 'foto_cabina_interior', base64: foto_cabina_interior },
+                { campo: 'foto_compartimiento_herramientas', base64: foto_compartimiento_herramientas },
+                { campo: 'foto_tanques_de_aire', base64: foto_tanques_de_aire },
+                { campo: 'foto_compartimientos_baterias', base64: foto_compartimientos_baterias },
+                { campo: 'foto_mofles', base64: foto_mofles },
+                { campo: 'foto_quinta_rueda', base64: foto_quinta_rueda },
+                { campo: 'foto_debajo_del_chasis', base64: foto_debajo_del_chasis },
+                { campo: 'foto_llantas_rines_remolque', base64: foto_llantas_rines_remolque },
+                { campo: 'foto_estructura_nodriza', base64: foto_estructura_nodriza },
+                { campo: 'foto_rampas', base64: foto_rampas },
+                { campo: 'foto_caja_herramientas_remolque', base64: foto_caja_herramientas_remolque },
+                { campo: 'foto_lona', base64: foto_lona },
+                { campo: 'foto_libre_de_plagas', base64: foto_libre_de_plagas },
+                { campo: 'foto_libre_de_semillas_hojas', base64: foto_libre_de_semillas_hojas },
+                { campo: 'firma_guardia', base64: firma_guardia },
+                { campo: 'firma_operador', base64: firma_operador }
             ];
-    
-            const uploadedFotos = {};
-            if (Array.isArray(salida_fotos)) {
-                for (const doc of salida_fotos) {
-                    uploadedFotos[doc.fieldname] = [doc];
-                }
-            } else {
-                uploadedFotos = documentosEvidencias || {};
-            }
 
             for (let foto of fotosChecklist) {
-                const archivoRecibido = uploadedFotos?.[foto]?.[0]?.filename;
-                if (archivoRecibido) {
-                    DatosSalida[foto] = archivoRecibido;
+                if (foto.base64) {
+                    DatosSalida[foto.campo] = saveBase64File(foto.base64, foto.campo);
                 }
-            }
-
-            if(firma_guardia !== 'undefined'){
-                DatosSalida['firma_guardia'] = saveBase64File(firma_guardia, 'firma_guardia');
-            }
-
-            if(firma_operador !== 'undefined'){
-                DatosSalida['firma_operador'] = saveBase64File(firma_operador, 'firma_operador');
             }
 
             // Si tiene un reporte o hallazgo no llega a las firmas
             // console.log(firma_guardia, firma_operador)
-            const checkHallazgos = (firma_guardia !== 'undefined' || firma_operador !== 'undefined');
+            const checkHallazgos = (firma_guardia !== undefined || firma_operador !== undefined);
 
             const estatus = checkHallazgos ? 'salida_salida' : 'salida_hallazgo';
 
@@ -516,7 +498,7 @@ module.exports = app => {
         } catch (error) {
             if (t) await t.rollback();
             console.error('Error en crear salida:', error);
-            return res.status(500).json({ 
+            return res.status(500).json({
                 OK: false,
                 msg: error,
             });
@@ -684,23 +666,24 @@ module.exports = app => {
                 check_libre_de_semillas_hojas: check_libre_de_semillas_hojas,
             }
 
-            if(firma_guardia !== 'undefined'){
+            if(firma_guardia !== undefined){
                 DatosSalida['firma_guardia'] = saveBase64File(firma_guardia, 'firma_guardia');
             }
 
-            if(firma_operador !== 'undefined'){
+            if(firma_operador !== undefined){
                 DatosSalida['firma_operador'] = saveBase64File(firma_operador, 'firma_operador');
             }
 
             const estatus = 'salida_salida'
 
             DatosSalida['estatus'] = estatus;
-            DatosSalida['fecha_salida'] = moment();
+            DatosSalida['fecha_salida'] = moment().format('YYYY-MM-DD hh:mm');
+            // console.log(DatosSalida);
 
             const salidaConfirmada = await Salida.update(
                 DatosSalida,
                 {
-                    where: {id_salida: id_salida},
+                    where: { id_salida: id_salida },
                     transaction: t
                 }
             )
