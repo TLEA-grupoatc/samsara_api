@@ -603,7 +603,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
   else {
-    console.log('Evento no reconocido:', payload.data.conditions[0].description);
+    console.log('Evento no reconocido:', payload.data?.conditions[0].description);
   }
 });
 
