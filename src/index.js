@@ -416,7 +416,7 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
 app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
-  if(payload.data.conditions?.[0].description === 'Asset starts moving') {
+  if(payload.data?.conditions[0].description === 'Asset starts moving') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['deviceMovement']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
