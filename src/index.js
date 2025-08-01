@@ -447,7 +447,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-  else if(payload.data.conditions[0].description === 'Asset stops moving') {
+  else if(payload.data?.conditions[0].description === 'Asset stops moving') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
@@ -478,7 +478,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-  else if(payload.data.conditions[0].description === 'Asset Engine Off') {
+  else if(payload.data?.conditions[0].description === 'Asset Engine Off') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['engineOff']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
@@ -509,7 +509,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-  else if(payload.data.conditions[0].description === 'Asset Engine On') {
+  else if(payload.data?.conditions[0].description === 'Asset Engine On') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['engineOn']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
@@ -540,7 +540,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-  else if(payload.data.conditions[0].description === 'Geofence Entry') {
+  else if(payload.data?.conditions[0].description === 'Geofence Entry') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
@@ -571,7 +571,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-  else if(payload.data.conditions[0].description === 'Geofence Exit') { 
+  else if(payload.data?.conditions[0].description === 'Geofence Exit') { 
     var ubi = await ubicacion(payload.data.conditions[0]['details']['geofenceExit']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
