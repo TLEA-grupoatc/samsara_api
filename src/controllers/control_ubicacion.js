@@ -503,18 +503,18 @@ module.exports = app => {
 
 
 
-    cron.schedule('00 08 * * *', () => { ubicacion('ubicacion1'); });
-    cron.schedule('00 09 * * *', () => { ubicacion('ubicacion2'); });
-    cron.schedule('00 10 * * *', () => { ubicacion('ubicacion3'); });
-    cron.schedule('00 11 * * *', () => { ubicacion('ubicacion4'); });
-    cron.schedule('00 12 * * *', () => { ubicacion('ubicacion5'); });
-    cron.schedule('00 13 * * *', () => { ubicacion('ubicacion6'); });
-    cron.schedule('00 14 * * *', () => { ubicacion('ubicacion7'); });
-    cron.schedule('00 15 * * *', () => { ubicacion('ubicacion8'); });
-    cron.schedule('00 16 * * *', () => { ubicacion('ubicacion9'); });
-    cron.schedule('00 17 * * *', () => { ubicacion('ubicacion10'); });
-    cron.schedule('00 18 * * *', () => { ubicacion('ubicacion11'); });
-    cron.schedule('00 19 * * *', () => { ubicacion('ubicacion12'); });
+    // cron.schedule('00 08 * * *', () => { ubicacion('ubicacion1'); });
+    // cron.schedule('00 09 * * *', () => { ubicacion('ubicacion2'); });
+    // cron.schedule('00 10 * * *', () => { ubicacion('ubicacion3'); });
+    // cron.schedule('00 11 * * *', () => { ubicacion('ubicacion4'); });
+    // cron.schedule('00 12 * * *', () => { ubicacion('ubicacion5'); });
+    // cron.schedule('00 13 * * *', () => { ubicacion('ubicacion6'); });
+    // cron.schedule('00 14 * * *', () => { ubicacion('ubicacion7'); });
+    // cron.schedule('00 15 * * *', () => { ubicacion('ubicacion8'); });
+    // cron.schedule('00 16 * * *', () => { ubicacion('ubicacion9'); });
+    // cron.schedule('00 17 * * *', () => { ubicacion('ubicacion10'); });
+    // cron.schedule('00 18 * * *', () => { ubicacion('ubicacion11'); });
+    // cron.schedule('00 19 * * *', () => { ubicacion('ubicacion12'); });
 
     async function ubicacion(hora) {
         var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
