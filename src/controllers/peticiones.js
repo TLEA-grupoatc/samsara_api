@@ -766,7 +766,6 @@ module.exports = app => {
         })
     }
 
-    cron.schedule('02 08 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 09 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 10 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 11 * * *', () => { enlazarUnidadAOperadorSamsara(); });
