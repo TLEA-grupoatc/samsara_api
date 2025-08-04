@@ -239,7 +239,7 @@ module.exports = app => {
                         numeroEmpleado: op.operador_num_externo,
                         operador: op.OPERADOR_NOMBRE,
                         unidad: op.operador_terminal,
-                        actividad: actividad ? actividad.actividad : "",
+                        actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad ? actividad.actividad : "",
                         comentarios: actividad ? actividad.comentarios : "",
                         id_historico: actividad ? actividad.id_historico : null
                     };
@@ -378,7 +378,7 @@ module.exports = app => {
                         numeroEmpleado: op.operador_num_externo,
                         operador: op.OPERADOR_NOMBRE,
                         unidad: op.operador_terminal,
-                        actividad: actividad ? actividad.actividad : "",
+                        actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad ? actividad.actividad : "",
                         comentarios: actividad ? actividad.comentarios : "",
                         id_historico: actividad ? actividad.id_historico : null
                     };
@@ -749,13 +749,7 @@ module.exports = app => {
             // });
             diasDescansadosResult.forEach(d => {
                 const mes = d.dataValues.mes;
-                const totalDiasDescansados = Number(d.dataValues.totaldiasdescansados) || 0;
-
-                const hoy = moment();
-                const esMesActual = hoy.month() + 1 === Number(mes) && hoy.year() === Number(anio);
-                const diasEnMes = esMesActual ? hoy.date() : moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
-
-                porcentajeDiasDescansadosPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasDescansados / diasEnMes) * 100).toFixed(2)) : 0;
+                porcentajeDiasDescansadosPorMes[mes] = Number(d.dataValues.totaldiasdescansados) || 0;
             });
 
 

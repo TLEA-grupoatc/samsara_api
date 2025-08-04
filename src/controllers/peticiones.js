@@ -390,8 +390,8 @@ module.exports = app => {
 
         res.json({
             OK: true,
-            // Total: allResults.length,
-            Resultados: allResults
+            Resultados: allResults,
+            Total: allResults.length
         });
     }
 

@@ -644,7 +644,7 @@ module.exports = app => {
 
                 let result = await pool.request().query("SELECT  ope.*, ost.* FROM voperador as ope\
                 INNER JOIN OPERADOR_SUBTIPO AS ost ON ost.SUBTIPO_CLAVE = ope.SUBTIPO_CLAVE\
-                WHERE ope.STATUS = 1 ORDER BY ope.OPERADOR_NOMBRE ASC;");
+                WHERE ope.STATUS = 1 AND ost.SUBTIPO_DESCRIP != 'ACADEMIA' ORDER BY ope.OPERADOR_NOMBRE ASC;");
                 // let result = await pool.request().query("SELECT ost.SUBTIPO_DESCRIP FROM voperador as ope \
                 // INNER JOIN OPERADOR_SUBTIPO AS ost ON ost.SUBTIPO_CLAVE = ope.SUBTIPO_CLAVE \
                 // WHERE ope.STATUS = 1  \
