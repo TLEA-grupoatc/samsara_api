@@ -642,13 +642,11 @@ module.exports = app => {
         try {
             let pool = await sql.connect(config);
 
-                let result = await pool.request().query("SELECT  ope.*, ost.* FROM voperador as ope\
+            // let result = await pool.request().query("SELECT ope.OPERADOR_CLAVE, ope.operador_num_externo, ope.OPERADOR_NOMBRE, ope.NUM_LICENCIA, ope.STATUS, ope.OPERADOR_TELEFONO, ope.CELULAR, ope.operador_terminal, ost.SUBTIPO_DESCRIP FROM voperador as ope\
+            let result = await pool.request().query("SELECT ope.OPERADOR_CLAVE, ope.operador_num_externo, ope.OPERADOR_NOMBRE, ope.NUM_LICENCIA, ope.FECHA_VIGENCIA, ope.STATUS, ope.OPERADOR_TELEFONO, ope.CELULAR, ope.negocio_clave as operador_terminal, ost.SUBTIPO_DESCRIP, ope.OPERADOR_RFC, ope.NUM_IMSS, ope.NUM_LICENCIA, ope.FCH_INGRESO FROM voperador as ope\
                 INNER JOIN OPERADOR_SUBTIPO AS ost ON ost.SUBTIPO_CLAVE = ope.SUBTIPO_CLAVE\
-                WHERE ope.STATUS = 1 AND ost.SUBTIPO_DESCRIP != 'ACADEMIA' ORDER BY ope.OPERADOR_NOMBRE ASC;");
-                // let result = await pool.request().query("SELECT ost.SUBTIPO_DESCRIP FROM voperador as ope \
-                // INNER JOIN OPERADOR_SUBTIPO AS ost ON ost.SUBTIPO_CLAVE = ope.SUBTIPO_CLAVE \
-                // WHERE ope.STATUS = 1  \
-                // GROUP BY ost.SUBTIPO_DESCRIP");
+                WHERE ope.STATUS = 1 AND ost.SUBTIPO_DESCRIP != 'ACADEMIA' AND (ope.negocio_clave IS NOT NULL AND ope.negocio_clave NOT IN ('DEF')) ORDER BY ope.OPERADOR_NOMBRE ASC;");
+                // ORDER BY ope.OPERADOR_NOMBRE ASC;");
 
             sql.close();
             
@@ -756,7 +754,7 @@ module.exports = app => {
                 "SELECT OP.OPERADOR_NOMBRE as operador, MAX(BT.FECHA_BITACORA) AS fechaBitacora, DATEDIFF(DAY, MAX(BT.FECHA_BITACORA), GETDATE()) AS diasDesdeUltimaBitacora FROM bitacoras AS BT \
                 INNER JOIN vbitacora_detalle AS BD ON BD.clave_bitacora = BT.clave_bitacora \
                 INNER JOIN voperador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
-                WHERE BD.KM > 100 AND BT.FECHA_BITACORA > '" + moment(yearactual + '-01-01').format('YYYY-MM-DD') + "T23:59:59.000Z' \
+                WHERE BD.KM > 100 AND BT.FECHA_BITACORA > '" + moment(yearactual + '-01-01').format('YYYY-MM-DD') + "T23:59:59.000Z' AND OP.STATUS = 1 \
                 GROUP BY OP.OPERADOR_NOMBRE ORDER BY OP.OPERADOR_NOMBRE"
             );
             // WHERE BT.STATUS_BITACORA IN (0,1) \

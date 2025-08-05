@@ -134,242 +134,316 @@ module.exports = app => {
         });
     }
 
-    // app.obtenerOperadoresConHistorico = async (req, res) => {
-    // const year = parseInt(req.query.year) || moment().year();
-    // const month = parseInt(req.query.month) || moment().month() + 1;
 
-    // const monthStr = month.toString().padStart(2, '0');
-    // const startOfMonth = moment(`${year}-${monthStr}-01`).startOf('day');
-    // const endOfMonth = moment(startOfMonth).endOf('month');
-    // const daysInMonth = endOfMonth.date();
-    // const fechasMes = Array.from({ length: daysInMonth }, (_, i) =>
-    //     moment(startOfMonth).add(i, 'days').format('YYYY-MM-DD')
-    // );
 
-    // try {
-    //     const [
-    //     viajesResp,
-    //     empleadosResp,
-    //     tractosAsignados,
-    //     ultimasLiquidaciones,
-    //     operadoresResp,
-    //     actividades
-    //     ] = await Promise.all([
-    //     axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
-    //     axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
-    //     operador.findAll({ order: [['nombre', 'ASC']] }),
-    //     liquidacion.findAll({
-    //         attributes: [
-    //         'operador',
-    //         [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
-    //         ],
-    //         where: { estado: 'COMPLETO' },
-    //         group: ['operador']
-    //     }),
-    //     axios.get('https://servidorlocal.ngrok.app/listadoOperadores'),
-    //     historico.findAll({
-    //         where: {
-    //         fecha: { [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')] }
-    //         },
-    //         order: [['fecha', 'DESC']]
-    //     })
-    //     ]);
 
-    //     // Mapeos para acceso rápido
-    //     const empleadosMap = Object.fromEntries(empleadosResp.data.Empleados.map(e => [e.numero_empleado, e]));
-    //     const tractosMap = Object.fromEntries(tractosAsignados.map(t => [t.nombre, t]));
-    //     const liquidacionesMap = Object.fromEntries(ultimasLiquidaciones.map(l => [l.operador, l]));
-    //     const viajesMap = Object.fromEntries(viajesResp.data.Registros.map(v => [v.operador, v]));
 
-    //     const operadores = operadoresResp.data.Registros || [];
 
-    //     const operadoresConActividades = operadores.map(op => {
-    //     const nombre = op.OPERADOR_NOMBRE;
-    //     const numEmpleado = Number(op.operador_num_externo);
-    //     const actividadesDelOperador = actividades.filter(a => a.nombre === nombre);
-    //     const empleado = empleadosMap[numEmpleado] || {};
-    //     const tracto = tractosMap[nombre] || {};
-    //     const liquidacion = liquidacionesMap[nombre] || {};
-    //     const viajes = viajesMap[nombre] || {};
 
-    //     const avatar = empleado.avatar
-    //         ? `https://api-rh.tlea.online/${empleado.avatar}`
-    //         : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
 
-    //     const registros = fechasMes.map((fecha, i) => {
-    //         const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
-    //         return {
-    //         titulo: `Día ${i + 1}: ${fecha}`,
-    //         numeroEmpleado: op.operador_num_externo,
-    //         operador: nombre,
-    //         unidad: op.operador_terminal,
-    //         actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad?.actividad || "",
-    //         comentarios: actividad?.comentarios || "",
-    //         id_historico: actividad?.id_historico || null
-    //         };
-    //     });
 
-    //     return {
-    //         ...op,
-    //         avatar,
-    //         tractoTitular: tracto.tracto_titular || "",
-    //         tractoActual: tracto.tracto_actual || "",
-    //         esconflictivo: tracto.conflictivo || 0,
-    //         conexperiencia: tracto.experiencia || 0,
-    //         conclase: tracto.clase || '',
-    //         conlicencia: tracto.licencia || '',
-    //         viajesLargos: viajes.viajeLargo || 0,
-    //         viajesCortos: viajes.viajeCorto || 0,
-    //         fechaliquidacion: liquidacion.fecha_pago || "",
-    //         registros
-    //     };
-    //     });
 
-    //     res.json({ OK: true, Operadores: operadoresConActividades });
-    // } catch (err) {
-    //     res.status(500).json({ OK: false, msg: err.message });
-    // }
-    // };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     app.obtenerOperadoresConHistorico = async (req, res) => {
-        const year = req.query.year ? parseInt(req.query.year) : moment().year();
-        const month = req.query.month ? parseInt(req.query.month) : moment().month() + 1; // month is 1-based for users
+    const year = parseInt(req.query.year) || moment().year();
+    const month = parseInt(req.query.month) || moment().month() + 1;
 
-        const monthPadded = month.toString().padStart(2, '0');
-        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
-        const endOfMonth = moment(startOfMonth).endOf('month').startOf('day');
-        const daysInMonth = endOfMonth.date();
+    const monthStr = month.toString().padStart(2, '0');
+    const startOfMonth = moment(`${year}-${monthStr}-01`).startOf('day');
+    const endOfMonth = moment(startOfMonth).endOf('month');
+    const daysInMonth = endOfMonth.date();
+    const fechasMes = Array.from({ length: daysInMonth }, (_, i) =>
+        moment(startOfMonth).add(i, 'days').format('YYYY-MM-DD')
+    );
 
-        let empleadosExternos = [];
-        let listaTractosAsignados = [];
-        let listaUltimaLiquidacion = [];
-        let listaViajes = [];
+    try {
+        const [
+        viajesResp,
+        empleadosResp,
+        tractosAsignados,
+        ultimasLiquidaciones,
+        operadoresResp,
+        actividades
+        ] = await Promise.all([
+        axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
+        axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
+        operador.findAll({ order: [['nombre', 'ASC']] }),
+        liquidacion.findAll({
+            attributes: [
+            'operador',
+            [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
+            ],
+            where: { estado: 'COMPLETO' },
+            group: ['operador']
+        }),
+        axios.get('https://servidorlocal.ngrok.app/listadoOperadores'),
+        historico.findAll({
+            where: {
+            fecha: { [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')] }
+            },
+            order: [['fecha', 'DESC']]
+        })
+        ]);
 
-        try {
-            const response = await axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos');
-            listaViajes = response.data.Registros || [];
-        }
-        catch (err) {
-            listaViajes = [];
-        }
+        // Mapeos para acceso rápido
+        const empleadosMap = Object.fromEntries(empleadosResp.data.Empleados.map(e => [e.numero_empleado, e]));
+        const tractosMap = Object.fromEntries(tractosAsignados.map(t => [t.nombre, t]));
+        const liquidacionesMap = Object.fromEntries(ultimasLiquidaciones.map(l => [l.operador, l]));
+        const viajesMap = Object.fromEntries(viajesResp.data.Registros.map(v => [v.operador, v]));
 
-        try {
-            const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
-            empleadosExternos = response.data.Empleados || [];
-        }
-        catch (err) {
-            empleadosExternos = [];
-        }
+        const operadores = operadoresResp.data.Registros || [];
 
-        try {
-            listaTractosAsignados = await operador.findAll({
-                order: [
-                    ['nombre', 'ASC']
-                ]
-            });
-        }
-        catch (err) {
-            listaTractosAsignados = [];
-        }
+        const operadoresConActividades = operadores.map(op => {
+        const nombre = op.OPERADOR_NOMBRE;
+        const numEmpleado = Number(op.operador_num_externo);
+        const actividadesDelOperador = actividades.filter(a => a.nombre === nombre);
+        const empleado = empleadosMap[numEmpleado] || {};
+        const tracto = tractosMap[nombre] || {};
+        const liquidacion = liquidacionesMap[nombre] || {};
+        const viajes = viajesMap[nombre] || {};
 
-        try {
-            listaUltimaLiquidacion = await liquidacion.findAll({
-                attributes: [
-                    'operador',
-                    [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
-                ],
-                where: {
-                    estado: 'COMPLETO'
-                },
-                group: ['operador'],
-                order: [
-                    ['operador', 'DESC']
-                ]
-            });
-            
-        }
-        catch (err) {
-            listaUltimaLiquidacion = [];
-        }
+        const avatar = empleado.avatar
+            ? `https://api-rh.tlea.online/${empleado.avatar}`
+            : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
 
-        try {
-            const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
-            const operadores = operadoresResponse.data.Registros || [];
+        const registros = fechasMes.map((fecha, i) => {
+            const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+            return {
+            titulo: `Día ${i + 1}: ${fecha}`,
+            numeroEmpleado: op.operador_num_externo,
+            operador: nombre,
+            unidad: op.operador_terminal,
+            actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad?.actividad || "",
+            comentarios: actividad?.comentarios || "",
+            id_historico: actividad?.id_historico || null
+            };
+        });
 
-            const actividades = await historico.findAll({
-                where: {
-                    fecha: {
-                        [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
-                    }
-                },
-                order: [
-                    ['fecha', 'DESC']
-                ]
-            });
+        return {
+            ...op,
+            avatar,
+            tractoTitular: tracto.tracto_titular || "",
+            tractoActual: tracto.tracto_actual || "",
+            esconflictivo: tracto.conflictivo || 0,
+            conexperiencia: tracto.experiencia || 0,
+            conclase: tracto.clase || '',
+            conlicencia: tracto.licencia || '',
+            viajesLargos: viajes.viajeLargo || 0,
+            viajesCortos: viajes.viajeCorto || 0,
+            fechaliquidacion: liquidacion.fecha_pago || "",
+            registros
+        };
+        });
 
-            const operadoresConActividades = operadores.map(op => {
-                const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
-                const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
-                const tractos = listaTractosAsignados.find(e => e.nombre == op.OPERADOR_NOMBRE);
-                const ultimaLiquidacion = listaUltimaLiquidacion.find(e => e.operador == op.OPERADOR_NOMBRE);
-                const viajes = listaViajes.find(e => e.operador == op.OPERADOR_NOMBRE);
-
-                const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
-                const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
-                const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
-                const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
-                const conexperiencia = tractos && tractos.experiencia ? tractos.experiencia : 0;
-                const conclase = tractos && tractos.clase ? tractos.clase : '';
-                const conlicencia = tractos && tractos.licencia ? tractos.licencia : '';
-                const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
-                
-                const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
-                const viajesCortos = viajes && viajes.viajeCorto ? viajes.viajeCorto : 0;
-
-                const registros = Array.from({ length: daysInMonth }, (_, index) => {
-                    const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
-                    const titulo = `Día ${index + 1}: ${moment(fecha).format('YYYY-MM-DD')}`;
-                    const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
-
-                    return {
-                        titulo,
-                        numeroEmpleado: op.operador_num_externo,
-                        operador: op.OPERADOR_NOMBRE,
-                        unidad: op.operador_terminal,
-                        actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad ? actividad.actividad : "",
-                        comentarios: actividad ? actividad.comentarios : "",
-                        id_historico: actividad ? actividad.id_historico : null
-                    };
-                });
-
-                return {
-                    ...op,
-                    avatar,
-                    tractoTitular,
-                    tractoActual,
-                    esconflictivo,
-                    conexperiencia,
-                    conclase,
-                    conlicencia,
-                    viajesLargos,
-                    viajesCortos,
-                    fechaliquidacion,
-                    registros
-                };
-            });
-
-            res.json({
-                OK: true,
-                Operadores: operadoresConActividades
-            });
-        }
-        catch (error) {
-            res.status(412).json({
-                OK: false,
-                msg: error.message
-            });
-        }
+        res.json({ OK: true, Operadores: operadoresConActividades });
+    } catch (err) {
+        res.status(500).json({ OK: false, msg: err.message });
     }
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // app.obtenerOperadoresConHistorico = async (req, res) => {
+    //     const year = req.query.year ? parseInt(req.query.year) : moment().year();
+    //     const month = req.query.month ? parseInt(req.query.month) : moment().month() + 1; // month is 1-based for users
+
+    //     const monthPadded = month.toString().padStart(2, '0');
+    //     const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
+    //     const endOfMonth = moment(startOfMonth).endOf('month').startOf('day');
+    //     const daysInMonth = endOfMonth.date();
+
+    //     let empleadosExternos = [];
+    //     let listaTractosAsignados = [];
+    //     let listaUltimaLiquidacion = [];
+    //     let listaViajes = [];
+
+    //     try {
+    //         const response = await axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos');
+    //         listaViajes = response.data.Registros || [];
+    //     }
+    //     catch (err) {
+    //         listaViajes = [];
+    //     }
+
+    //     try {
+    //         const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
+    //         empleadosExternos = response.data.Empleados || [];
+    //     }
+    //     catch (err) {
+    //         empleadosExternos = [];
+    //     }
+
+    //     try {
+    //         listaTractosAsignados = await operador.findAll({
+    //             order: [
+    //                 ['nombre', 'ASC']
+    //             ]
+    //         });
+    //     }
+    //     catch (err) {
+    //         listaTractosAsignados = [];
+    //     }
+
+    //     try {
+    //         listaUltimaLiquidacion = await liquidacion.findAll({
+    //             attributes: [
+    //                 'operador',
+    //                 [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
+    //             ],
+    //             where: {
+    //                 estado: 'COMPLETO'
+    //             },
+    //             group: ['operador'],
+    //             order: [
+    //                 ['operador', 'DESC']
+    //             ]
+    //         });
+            
+    //     }
+    //     catch (err) {
+    //         listaUltimaLiquidacion = [];
+    //     }
+
+    //     try {
+    //         const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
+    //         const operadores = operadoresResponse.data.Registros || [];
+
+    //         const actividades = await historico.findAll({
+    //             where: {
+    //                 fecha: {
+    //                     [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
+    //                 }
+    //             },
+    //             order: [
+    //                 ['fecha', 'DESC']
+    //             ]
+    //         });
+
+    //         const operadoresConActividades = operadores.map(op => {
+    //             const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
+    //             const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
+    //             const tractos = listaTractosAsignados.find(e => e.nombre == op.OPERADOR_NOMBRE);
+    //             const ultimaLiquidacion = listaUltimaLiquidacion.find(e => e.operador == op.OPERADOR_NOMBRE);
+    //             const viajes = listaViajes.find(e => e.operador == op.OPERADOR_NOMBRE);
+
+    //             const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+    //             const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
+    //             const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
+    //             const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
+    //             const conexperiencia = tractos && tractos.experiencia ? tractos.experiencia : 0;
+    //             const conclase = tractos && tractos.clase ? tractos.clase : '';
+    //             const conlicencia = tractos && tractos.licencia ? tractos.licencia : '';
+    //             const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
+                
+    //             const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
+    //             const viajesCortos = viajes && viajes.viajeCorto ? viajes.viajeCorto : 0;
+
+    //             const registros = Array.from({ length: daysInMonth }, (_, index) => {
+    //                 const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
+    //                 const titulo = `Día ${index + 1}: ${moment(fecha).format('YYYY-MM-DD')}`;
+    //                 const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+
+    //                 return {
+    //                     titulo,
+    //                     numeroEmpleado: op.operador_num_externo,
+    //                     operador: op.OPERADOR_NOMBRE,
+    //                     unidad: op.operador_terminal,
+    //                     actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad ? actividad.actividad : "",
+    //                     comentarios: actividad ? actividad.comentarios : "",
+    //                     id_historico: actividad ? actividad.id_historico : null
+    //                 };
+    //             });
+
+    //             return {
+    //                 ...op,
+    //                 avatar,
+    //                 tractoTitular,
+    //                 tractoActual,
+    //                 esconflictivo,
+    //                 conexperiencia,
+    //                 conclase,
+    //                 conlicencia,
+    //                 viajesLargos,
+    //                 viajesCortos,
+    //                 fechaliquidacion,
+    //                 registros
+    //             };
+    //         });
+
+    //         res.json({
+    //             OK: true,
+    //             Operadores: operadoresConActividades
+    //         });
+    //     }
+    //     catch (error) {
+    //         res.status(412).json({
+    //             OK: false,
+    //             msg: error.message
+    //         });
+    //     }
+    // }
 
     app.obtenerOperadoresConHistoricoConFiltro = async (req, res) => {
         const year = req.params.year ? parseInt(req.params.year) : moment().year();
@@ -923,6 +997,50 @@ module.exports = app => {
             });
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     app.actualizarOperador = (req, res) => {
         let body = req.body;
