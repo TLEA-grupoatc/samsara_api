@@ -742,6 +742,42 @@ module.exports = app => {
 
 
 
+    app.operadoresCriticosUL  = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+            
+            const today = new Date();
+            const fifteenDaysAgo = new Date();
+            fifteenDaysAgo.setDate(today.getDate() - 14);
+
+            yearactual = moment(today).format('YYYY');
+
+            let result = await pool.request().query(
+                "SELECT OP.OPERADOR_NOMBRE as operador, MAX(BT.FECHA_BITACORA) AS fechaBitacora, DATEDIFF(DAY, MAX(BT.FECHA_BITACORA), GETDATE()) AS diasDesdeUltimaBitacora FROM bitacoras AS BT \
+                INNER JOIN vbitacora_detalle AS BD ON BD.clave_bitacora = BT.clave_bitacora \
+                INNER JOIN voperador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
+                WHERE BD.KM > 100 AND BT.FECHA_BITACORA > '" + moment(yearactual + '-01-01').format('YYYY-MM-DD') + "T23:59:59.000Z' \
+                GROUP BY OP.OPERADOR_NOMBRE ORDER BY OP.OPERADOR_NOMBRE"
+            );
+            // WHERE BT.STATUS_BITACORA IN (0,1) \
+            // GROUP BY OP.OPERADOR_NOMBRE \
+            // ;"
+
+            sql.close();
+            
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+
 
 
 

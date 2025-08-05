@@ -66,4 +66,31 @@ module.exports = app => {
 
 
     app.get('/obtenerViajesCortsLargos', ca.obtenerViajesCortsLargos);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.get('/operadoresCriticosUL', ca.operadoresCriticosUL);
+
 }
