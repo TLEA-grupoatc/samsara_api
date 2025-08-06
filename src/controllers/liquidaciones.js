@@ -3541,6 +3541,63 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+    app.operadoresCriticosLiquidaciones = (req, res) => {
+        liquidacion.findAll({
+            attributes: [
+                'operador',
+                [liquidacion.sequelize.fn('DATEDIFF', liquidacion.sequelize.fn('NOW'), liquidacion.sequelize.col('fecha_pago')), 'dias']
+            ],
+            where: {
+                estado: 'COMPLETO'
+            },
+            group: ['operador']
+        }).then(result => {
+            res.json({
+                OK: true,
+                Resumen : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     function getDatesArray(startDate, endDate) {
         const dates = [];
         let currentDate = new Date(startDate);
