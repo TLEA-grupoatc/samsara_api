@@ -351,14 +351,21 @@ module.exports = app => {
             '281474997272294'
         ];
         let allResults = [];
+
         const pstartDate = moment().subtract(7, 'days').format('YYYY-MM-DD');
         const pendDate = moment().format('YYYY-MM-DD');
         const startDate = pstartDate.toString() + 'T00:00:00Z';
         const endDate = pendDate.toString() + 'T23:59:59Z';
 
-        for (let i = 0; i < listatractos.length; i += 3) {
-            const batch = listatractos.slice(i, i + 3);
+        var vueltas = 0;
+
+        for(let i = 0; i < listatractos.length; i += 1) {
+            vueltas += 1;
+            const batch = listatractos.slice(i, i + 1);
+
             try {
+                console.log(batch);
+
                 const params = {
                     vehicleIds: batch,
                     startTime: startDate,
@@ -368,25 +375,27 @@ module.exports = app => {
                 const response = await Samsara.getEngineImmobilizerStates(params);
 
                 let grouped = {};
-                if (response.data && Array.isArray(response.data.data)) {
+                if(response.data && Array.isArray(response.data.data)) {
                     response.data.data.forEach(item => {
                         const id = item.vehicleId;
                         const fecha = new Date(item.happenedAtTime);
-                        if (!grouped[id] || new Date(grouped[id].happenedAtTime) < fecha) {
+                        if(!grouped[id] || new Date(grouped[id].happenedAtTime) < fecha) {
                             grouped[id] = item;
                         }
                     });
                 }
 
                 allResults.push(...Object.values(grouped));
-                console.log(batch);
-            } catch (error) {
+            }
+            catch (error) {
                 console.error(`Error con tractos ${batch.join(',')}:`, error);
             }
 
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            if(vueltas % 5 === 0) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         }
+
 
         res.json({
             OK: true,
