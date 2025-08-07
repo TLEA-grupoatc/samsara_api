@@ -3557,7 +3557,7 @@ module.exports = app => {
         liquidacion.findAll({
             attributes: [
                 'operador',
-                [liquidacion.sequelize.fn('DATEDIFF', liquidacion.sequelize.fn('NOW'), liquidacion.sequelize.col('fecha_pago')), 'dias']
+                [liquidacion.sequelize.fn('DATEDIFF', liquidacion.sequelize.fn('NOW'), liquidacion.sequelize.col('fecha_pago')), 'diasDesdeUltimoPago']
             ],
             where: {
                 estado: 'COMPLETO'

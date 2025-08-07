@@ -184,100 +184,89 @@ module.exports = app => {
 
 
     app.obtenerOperadoresConHistorico = async (req, res) => {
-    const year = parseInt(req.query.year) || moment().year();
-    const month = parseInt(req.query.month) || moment().month() + 1;
+        const year = parseInt(req.query.year) || moment().year();
+        const month = parseInt(req.query.month) || moment().month() + 1;
 
-    const monthStr = month.toString().padStart(2, '0');
-    const startOfMonth = moment(`${year}-${monthStr}-01`).startOf('day');
-    const endOfMonth = moment(startOfMonth).endOf('month');
-    const daysInMonth = endOfMonth.date();
-    const fechasMes = Array.from({ length: daysInMonth }, (_, i) =>
-        moment(startOfMonth).add(i, 'days').format('YYYY-MM-DD')
-    );
+        const monthStr = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthStr}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month');
+        const daysInMonth = endOfMonth.date();
+        const fechasMes = Array.from({ length: daysInMonth }, (_, i) => moment(startOfMonth).add(i, 'days').format('YYYY-MM-DD'));
 
-    try {
-        const [
-        viajesResp,
-        empleadosResp,
-        tractosAsignados,
-        ultimasLiquidaciones,
-        operadoresResp,
-        actividades
-        ] = await Promise.all([
-        axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
-        axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
-        operador.findAll({ order: [['nombre', 'ASC']] }),
-        liquidacion.findAll({
-            attributes: [
-            'operador',
-            [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
-            ],
-            where: { estado: 'COMPLETO' },
-            group: ['operador']
-        }),
-        axios.get('https://servidorlocal.ngrok.app/listadoOperadores'),
-        historico.findAll({
-            where: {
-            fecha: { [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')] }
-            },
-            order: [['fecha', 'DESC']]
-        })
-        ]);
+        try {
+            const [viajesResp, empleadosResp, tractosAsignados, ultimasLiquidaciones, operadoresResp, actividades] = await Promise.all([
+                axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
+                axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
+                operador.findAll({ order: [['nombre', 'ASC']] }),
+                liquidacion.findAll({
+                    attributes: [
+                        'operador',
+                        [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
+                    ],
+                    where: { estado: 'COMPLETO' },
+                    group: ['operador']
+                }),
+                axios.get('https://servidorlocal.ngrok.app/listadoOperadores'),
+                historico.findAll({
+                    where: {
+                        fecha: { [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')] }
+                    },
+                    order: [['fecha', 'DESC']]
+                })
+            ]);
 
-        // Mapeos para acceso rápido
-        const empleadosMap = Object.fromEntries(empleadosResp.data.Empleados.map(e => [e.numero_empleado, e]));
-        const tractosMap = Object.fromEntries(tractosAsignados.map(t => [t.nombre, t]));
-        const liquidacionesMap = Object.fromEntries(ultimasLiquidaciones.map(l => [l.operador, l]));
-        const viajesMap = Object.fromEntries(viajesResp.data.Registros.map(v => [v.operador, v]));
+            const empleadosMap = Object.fromEntries(empleadosResp.data.Empleados.map(e => [e.numero_empleado, e]));
+            const tractosMap = Object.fromEntries(tractosAsignados.map(t => [t.nombre, t]));
+            const liquidacionesMap = Object.fromEntries(ultimasLiquidaciones.map(l => [l.operador, l]));
+            const viajesMap = Object.fromEntries(viajesResp.data.Registros.map(v => [v.operador, v]));
 
-        const operadores = operadoresResp.data.Registros || [];
+            const operadores = operadoresResp.data.Registros || [];
 
-        const operadoresConActividades = operadores.map(op => {
-        const nombre = op.OPERADOR_NOMBRE;
-        const numEmpleado = Number(op.operador_num_externo);
-        const actividadesDelOperador = actividades.filter(a => a.nombre === nombre);
-        const empleado = empleadosMap[numEmpleado] || {};
-        const tracto = tractosMap[nombre] || {};
-        const liquidacion = liquidacionesMap[nombre] || {};
-        const viajes = viajesMap[nombre] || {};
+            const operadoresConActividades = operadores.map(op => {
+            const nombre = op.OPERADOR_NOMBRE;
+            const numEmpleado = Number(op.operador_num_externo);
+            const actividadesDelOperador = actividades.filter(a => a.nombre === nombre);
+            const empleado = empleadosMap[numEmpleado] || {};
+            const tracto = tractosMap[nombre] || {};
+            const liquidacion = liquidacionesMap[nombre] || {};
+            const viajes = viajesMap[nombre] || {};
 
-        const avatar = empleado.avatar
-            ? `https://api-rh.tlea.online/${empleado.avatar}`
-            : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+            const avatar = empleado.avatar ? `https://api-rh.tlea.online/${empleado.avatar}` : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
 
-        const registros = fechasMes.map((fecha, i) => {
-            const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+            const registros = fechasMes.map((fecha, i) => {
+                const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+                return {
+                    titulo: `Día ${i + 1}: ${fecha}`,
+                    numeroEmpleado: op.operador_num_externo,
+                    operador: nombre,
+                    unidad: op.operador_terminal,
+                    actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad?.actividad || "",
+                    comentarios: actividad?.comentarios || "",
+                    id_historico: actividad?.id_historico || null
+                };
+            });
+
             return {
-            titulo: `Día ${i + 1}: ${fecha}`,
-            numeroEmpleado: op.operador_num_externo,
-            operador: nombre,
-            unidad: op.operador_terminal,
-            actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad?.actividad || "",
-            comentarios: actividad?.comentarios || "",
-            id_historico: actividad?.id_historico || null
-            };
-        });
+                    ...op,
+                    avatar,
+                    tractoTitular: tracto.tracto_titular || "",
+                    tractoActual: tracto.tracto_actual || "",
+                    esconflictivo: tracto.conflictivo || 0,
+                    conexperiencia: tracto.experiencia || 0,
+                    conclase: tracto.clase || '',
+                    conlicencia: tracto.licencia || '',
+                    viajesLargos: viajes.viajeLargo || 0,
+                    viajesCortos: viajes.viajeCorto || 0,
+                    fechaliquidacion: liquidacion.fecha_pago || "",
+                    registros
+                };
+            });
 
-        return {
-            ...op,
-            avatar,
-            tractoTitular: tracto.tracto_titular || "",
-            tractoActual: tracto.tracto_actual || "",
-            esconflictivo: tracto.conflictivo || 0,
-            conexperiencia: tracto.experiencia || 0,
-            conclase: tracto.clase || '',
-            conlicencia: tracto.licencia || '',
-            viajesLargos: viajes.viajeLargo || 0,
-            viajesCortos: viajes.viajeCorto || 0,
-            fechaliquidacion: liquidacion.fecha_pago || "",
-            registros
-        };
-        });
-
-        res.json({ OK: true, Operadores: operadoresConActividades });
-    } catch (err) {
-        res.status(500).json({ OK: false, msg: err.message });
-    }
+            res.json({ OK: true, Operadores: operadoresConActividades });
+        }
+        catch (err) {
+            res.status(500).json({ OK: false, msg: err.message });
+        }
     };
 
 
