@@ -3599,7 +3599,7 @@ module.exports = app => {
             ],
             where: {
                 estado: 'COMPLETO',
-                fecha: {
+                fecha_pago: {
                     [Op.between]: [
                         moment(`${anio}-01-01`).format('YYYY-MM-DD'),
                         moment(`${anio}-12-31`).format('YYYY-MM-DD')
@@ -3607,7 +3607,7 @@ module.exports = app => {
                 }
             },
             group: ['mes', 'operador'],
-            order: [[liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha')), 'ASC']]
+            order: [[liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha_pago')), 'ASC']]
         }).then(result => {
             res.json({
                 OK: true,

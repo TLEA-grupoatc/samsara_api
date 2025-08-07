@@ -257,7 +257,7 @@ module.exports = app => {
     
     
     
-    app.get('/operadoresPromedioPago', verificarToken, Liq.operadoresPromedioPago);
+    app.get('/operadoresPromedioPago', Liq.operadoresPromedioPago);
 
 
 
