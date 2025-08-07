@@ -231,7 +231,7 @@ module.exports = app => {
             const liquidacion = liquidacionesMap[nombre] || {};
             const viajes = viajesMap[nombre] || {};
 
-            const avatar = empleado.avatar ? `https://api-rh.tlea.online/${empleado.avatar}` : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+            const avatar = empleado?.avatar ? `https://api-rh.tlea.online/${empleado.avatar}` : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
 
             const registros = fechasMes.map((fecha, i) => {
                 const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);

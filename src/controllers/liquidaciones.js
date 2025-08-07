@@ -3586,6 +3586,75 @@ module.exports = app => {
 
 
 
+    app.operadoresPromedioPago = async (req, res) => {
+        const anio = req.params.anio || moment().year();
+
+        liquidacion.findAll({
+            attributes: [
+                'operador',
+                [liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha_pago')), 'mes'],
+                [liquidacion.sequelize.fn('SUM', liquidacion.sequelize.col('monto')), 'totalliquidacion'],
+                [liquidacion.sequelize.literal(`DATEDIFF(MAX(fecha_pago), MIN(fecha_pago)) / NULLIF(COUNT(fecha_pago) - 1, 0)`), 'promedio_dias_entre_pagos']
+            ],
+            where: {
+                estado: 'COMPLETO',
+                fecha: {
+                    [Op.between]: [
+                        moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                        moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                    ],
+                }
+            },
+            group: ['mes', 'operador'],
+            order: [[liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha')), 'ASC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Resumen : result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
 
 
