@@ -751,15 +751,12 @@ module.exports = app => {
             yearactual = moment(today).format('YYYY');
 
             let result = await pool.request().query(
-                "SELECT OP.OPERADOR_NOMBRE as operador, MAX(BT.FECHA_BITACORA) AS fechaBitacora, DATEDIFF(DAY, MAX(BT.FECHA_BITACORA), GETDATE()) AS diasDesdeUltimaBitacora FROM bitacoras AS BT \
+                "SELECT OP.OPERADOR_NOMBRE as operador, MAX(OP.negocio_clave) AS unidad, MAX(BT.FECHA_BITACORA) AS fechaBitacora, DATEDIFF(DAY, MAX(BT.FECHA_BITACORA), GETDATE()) AS diasDesdeUltimaBitacora FROM bitacoras AS BT \
                 INNER JOIN vbitacora_detalle AS BD ON BD.clave_bitacora = BT.clave_bitacora \
                 INNER JOIN voperador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
                 WHERE BD.KM > 100 AND BT.FECHA_BITACORA > '" + moment(yearactual + '-01-01').format('YYYY-MM-DD') + "T23:59:59.000Z' AND OP.STATUS = 1 \
                 GROUP BY OP.OPERADOR_NOMBRE ORDER BY OP.OPERADOR_NOMBRE"
             );
-            // WHERE BT.STATUS_BITACORA IN (0,1) \
-            // GROUP BY OP.OPERADOR_NOMBRE \
-            // ;"
 
             sql.close();
             

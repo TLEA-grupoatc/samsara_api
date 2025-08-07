@@ -3557,14 +3557,14 @@ module.exports = app => {
         liquidacion.findAll({
             attributes: [
                 'operador',
-                // [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fechaPago'],
-                [Sequelize.fn('DATEDIFF', Sequelize.fn('NOW'), Sequelize.col('fecha_pago')), 'diasDesdeUltimoPago']
+                [Sequelize.fn('MAX', Sequelize.col('terminal')), 'unidad'],
+                [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fechaPago'],
+                [Sequelize.literal('DATEDIFF(NOW(), MAX(fecha_pago))'), 'diasDesdeUltimoPago']
             ],
             where: {
                 estado: 'COMPLETO'
             },
-            group: ['operador'],
-            order: ['operador']
+            group: ['operador']
         }).then(result => {
             res.json({
                 OK: true,
