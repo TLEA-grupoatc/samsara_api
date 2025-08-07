@@ -251,7 +251,7 @@ module.exports = app => {
     app.get('/obtenerRechazosdePrenominasXPrenomina/:id_prenomina', Liq.obtenerRechazosdePrenominasXPrenomina);
     
     
-    app.get('/operadoresCriticosLiquidaciones', Liq.operadoresCriticosLiquidaciones);
+    app.get('/operadoresCriticosLiquidaciones', verificarToken, Liq.operadoresCriticosLiquidaciones);
     
 
 
