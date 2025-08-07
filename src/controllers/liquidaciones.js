@@ -3592,6 +3592,7 @@ module.exports = app => {
         liquidacion.findAll({
             attributes: [
                 'operador',
+                [liquidacion.sequelize.fn('MAX', liquidacion.sequelize.col('terminal')), 'unidad'],
                 [liquidacion.sequelize.fn('MONTH', liquidacion.sequelize.col('fecha_pago')), 'mes'],
                 [liquidacion.sequelize.fn('SUM', liquidacion.sequelize.col('monto')), 'totalliquidacion'],
                 [liquidacion.sequelize.literal(`DATEDIFF(MAX(fecha_pago), MIN(fecha_pago)) / NULLIF(COUNT(fecha_pago) - 1, 0)`), 'promedio_dias_entre_pagos']
