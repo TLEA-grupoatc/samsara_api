@@ -2414,33 +2414,31 @@ module.exports = app => {
         try {
             const results = await historico.findAll({
                 attributes: [
-                    'numero_empleado',
                     'nombre',
                     [Sequelize.fn('MAX', Sequelize.col('fecha')), 'fecha_ultima']
                 ],
-                group: ['numero_empleado', 'nombre'],
+                group: ['nombre'],
                 raw: true
             });
 
             const finalResults = await Promise.all(
                 results.map(async r => {
                     const ultimoRegistro = await historico.findOne({
+                        attributes: ['actividad'],
                         where: {
-                            numero_empleado: r.numero_empleado,
+                            nombre: r.nombre,
                             fecha: r.fecha_ultima
                         },
                         order: [['fecha', 'DESC']],
-                        attributes: ['actividad']
                     });
 
                     return {
-                        numero_empleado: r.numero_empleado,
                         nombre: r.nombre,
                         fecha_ultima: r.fecha_ultima,
                         actividad_ultima: ultimoRegistro ? ultimoRegistro.actividad : null
                     };
                 })
-            );p
+            );
 
             res.json({
                 OK: true,
