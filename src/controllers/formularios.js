@@ -2424,7 +2424,7 @@ module.exports = app => {
             const finalResults = await Promise.all(
                 results.map(async r => {
                     const ultimoRegistro = await historico.findOne({
-                        attributes: ['actividad'],
+                        attributes: ['unidad', 'actividad'],
                         where: {
                             nombre: r.nombre,
                             fecha: r.fecha_ultima
@@ -2435,6 +2435,7 @@ module.exports = app => {
                     return {
                         nombre: r.nombre,
                         fecha_ultima: r.fecha_ultima,
+                        unidad: ultimoRegistro ? ultimoRegistro.unidad : null,
                         actividad_ultima: ultimoRegistro ? ultimoRegistro.actividad : null
                     };
                 })
