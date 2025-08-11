@@ -666,46 +666,64 @@ module.exports = app => {
             const check_id_agenda = id_agenda === 'null' ? null : id_agenda
             
             if(check_id_agenda){
-                const reprogramacionAnteriorCheck = await ReprogramacionesArribos.findAll({
+                // Trae solo la última reprogramación (o null)
+                const reprogramacionAnteriorCheck = await ReprogramacionesArribos.findOne({
                     where: { fk_agenda: check_id_agenda },
-                    attributes: ['id_reprogramacion_arribo'],
+                    attributes: ['id_reprogramacion_arribo', 'fecha_arribo_reprogramado'],
                     order: [['id_reprogramacion_arribo', 'DESC']],
-                    limit: 1,
-                    transaction: t
+                    transaction: t,
+                    raw: true,
                 });
 
-                // console.log(reprogramacionAnteriorCheck)
-                const fecha_reprogramacion = moment(reprogramacionAnteriorCheck[0]?.dataValues?.fecha_arribo_reprogramado).format('YYYY-MM-DD');
-                const fecha_entrada_unidad = moment(fecha_entrada).format('YYYY-MM-DD');
-                const checkCumplimiento = moment(fecha_reprogramacion).isSameOrBefore(fecha_entrada_unidad);
+                const Programacion = await Agenda.findByPk(check_id_agenda, {
+                    attributes: ['id_agenda', 'fecha_arribo_programado'],
+                    transaction: t,
+                    raw: true,
+                });
+
+                const fmt = 'YYYY-MM-DD HH:mm:ss';
+
+                const fecha_programacion = Programacion?.fecha_arribo_programado
+                ? moment(Programacion.fecha_arribo_programado, fmt)
+                : null;
+
+                const fecha_reprogramacion = reprogramacionAnteriorCheck?.fecha_arribo_reprogramado
+                ? moment(reprogramacionAnteriorCheck.fecha_arribo_reprogramado, fmt)
+                : null;
+
+                const fecha_entrada_unidad = moment(fecha_entrada, );
+
+                const checkCumplimientoProgramacion =  !!(fecha_programacion && fecha_entrada_unidad.isSameOrBefore(fecha_programacion, 'day'));
+                const checkCumplimientoReprogramacion = !!(fecha_reprogramacion && fecha_entrada_unidad.isSameOrBefore(fecha_reprogramacion, 'day'));
                 
-                if(reprogramacionAnteriorCheck.length > 0){
+                // console.log({ fecha_programacion, fecha_reprogramacion, fecha_entrada_unidad });
+                // console.log({ checkCumplimientoProgramacion, checkCumplimientoReprogramacion });
 
-                    const id_reprogramacion_arribo = reprogramacionAnteriorCheck[0]?.dataValues?.id_reprogramacion_arribo;
-                    
-                    if(checkCumplimiento){
-                        await ReprogramacionesArribos.update(
-                            { cumplimiento_arribo_reprogramacion: 'cumplio_arribo' },
-                            {
-                                where: {id_reprogramacion_arribo: id_reprogramacion_arribo},
-                                transaction: t
-                            }
-                        )
-                    }
+                
+                if (reprogramacionAnteriorCheck) {
+                    const id_reprogramacion_arribo = reprogramacionAnteriorCheck.id_reprogramacion_arribo;
+
+                    let cumplimiento = checkCumplimientoReprogramacion ? 'cumplio_arribo' : 'incumplio_arribo';
+
+                    await ReprogramacionesArribos.update(
+                        { cumplimiento_arribo_reprogramacion: cumplimiento },
+                        {
+                            where: { id_reprogramacion_arribo },
+                            transaction: t
+                        }
+                    );
+                } else {
+                    let cumplimiento = checkCumplimientoProgramacion ? 'cumplio_arribo' : 'incumplio_arribo';
+
+                    await Agenda.update(
+                        { cumplimiento_arribo: cumplimiento },
+                        {
+                            where: { id_agenda: check_id_agenda },
+                            transaction: t
+                        }
+                    );
                 }
 
-                if(reprogramacionAnteriorCheck.length === 0){
-                    if(checkCumplimiento){
-                        // console.log(id_agenda)
-                        await Agenda.update(
-                            { cumplimiento_arribo: 'cumplio_arribo' },
-                            {
-                                where:{id_agenda: check_id_agenda},
-                                transaction: t
-                            }
-                        )
-                    }
-                }
 
                 pickandupData = {
                     fk_entrada: EntradaCreada.id_entrada,

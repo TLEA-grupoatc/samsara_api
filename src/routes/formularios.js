@@ -98,8 +98,9 @@ module.exports = app => {
 
     app.get('/obtenerScoreCardOperador/:operador/:mes', verificarToken, Fo.obtenerScoreCardOperador);
 
-
-
+    
+    
+    app.get('/obtenerUltimaActividadOperador', Fo.obtenerUltimaActividadOperador);
 
 
 
@@ -115,4 +116,5 @@ module.exports = app => {
     app.get('/obtenerCronogramaDanosUnidadOperador/:year/:month', verificarToken, Fo.obtenerCronogramaDanosUnidadOperador);
     
     app.get('/obtenerCronogramaDopingsOperador/:year/:month', verificarToken, Fo.obtenerCronogramaDopingsOperador);
+    
 }

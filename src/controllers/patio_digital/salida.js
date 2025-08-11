@@ -47,6 +47,9 @@ module.exports = app => {
                     fk_salida: {
                         [Op.eq]: null
                     },
+                    estatus: {
+                        [Op.ne]: 'salida_salida'
+                    },
                     base: base
                 },
                 include: [
