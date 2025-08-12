@@ -15,31 +15,14 @@ module.exports = app => {
     const alerta = app.database.models.Alertas;
     const seguimiento = app.database.models.Seguimientos;
     const ope = app.database.models.Operadores;
-        const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
+    const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
     const axios = require('axios');
 
-    const { parseISO, format,  startOfWeek, differenceInCalendarWeeks, es } = require('date-fns');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    const { parseISO, format,  startOfWeek, differenceInCalendarWeeks, endOfDay, es } = require('date-fns');
 
     app.reporteInmovilizadores = async (req, res) => {
         var listatractos = [
@@ -404,24 +387,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.obtenerReporteUltimaLocacion = async (req, res) => {
         Samsara.getVehicleStats({
             tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
@@ -474,8 +439,6 @@ module.exports = app => {
             });
         });
     }
-
-
 
     app.obtenerReporteULYI = async (req, res) => {
         try {
@@ -561,23 +524,6 @@ module.exports = app => {
             });
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     app.obtenerParaGuardarUnidades = (req, res) => {
         var tractos = []
@@ -785,7 +731,6 @@ module.exports = app => {
     cron.schedule('02 16 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 17 * * *', () => { enlazarUnidadAOperadorSamsara(); });
 
-
     app.obtenerVehiculos = (req, res) => {
         unidad.findAll({
             order: [
@@ -803,29 +748,6 @@ module.exports = app => {
             });
         });
     }
-
-    // app.obtenerVehiculos = async (req, res) => {
-    //     try {
-    //         const tractosResult = await Samsara.listVehicles({ limit: '512' });
-    //         const tractos = tractosResult['data']['data'].map(element => {
-    //             if(element.name && element.name.startsWith('C-')) {
-    //                 element.name = element.name.replace('C-', 'C');
-    //             }
-    //             return {
-    //                 id_unidad: element.id,
-    //                 name: element.name
-    //             };
-    //         });
-    //         res.json({
-    //             OK: true,
-    //             Unidades: tractos
-    //         });
-    //     } catch (error) {
-    //         res.status(412).json({
-    //             msg: error.message
-    //         });
-    //     }
-    // }
 
     app.obtenerVehiculosxTag = (req, res) => {
         unidad.findAll({
@@ -1005,7 +927,6 @@ module.exports = app => {
             });
         });
     }
-
 
     app.crearDocumentoUnidad = (req, res) => {
         let body = req.body;
@@ -1276,9 +1197,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
 
     app.obtenerDetalleReporte = (req, res) => {
         reporte.findAll({
@@ -1738,48 +1656,128 @@ module.exports = app => {
         });
     }
 
-    app.obtenerGraficaGobernadas = async (req, res) => {
-        var today = new Date();
-        var year = today.getFullYear();
-        var resultadounidades  = [];
-        var groupedByType;
 
-        await unidad.findAll({
-            where: {
-                fechagobernada: {
-                    [Op.startsWith]: year
-                }
-            },
-            order: [
-                ['name', 'DESC']
-            ],
-        }).then(result => {resultadounidades = result})
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
+
+
+
+    // app.obtenerGraficaGobernadas = async (req, res) => {
+    //     var today = new Date();
+    //     var year = today.getFullYear();
+    //     var resultadounidades  = [];
+    //     var groupedByType;
+
+    //     await unidad.findAll({
+    //         where: {
+    //             fechagobernada: {
+    //                 [Op.startsWith]: year
+    //             }
+    //         },
+    //         order: [
+    //             ['name', 'DESC']
+    //         ],
+    //     }).then(result => {resultadounidades = result})
+    //     .catch(error => {
+    //         res.status(412).json({
+    //             msg: error.message
+    //         });
+    //     });
+
+    //     groupedByType = resultadounidades.reduce((acc, registro) => {
+    //         const fecha = parseISO(registro.fechagobernada + ' 00:00:00');
+    //         const startOfCurrentWeek = startOfWeek(fecha, { weekStartsOn: 1 });
+    //         const weekNumber = differenceInCalendarWeeks(startOfCurrentWeek, new Date(year, 0, 1), { weekStartsOn: 1 });
+            
+    //         if(!acc[weekNumber]) {
+    //             acc[weekNumber] = [];
+    //         }
+
+    //         acc[weekNumber].push(registro);
+            
+    //         return acc;
+    //     }, {});
+
+
+    //     res.json({
+    //         OK: true,
+    //         Grafica: groupedByType
+    //     })
+    // }
+
+
+
+
+
+// Asegúrate de tener estos imports/utilidades
+
+
+    app.obtenerGraficaGobernadas = async (req, res) => {
+    try {
+        const today = new Date();
+        const year = today.getFullYear();
+
+        // Rango del año actual (desde 1 de enero hasta hoy)
+        const inicioAnio = new Date(year, 0, 1);
+        const finRango = endOfDay(today);
+
+        // Trae solo lo necesario y en crudo
+        const resultadounidades = await unidad.findAll({
+        attributes: ['fechagobernada'],
+        where: {
+            fechagobernada: { [Op.between]: [inicioAnio, finRango] }
+        },
+        raw: true
         });
 
-        groupedByType = resultadounidades.reduce((acc, registro) => {
-            const fecha = parseISO(registro.fechagobernada + ' 00:00:00');
-            const startOfCurrentWeek = startOfWeek(fecha, { weekStartsOn: 1 });
-            const weekNumber = differenceInCalendarWeeks(startOfCurrentWeek, new Date(year, 0, 1), { weekStartsOn: 1 });
-            
-            if(!acc[weekNumber]) {
-                acc[weekNumber] = [];
-            }
+        // Calcula la "semana actual" relativa al 1 de enero (semana 1 = la del 1 de enero)
+        const startOfYearWeek = startOfWeek(inicioAnio, { weekStartsOn: 1 }); // lunes
+        const currentWeek =
+        differenceInCalendarWeeks(
+            startOfWeek(today, { weekStartsOn: 1 }),
+            startOfYearWeek,
+            { weekStartsOn: 1 }
+        ) + 1;
 
-            acc[weekNumber].push(registro);
-            
-            return acc;
-        }, {});
+        // Prepara arreglo de semanas con cero (1..currentWeek)
+        const grafica = Array.from({ length: currentWeek }, (_, i) => ({
+        semana: i + 1,
+        unidades: 0
+        }));
 
+        // Agrupa y cuenta por semana (1-based), ignorando nulos
+        for (const r of resultadounidades) {
+        const fecha = r.fechagobernada ? new Date(r.fechagobernada) : null;
+        if (!fecha || isNaN(fecha)) continue;
 
+        const startOfCurrentWeek = startOfWeek(fecha, { weekStartsOn: 1 });
+        const weekNumber =
+            differenceInCalendarWeeks(
+            startOfCurrentWeek,
+            startOfYearWeek,
+            { weekStartsOn: 1 }
+            ) + 1;
+
+        if (weekNumber >= 1 && weekNumber <= currentWeek) {
+            grafica[weekNumber - 1].unidades += 1;
+        }
+        }
+
+        // Respuesta lista para graficar
         res.json({
-            OK: true,
-            Grafica: groupedByType
-        })
+        ok: true,
+        anio: year,
+        semanas_totales: currentWeek,
+        grafica // [{ semana: 1, unidades: X }, ...]
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(412).json({ msg: error.message });
     }
+    };
+
+
+
+
+
 
     app.obtenerGraficaUnidadesParoMotor = async (req, res) => {
         var today = new Date();
@@ -2076,18 +2074,6 @@ module.exports = app => {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     app.resumenAlertasOperadores = (req, res) => {
         alerta.findAll({
             attributes: [
@@ -2132,45 +2118,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.aplicaNoAplicaAlerta = (req, res) => {
         let body = req.body;
 
@@ -2200,9 +2147,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
 
 
 
