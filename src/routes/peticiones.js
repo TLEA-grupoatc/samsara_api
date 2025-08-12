@@ -81,7 +81,7 @@ module.exports = app => {
 
     app.get('/obtenerReporteParoMotor', verificarToken, Peticion.obtenerReporteParoMotor);
 
-    app.get('/obtenerGraficaGobernadas', verificarToken, Peticion.obtenerGraficaGobernadas);
+    app.get('/obtenerGraficaGobernadas', Peticion.obtenerGraficaGobernadas);
 
     app.get('/obtenerGraficaUnidadesParoMotor', verificarToken, Peticion.obtenerGraficaUnidadesParoMotor);
 

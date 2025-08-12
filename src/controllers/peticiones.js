@@ -18,11 +18,14 @@ module.exports = app => {
     const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
 
     const Sequelize = require('sequelize');
-    const { literal } = require('sequelize');
     const Op = Sequelize.Op;
     const axios = require('axios');
+    const { literal } = require('sequelize');
 
-    const { parseISO, format,  startOfWeek, differenceInCalendarWeeks, endOfDay, es } = require('date-fns');
+    const { parseISO, startOfWeek, endOfWeek, endOfDay, addWeeks, differenceInCalendarWeeks, es, format } = require('date-fns');
+
+
+
 
     app.reporteInmovilizadores = async (req, res) => {
         var listatractos = [
@@ -1660,76 +1663,21 @@ module.exports = app => {
 
 
 
-    // app.obtenerGraficaGobernadas = async (req, res) => {
-    //     var today = new Date();
-    //     var year = today.getFullYear();
-    //     var resultadounidades  = [];
-    //     var groupedByType;
-
-    //     await unidad.findAll({
-    //         where: {
-    //             fechagobernada: {
-    //                 [Op.startsWith]: year
-    //             }
-    //         },
-    //         order: [
-    //             ['name', 'DESC']
-    //         ],
-    //     }).then(result => {resultadounidades = result})
-    //     .catch(error => {
-    //         res.status(412).json({
-    //             msg: error.message
-    //         });
-    //     });
-
-    //     groupedByType = resultadounidades.reduce((acc, registro) => {
-    //         const fecha = parseISO(registro.fechagobernada + ' 00:00:00');
-    //         const startOfCurrentWeek = startOfWeek(fecha, { weekStartsOn: 1 });
-    //         const weekNumber = differenceInCalendarWeeks(startOfCurrentWeek, new Date(year, 0, 1), { weekStartsOn: 1 });
-            
-    //         if(!acc[weekNumber]) {
-    //             acc[weekNumber] = [];
-    //         }
-
-    //         acc[weekNumber].push(registro);
-            
-    //         return acc;
-    //     }, {});
-
-
-    //     res.json({
-    //         OK: true,
-    //         Grafica: groupedByType
-    //     })
-    // }
-
-
-
-
-
-// Asegúrate de tener estos imports/utilidades
-
-
     app.obtenerGraficaGobernadas = async (req, res) => {
     try {
         const today = new Date();
         const year = today.getFullYear();
 
-        // Rango del año actual (desde 1 de enero hasta hoy)
         const inicioAnio = new Date(year, 0, 1);
+        const startOfYearWeek = startOfWeek(inicioAnio, { weekStartsOn: 1 }); // lunes (para 2025: 2024-12-30)
         const finRango = endOfDay(today);
 
-        // Trae solo lo necesario y en crudo
-        const resultadounidades = await unidad.findAll({
+        const registros = await unidad.findAll({
         attributes: ['fechagobernada'],
-        where: {
-            fechagobernada: { [Op.between]: [inicioAnio, finRango] }
-        },
+        where: { fechagobernada: { [Op.between]: [startOfYearWeek, finRango] } },
         raw: true
         });
 
-        // Calcula la "semana actual" relativa al 1 de enero (semana 1 = la del 1 de enero)
-        const startOfYearWeek = startOfWeek(inicioAnio, { weekStartsOn: 1 }); // lunes
         const currentWeek =
         differenceInCalendarWeeks(
             startOfWeek(today, { weekStartsOn: 1 }),
@@ -1737,42 +1685,51 @@ module.exports = app => {
             { weekStartsOn: 1 }
         ) + 1;
 
-        // Prepara arreglo de semanas con cero (1..currentWeek)
-        const grafica = Array.from({ length: currentWeek }, (_, i) => ({
-        semana: i + 1,
-        unidades: 0
-        }));
+        const grafica = Array.from({ length: currentWeek }, (_, i) => {
+        const inicioSemana = addWeeks(startOfYearWeek, i);
+        const finSemana = endOfWeek(inicioSemana, { weekStartsOn: 1 });
+        return {
+            semana: i + 1,
+            desde: format(inicioSemana, 'yyyy-MM-dd'),
+            hasta: format(finSemana, 'yyyy-MM-dd'),
+            unidades: 0
+        };
+        });
 
-        // Agrupa y cuenta por semana (1-based), ignorando nulos
-        for (const r of resultadounidades) {
-        const fecha = r.fechagobernada ? new Date(r.fechagobernada) : null;
+        for (const r of registros) {
+        const fecha = parseDateLocal(r.fechagobernada);
         if (!fecha || isNaN(fecha)) continue;
 
-        const startOfCurrentWeek = startOfWeek(fecha, { weekStartsOn: 1 });
-        const weekNumber =
+        const inicioSemanaFecha = startOfWeek(fecha, { weekStartsOn: 1 });
+        const w =
             differenceInCalendarWeeks(
-            startOfCurrentWeek,
+            inicioSemanaFecha,
             startOfYearWeek,
             { weekStartsOn: 1 }
             ) + 1;
 
-        if (weekNumber >= 1 && weekNumber <= currentWeek) {
-            grafica[weekNumber - 1].unidades += 1;
+        if (w >= 1 && w <= currentWeek) {
+            grafica[w - 1].unidades += 1; // cuenta registros (unidades únicas según tu BD)
         }
         }
 
-        // Respuesta lista para graficar
         res.json({
         ok: true,
         anio: year,
+        inicio_semana1: format(startOfYearWeek, 'yyyy-MM-dd'),
         semanas_totales: currentWeek,
-        grafica // [{ semana: 1, unidades: X }, ...]
+        grafica
         });
+
     } catch (error) {
         console.error(error);
         res.status(412).json({ msg: error.message });
     }
     };
+
+
+
+
 
 
 
@@ -2149,6 +2106,11 @@ module.exports = app => {
     }
 
 
+    function parseDateLocal(yyyy_mm_dd) {
+        if(!yyyy_mm_dd) return null;
+        const [y, m, d] = String(yyyy_mm_dd).split('-').map(Number);
+        return new Date(y, (m || 1) - 1, d || 1);
+    }
 
     async function getUnidadesDivision(uni) {
         try {
