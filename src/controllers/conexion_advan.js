@@ -787,6 +787,42 @@ module.exports = app => {
 
 
 
+    app.bitacorasParaComidaAut = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+            
+            const today = new Date();
+            const fifteenDaysAgo = new Date();
+            fifteenDaysAgo.setDate(today.getDate() - 1);
+            
+            let result = await pool.request().query(
+                "SELECT MAX(BT.FECHA_BITACORA) AS fechaBitacora, OP.OPERADOR_NOMBRE as operador FROM bitacoras AS BT \
+                INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
+                WHERE BT.STATUS_BITACORA = 0 \
+                AND BT.FECHA_BITACORA BETWEEN '" + moment(fifteenDaysAgo).format('YYYY-MM-DD') + "T00:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
+                GROUP BY OP.OPERADOR_NOMBRE ORDER BY OP.OPERADOR_NOMBRE"
+            );
+
+            sql.close();
+            
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+
+
+
+
+
+
     app.obtenerBitacorasQuinceDias = async (req, res) => {
         try {
             let pool = await sql.connect(config);
@@ -816,10 +852,6 @@ module.exports = app => {
             sql.close();
         }
     }
-
-
-
-
 
 
 

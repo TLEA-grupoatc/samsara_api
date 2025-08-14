@@ -40,8 +40,11 @@ module.exports = app => {
     
     
     app.get('/obtenerBitacorasQuinceDias', ca.obtenerBitacorasQuinceDias);
+    
+    
 
 
+    app.get('/bitacorasParaComidaAut', ca.bitacorasParaComidaAut);
 
 
 

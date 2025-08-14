@@ -86,6 +86,8 @@ module.exports = app => {
 
     app.post('/crearDanoUnidadOperador', verificarToken, Fo.crearDanoUnidadOperador);
     
+    app.delete('/aplicaCargoOperador/:id_danosunidad/:aplica/:aprobo', verificarToken, Fo.aplicaCargoOperador);
+
     app.get('/obtenerQuejasXOperador/:operador', verificarToken, Fo.obtenerQuejasXOperador);
     
     app.post('/crearQuejaOperador', verificarToken, Fo.crearQuejaOperador);

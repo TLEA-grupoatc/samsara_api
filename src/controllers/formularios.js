@@ -1446,6 +1446,12 @@ module.exports = app => {
             comentarios: body.comentarios, 
             fecha: body.fecha, 
             evidencia: doc, 
+            monto: body.monto, 
+            responsable: body.responsable, 
+            aplica: body.aplica, 
+            estado: body.estado, 
+            aprobo: body.aprobo, 
+            fecha_aprobo: body.fecha_aprobo, 
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion
         });
@@ -1457,6 +1463,12 @@ module.exports = app => {
                 'comentarios', 
                 'fecha',
                 'evidencia',
+                'monto',
+                'responsable',
+                'aplica',
+                'estado',
+                'aprobo',
+                'fecha_aprobo',
                 'fecha_creacion', 
                 'usuario_creacion'
             ]
@@ -1474,6 +1486,44 @@ module.exports = app => {
             });
         });
     }
+
+    app.aplicaCargoOperador = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD HH:mm:ss');
+        let data = new danosunidadoperador({
+            aplica: req.params.aplica,
+            estado: 'Cerrado',
+            aprobo: req.params.aprobo,
+            fecha_aprobo: hoy
+        });
+
+        danosunidadoperador.update(data.dataValues, {
+            where: {
+                id_danosunidad: req.params.id_danosunidad
+            },
+            fields: ['aplica', 'estado', 'aprobo', 'fecha_aprobo']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
 
     app.obtenerDopings = (req, res) => {
         dopope.findAll({
