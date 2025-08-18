@@ -9,6 +9,8 @@ module.exports = app => {
 
     const unidad = app.database.models.Unidades;
     const geogaso = app.database.models.GeoGaso;
+    const itine = app.database.models.Itinerarios;
+    const axios = require('axios');
 
     const config = {
         user: process.env.USERADVAN,
@@ -113,11 +115,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
     app.obtenerGPS = (req, res) => {
         Samsara.getVehicleStatsHistory({
             startTime: req.params.fechaInicio,
@@ -138,22 +135,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     app.obtenerCombustible = async (req, res) => {
         try {
@@ -217,27 +198,6 @@ module.exports = app => {
             sql.close();
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     app.obtenerViajesCortsLargos = async (req, res) => {
         try {
@@ -574,46 +534,112 @@ module.exports = app => {
         }
     }
 
-    app.pruebas = async (req, res) => {
+    app.pruebasItinerarios = async (req, res) => {
         try {
             let pool = await sql.connect(config);
 
-            const startOfWeek = new Date();
-            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-            startOfWeek.setHours(0, 0, 0, 0);
-    
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(endOfWeek.getDate() + 6);
-            endOfWeek.setHours(23, 59, 59, 999);
+            const today = new Date();
 
-
-
-            // RUTA_ORIGEN, RUTA_DESTINO, RUTA_DESCRIP
-
-            let result = await pool.request().query("SELECT localidades FROM ruta_descripcion group by localidades;");
-            // let result = await pool.request().query("SELECT localidades FROM ruta_descripcion;");
-            
-            // let result = await pool.request().query("SELECT top 100 * from vBitacora_ruta_sld;");
-            
-            
-            
-            // let result = await pool.request().query("SELECT BT.BAN_LIQUIDACION, BT.FECHA_BITACORA, BT.TERMINAL_BITACORA, BT.TRACTO_NUM_ECO, BRS.NUM_ORDEN, BRS.BITACORA, BRS.ORIGEN_DESC, BRS.cliente_nombre, BRS.DESTINO_DESC, BRS.NUM_ORDEN, OP.OPERADOR_NOMBRE FROM bitacoras AS BT \
-            //     INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
-            //     INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
-            //     WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES';"
-            // );
-
-
-
-            // let result = await pool.request().query("SELECT BT.*, BRS.*, OP.* FROM bitacoras AS BT \
-            //     INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
-            //     INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
-            //     WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES' \
-            //     AND BT.FECHA_BITACORA BETWEEN DATEADD(DAY, -10, GETDATE()) AND GETDATE();"
-            // );
-
+            // let result = await pool.request().query("SELECT TOP(10)* FROM vordenser order by fecha_orden desc");
+            let result = await pool.request().query("SELECT vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos \
+                INNER JOIN bitacoras AS bt on bt.clave_bitacora = vos.clave_bitacora \
+                WHERE vos.fecha_orden BETWEEN '" + moment(today).format('YYYY-MM-DD') + "T00:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
+                AND vos.clave_bitacora IS NOT NULL");
 
             sql.close();
+
+            result['recordsets'][0].forEach(async rr => {
+                const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+                               
+                var existe = await itine.findAll({
+                    where: {
+                        operador: rr.operador_nombre,
+                        economico: rr.unidad,
+                        origen: rr.origen_nom,
+                        destino: rr.destinatario_nom
+                    }
+                });
+
+                if(existe.length === 0) {
+                    try {
+                        const responseUno = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+                            params: {
+                                address: rr.origen_dom,
+                                key: process.env.GOOGLE_MAPS_KEY
+                            }
+                        });
+
+                        const responseDos = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+                            params: {
+                                address: rr.destinatario_dom,
+                                key: process.env.GOOGLE_MAPS_KEY
+                            }
+                        });
+
+                        if(responseUno.data.status !== 'OK') {
+                            return res.status(400).json({ error: 'No se pudo geocodificar la dirección' });
+                        }
+
+                        if(responseDos.data.status !== 'OK') {
+                            return res.status(400).json({ error: 'No se pudo geocodificar la dirección' });
+                        }
+
+                        const locationUno = responseUno.data.results[0].geometry.location;
+                        const locationDos = responseDos.data.results[0].geometry.location;
+
+                        let nuevoRegistro = new itine({
+                            folio_orden: rr.ordenser_folio, 
+                            unidad: rr.terminal_clave, 
+                            numero_empleado: rr.numero_empleado, 
+                            operador: rr.operador_nombre, 
+                            economico: rr.unidad, 
+                            origen: rr.origen_nom, 
+                            destino: rr.destinatario_nom, 
+                            origen_direccion: rr.origen_dom, 
+                            destino_direccion: rr.destinatario_dom, 
+                            origen_longitud: locationUno.lng, 
+                            origen_latitud: locationUno.lat, 
+                            destino_longitud: locationDos.lng, 
+                            destino_latitud: locationDos.lat, 
+                            fecha: moment(rr.fecha_orden).format('YYYY-MM-DD')
+                        });
+
+                        itine.create(nuevoRegistro.dataValues, {
+                            fields: [
+                                'folio_orden', 
+                                'unidad', 
+                                'numero_empleado', 
+                                'operador', 
+                                'economico',
+                                'origen',
+                                'destino',
+                                'origen_direccion',
+                                'destino_direccion',
+                                'origen_longitud',
+                                'origen_latitud',
+                                'destino_longitud',
+                                'destino_latitud', 
+                                'fecha'
+                            ]
+                        })
+                        .then(result => {
+                            // console.log('ok');
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+
+                    } catch (error) {
+                        console.error(error);
+                        res.status(500).json({ error: 'Error interno del servidor' });
+                    }
+                } 
+                else {
+                    console.log('Ya existe el folio:', existe[0].folio_orden);
+                }
+                               
+                await sleep(3000);
+            });
             
             res.json({
                 OK: true,
@@ -785,7 +811,7 @@ module.exports = app => {
 
 
 
-
+// SELECT TOP(10) terminal_clave, unidad, operador_nombre, origen_desc, destino_desc, cliente_nombre FROM vordenser
 
     app.bitacorasParaComidaAut = async (req, res) => {
         try {
@@ -795,14 +821,56 @@ module.exports = app => {
             const fifteenDaysAgo = new Date();
             fifteenDaysAgo.setDate(today.getDate() - 1);
             
-            let result = await pool.request().query(
-                "SELECT MAX(BT.FECHA_BITACORA) AS fechaBitacora, OP.OPERADOR_NOMBRE as operador FROM bitacoras AS BT \
+            // let result = await pool.request().query(
+            //     "SELECT BT.*, OP.*, VOS.* FROM bitacoras AS BT \
+            //     INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
+            //     INNER JOIN vordenser AS VOS ON VOS.clave_bitacora = BT.clave_bitacora \
+            //     WHERE BT.STATUS_BITACORA = 0 \
+            //     AND BT.FECHA_BITACORA BETWEEN '" + moment(fifteenDaysAgo).format('YYYY-MM-DD') + "T00:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' ORDER BY OP.OPERADOR_NOMBRE"
+            // );
+
+            
+            //   let result = await pool.request().query(
+            //     "SELECT BT.FECHA_BITACORA, BT.TERMINAL_BITACORA, MAX(BT.FOLIO_BITACORA) as FOLIO_BITACORA, OP.operador_nombre, MAX(VOS.ordenser_folio) as ordenser_folio, MAX(VOS.consec_os) as consec_os, BT.TRACTO_NUM_ECO, MAX(BRS.NUM_ORDEN) AS NUM_ORDEN, VOS.origen_desc, VOS.destino_desc, VOS.cliente_nombre FROM bitacoras AS BT \
+            //     INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
+            //     INNER JOIN vordenser AS VOS ON VOS.clave_bitacora = BT.clave_bitacora \
+            //     INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
+            //     WHERE BT.STATUS_BITACORA = 0 AND VOS.fch_can is null \
+            //      GROUP BY BT.FECHA_BITACORA, BT.TERMINAL_BITACORA, OP.operador_nombre, BT.TRACTO_NUM_ECO, VOS.origen_desc, VOS.destino_desc, VOS.cliente_nombre ORDER BY OP.OPERADOR_NOMBRE"
+            // );
+
+
+
+
+
+            let result = await pool.request().query("SELECT BT.BAN_LIQUIDACION, BT.FECHA_BITACORA, BT.TERMINAL_BITACORA, BT.TRACTO_NUM_ECO, BRS.NUM_ORDEN, BRS.BITACORA, BRS.ORIGEN_DESC, BRS.cliente_nombre, BRS.DESTINO_DESC, OP.OPERADOR_NOMBRE FROM bitacoras AS BT \
+                INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
                 INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
-                WHERE BT.STATUS_BITACORA = 0 \
-                AND BT.FECHA_BITACORA BETWEEN '" + moment(fifteenDaysAgo).format('YYYY-MM-DD') + "T00:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
-                GROUP BY OP.OPERADOR_NOMBRE ORDER BY OP.OPERADOR_NOMBRE"
+                WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES' \
+                AND BRS.NUM_ORDEN = (SELECT MAX(BRS2.NUM_ORDEN) FROM vBitacora_ruta_sld AS BRS2 WHERE BRS2.clave_bitacora = BT.clave_bitacora) \
+                AND BT.FECHA_BITACORA BETWEEN '" + moment(today).format('YYYY-MM-DD') + "T00:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z'"
             );
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+                       
+            // let result = await pool.request().query("SELECT BT.BAN_LIQUIDACION, BT.FECHA_BITACORA, BT.TERMINAL_BITACORA, BT.TRACTO_NUM_ECO, BRS.NUM_ORDEN, BRS.BITACORA, BRS.ORIGEN_DESC, BRS.cliente_nombre, BRS.DESTINO_DESC, OP.OPERADOR_NOMBRE FROM bitacoras AS BT \
+            //     INNER JOIN vBitacora_ruta_sld AS BRS ON BRS.clave_bitacora = BT.clave_bitacora \
+            //     INNER JOIN operador AS OP ON OP.OPERADOR_CLAVE = BT.OPERADOR_CLAVE \
+            //     WHERE BT.BAN_LIQUIDACION = 0 AND BT.STATUS_BITACORA = 0 AND BT.TERMINAL_BITACORA != 'PHES' \
+            //     AND BRS.NUM_ORDEN = (SELECT MAX(BRS2.NUM_ORDEN) FROM vBitacora_ruta_sld AS BRS2 WHERE BRS2.clave_bitacora = BT.clave_bitacora);"
+            // );
             sql.close();
             
             res.json({
@@ -817,6 +885,28 @@ module.exports = app => {
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
 
 

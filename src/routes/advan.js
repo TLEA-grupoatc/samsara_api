@@ -26,8 +26,9 @@ module.exports = app => {
 
 
 
-    app.get('/pruebas', ca.pruebas);
-
+    // app.get('/pruebas', ca.pruebas);
+    
+    app.get('/pruebasItinerarios', ca.pruebasItinerarios);
     
     app.get('/folios', ca.folios);
 
