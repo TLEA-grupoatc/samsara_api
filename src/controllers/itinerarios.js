@@ -21,105 +21,101 @@ module.exports = app => {
     }
 
     app.itinerarioP = async (req, res) => {
-        const listaordenes = await axios.get('https://servidorlocal.ngrok.app/itinerariosVO');
-        const ordenes = listaordenes.data.Registros || [];
+        try {
+            const listaordenes = await axios.get('https://servidorlocal.ngrok.app/itinerariosVO');
+            const ordenes = listaordenes.data.Registros || [];
 
-        ordenes.forEach(async rr => {
             const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-                            
-            var existe = await itine.findAll({
+
+            for (const rr of ordenes) {
+            const existe = await itine.findAll({
                 where: {
-                    operador: rr.operador_nombre,
-                    economico: rr.unidad,
-                    origen: rr.origen_nom,
-                    destino: rr.destinatario_nom
+                operador: rr.operador_nombre,
+                economico: rr.unidad,
+                origen: rr.origen_nom,
+                destino: rr.destinatario_nom
                 }
             });
 
-            if(existe.length === 0) {
+            if (existe.length === 0) {
                 try {
-                    const responseUno = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-                        params: {
-                            address: rr.origen_dom,
-                            key: process.env.GOOGLE_MAPS_KEY
-                        }
-                    });
-
-                    const responseDos = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-                        params: {
-                            address: rr.destinatario_dom,
-                            key: process.env.GOOGLE_MAPS_KEY
-                        }
-                    });
-
-                    if(responseUno.data.status !== 'OK') {
-                        return res.status(400).json({ error: 'No se pudo geocodificar la dirección' });
+                const responseUno = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+                    params: {
+                    address: rr.origen_dom,
+                    key: process.env.GOOGLE_MAPS_KEY
                     }
+                });
 
-                    if(responseDos.data.status !== 'OK') {
-                        return res.status(400).json({ error: 'No se pudo geocodificar la dirección' });
+                const responseDos = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+                    params: {
+                    address: rr.destinatario_dom,
+                    key: process.env.GOOGLE_MAPS_KEY
                     }
+                });
 
-                    const locationUno = responseUno.data.results[0].geometry.location;
-                    const locationDos = responseDos.data.results[0].geometry.location;
+                if (responseUno.data.status !== 'OK' || responseDos.data.status !== 'OK') {
+                    console.warn(`No se pudo geocodificar alguna dirección para folio ${rr.ordenser_folio}`);
+                    continue; // 👈 ignoramos este registro y seguimos
+                }
 
-                    let nuevoRegistro = new itine({
-                        folio_orden: rr.ordenser_folio, 
-                        unidad: rr.terminal_clave, 
-                        numero_empleado: rr.numero_empleado, 
-                        operador: rr.operador_nombre, 
-                        economico: rr.unidad, 
-                        origen: rr.origen_nom, 
-                        destino: rr.destinatario_nom, 
-                        origen_direccion: rr.origen_dom, 
-                        destino_direccion: rr.destinatario_dom, 
-                        origen_longitud: locationUno.lng, 
-                        origen_latitud: locationUno.lat, 
-                        destino_longitud: locationDos.lng, 
-                        destino_latitud: locationDos.lat, 
-                        fecha: moment(rr.fecha_orden).format('YYYY-MM-DD')
-                    });
+                const locationUno = responseUno.data.results[0].geometry.location;
+                const locationDos = responseDos.data.results[0].geometry.location;
 
-                    itine.create(nuevoRegistro.dataValues, {
-                        fields: [
-                            'folio_orden', 
-                            'unidad', 
-                            'numero_empleado', 
-                            'operador', 
-                            'economico',
-                            'origen',
-                            'destino',
-                            'origen_direccion',
-                            'destino_direccion',
-                            'origen_longitud',
-                            'origen_latitud',
-                            'destino_longitud',
-                            'destino_latitud', 
-                            'fecha'
-                        ]
-                    })
-                    .then(result => {
-                        // console.log('ok');
-                    })
-                    .catch(error => {
-                        console.log(error);
-                    });
+                let nuevoRegistro = new itine({
+                    folio_orden: rr.ordenser_folio,
+                    unidad: rr.terminal_clave,
+                    numero_empleado: rr.numero_empleado,
+                    operador: rr.operador_nombre,
+                    economico: rr.unidad,
+                    origen: rr.origen_nom,
+                    destino: rr.destinatario_nom,
+                    origen_direccion: rr.origen_dom,
+                    destino_direccion: rr.destinatario_dom,
+                    origen_longitud: locationUno.lng,
+                    origen_latitud: locationUno.lat,
+                    destino_longitud: locationDos.lng,
+                    destino_latitud: locationDos.lat,
+                    fecha: moment(rr.fecha_orden).format('YYYY-MM-DD')
+                });
+
+                await itine.create(nuevoRegistro.dataValues, {
+                    fields: [
+                    'folio_orden',
+                    'unidad',
+                    'numero_empleado',
+                    'operador',
+                    'economico',
+                    'origen',
+                    'destino',
+                    'origen_direccion',
+                    'destino_direccion',
+                    'origen_longitud',
+                    'origen_latitud',
+                    'destino_longitud',
+                    'destino_latitud',
+                    'fecha'
+                    ]
+                });
 
                 } catch (error) {
-                    console.error(error);
+                console.error('Error en registro', rr.ordenser_folio, error.message);
                 }
-            } 
-            else {
+            } else {
                 console.log('Ya existe el folio:', existe[0].folio_orden);
             }
-                            
-            await sleep(3000);
-        });
-        
-        res.json({
-            OK: true
-        });
-    }
+
+            await sleep(1000);
+            }
+
+            res.json({ OK: true });
+
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Error general del servidor' });
+        }
+}
+
+    
 
 
 
