@@ -48,6 +48,10 @@ consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('midd
 const alerta = app.database.models.Alertas;
 const geogaso = app.database.models.GeoGaso;
 const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
+    const itine = app.database.models.Itinerarios;
+    const itineDet = app.database.models.ItinerarioDetalle;
+
+     const axios = require('axios');
 const Samsara = require("@api/samsara-dev-rel");
 const fs = require('fs');
 Samsara.auth(process.env.KEYSAM);
@@ -488,6 +492,8 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   else if(payload.data?.conditions[0].description === 'Geofence Entry') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
+    let fechaInsert = moment(payload.data.happenedAtTime).format('YYYY-MM-DD');
+
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id'],
       economico: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['name'],
@@ -500,7 +506,6 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       hora_salida: null,
       evento: payload.data.conditions[0].description
     });
-
     await ubiporeco.create(nuevaAlerta.dataValues, {
       fields: [
         'id_samsara', 
@@ -515,6 +520,131 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
         'evento'
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
+
+
+
+    try {
+      const cond = payload?.data?.conditions?.[0];
+      const entry = cond?.details?.geofenceEntry;
+      const addr  = entry?.address;
+      const veh   = entry?.vehicle;
+
+      // Validaciones mínimas
+      if (!addr?.name || !addr?.formattedAddress || !veh?.name) {
+        console.warn('Payload incompleto para geofenceEntry.');
+        return;
+      }
+
+      const name = String(addr.name).trim();
+      const prefix = name.split(/\s*-\s*/)[0].toUpperCase(); // ej. "PA - Algo" -> "PA"
+
+      // // Solo continuar si es PA o TRAMO
+      // if (!(prefix === 'PA' || prefix === 'TRAMO')) {
+      //   return;
+      // }
+
+      // Buscar itinerario del vehículo en esa fecha
+      const row = await itine.findOne({
+        where: {
+          economico: veh.name,
+          fecha: fechaInsert   // Asegúrate que fechaInsert está definido y en el formato correcto
+        }
+      });
+
+      if (!row) {
+        console.warn(`No hay itinerario para ${veh.name} en ${fechaInsert}`);
+        return;
+      }
+
+      const geocodeResp = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+        params: {
+          // address: addr.formattedAddress,
+          address: ubi,
+          key: process.env.GOOGLE_MAPS_KEY
+        },
+        timeout: 10000
+      });
+
+      if (geocodeResp.data.status !== 'OK' || !geocodeResp.data.results?.length) {
+        // console.warn(`No se pudo geocodificar la dirección: ${addr.formattedAddress}`);
+        console.warn(`No se pudo geocodificar la dirección: ${ubi}`);
+        return;
+      }
+
+      const { lat, lng } = geocodeResp.data.results[0].geometry.location;
+
+      async function googleTravelTime({lat1, lon1, lat2, lon2, mode = 'driving',apiKey = process.env.GOOGLE_MAPS_KEY, useTraffic = true}) {
+        const params = new URLSearchParams({
+          origin: `${lat1},${lon1}`,
+          destination: `${lat2},${lon2}`,
+          mode
+        });
+
+        // Tráfico (requiere facturación habilitada en Google)
+        if (mode === 'driving' && useTraffic) {
+          params.set('departure_time', 'now');
+        }
+
+        const url = `https://maps.googleapis.com/maps/api/directions/json?${params.toString()}&key=${apiKey}`;
+        const { data } = await axios.get(url, { timeout: 10000 });
+
+        if (data.status !== 'OK' || !data.routes?.length) {
+          throw new Error(`Google Directions error: ${data.status}`);
+        }
+
+        const leg = data.routes[0].legs[0];
+        const duration = leg.duration_in_traffic?.value ?? leg.duration.value;
+
+        return {
+          provider: 'Google',
+          mode,
+          distance_km: (leg.distance.value || 0) / 1000,
+          duration_sec: duration || 0
+        };
+      }
+
+      // Calcular distancia/tiempo entre posición geocodificada y origen del itinerario
+      const travel = await googleTravelTime({
+        lat1: lat,
+        lon1: lng,
+        lat2: Number(row.origen_latitud),
+        lon2: Number(row.origen_longitud),
+        mode: 'driving',
+        apiKey: process.env.GOOGLE_MAPS_KEY,
+        useTraffic: true
+      });
+
+      // Crear detalle del itinerario
+      await itineDet.create({
+        id_itinerarios: row.id_itinerarios,
+        operador: row.operador,
+        latitud: lat,
+        longitud: lng,
+        direccion: ubi,
+        geocerca: name,
+        combustible: 0,
+        km: travel.distance_km,
+        tiempo: Math.round(travel.duration_sec / 60), // minutos
+        fecha: fechaInsert // o moment(row.fecha_orden).format('YYYY-MM-DD') si es lo que necesitas
+      }, {
+        fields: [
+          'id_itinerarios',
+          'operador',
+          'latitud',
+          'longitud',
+          'direccion',
+          'geocerca',
+          'combustible',
+          'km',        // <— antes faltaba
+          'tiempo',
+          'fecha'
+        ]
+      });
+    } 
+    catch (err) {
+      console.error('Error procesando geofenceEntry:', err);
+    }
+  
   }
   else if(payload.data?.conditions[0].description === 'Geofence Exit') { 
     var ubi = await ubicacion(payload.data.conditions[0]['details']['geofenceExit']['vehicle']['id']);

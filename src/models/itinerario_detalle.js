@@ -9,6 +9,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        economico: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         operador: {
             type: DataType.STRING,
             allowNull: true
@@ -30,6 +34,10 @@ module.exports = (sequelize, DataType) => {
             allowNull: true
         }, 
         combustible: {
+            type: DataType.INTEGER,
+            allowNull: true
+        }, 
+        km: {
             type: DataType.INTEGER,
             allowNull: true
         }, 
