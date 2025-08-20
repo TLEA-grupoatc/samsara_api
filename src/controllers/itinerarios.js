@@ -170,7 +170,8 @@ module.exports = app => {
                     fecha_carga: moment(rr.fecha_carga).format('YYYY-MM-DD HH:mm:ss'),
                     tiempo: Math.round(travel.duration_sec / 60),
                     km: travel.distance_km,
-                    fecha: moment(rr.fecha_orden).format('YYYY-MM-DD HH:mm:ss')
+                    fecha: moment(rr.fecha_orden).format('YYYY-MM-DD HH:mm:ss'),
+                    fecha_creacion: moment(rr.fecha_orden).format('YYYY-MM-DD')
                 });
 
                 await itine.create(nuevoRegistro.dataValues, {
@@ -191,7 +192,8 @@ module.exports = app => {
                     'fecha_carga',
                     'tiempo',
                     'km',
-                    'fecha'
+                    'fecha',
+                    'fecha_creacion'
                     ]
                 });
 

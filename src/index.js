@@ -492,7 +492,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   else if(payload.data?.conditions[0].description === 'Geofence Entry') {
     var ubi = await ultimaubi(payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
-    let fechaInsert = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
+    let fechaInsert = moment(payload.data.happenedAtTime).format('YYYY-MM-DD');
 
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id'],
@@ -545,7 +545,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       const row = await itine.findOne({
         where: {
           economico: veh.name,
-          fecha: fechaInsert
+          fecha_creacion: fechaInsert
         }
       });
 
@@ -619,7 +619,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
         combustible: ubi.fuelpercent,
         km: travel.distance_km,
         tiempo: Math.round(travel.duration_sec / 60),
-        fecha: fechaInsert
+        fecha: fechahora
       }, {
         fields: [
           'id_itinerarios',
