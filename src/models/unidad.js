@@ -140,6 +140,26 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        idcoordinador: {
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        idcircuito: {
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        estructura: {
+            type: DataType.STRING(100),  
+            allowNull: true
+        },
+        operador: {
+            type: DataType.STRING(100),  
+            allowNull: true
+        },
+        neg_tipo: {
+            type: DataType.STRING(45),  
+            allowNull: true
+        },
         estado:{
             type: DataType.STRING,
             allowNull: true

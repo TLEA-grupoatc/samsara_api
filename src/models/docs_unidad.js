@@ -9,6 +9,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        camp: {
+            type: DataType.STRING,
+            allowNull: true
+        },
         nombre:{
             type: DataType.STRING,
             allowNull: false

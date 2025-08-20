@@ -3,7 +3,7 @@ const moment = require("moment");
 module.exports = app => {
     
     const Pickandup = app.database.models.PickAndUp;
-    // const Sequelize = app.database.Sequelize;
+    const Sequelize = app.database.Sequelize;
     // const Op = Sequelize.Op;
 
     app.EconomicoSinProgramacionAnterior = async (req, res, next) => { 
@@ -14,7 +14,10 @@ module.exports = app => {
             let arriboProgramado = await Pickandup.findOne({ 
                 attributes: ['idpickandup', 'unidad', 'estatus'],
                 where: {
-                    unidad: req.body.unidad
+                    unidad: req.body.unidad,
+                    estatus: {
+                        [Sequelize.Op.ne]: 'cancelado'
+                    }
                 },
                 order: [['idpickandup', 'DESC']],
                 limit: 1,

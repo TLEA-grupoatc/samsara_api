@@ -57,6 +57,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.FLOAT,
             allowNull: true
         }, 
+        tiempo: {
+            type: DataType.INTEGER,
+            allowNull: true
+        }, 
+        km: {
+            type: DataType.INTEGER,
+            allowNull: true
+        }, 
         fecha: {
             type: DataType.STRING,
             allowNull: false
@@ -66,6 +74,13 @@ module.exports = (sequelize, DataType) => {
         tableName: 'itinerarios',        
         timestamps: false
     });
+
+    Itinerarios.associate = (models) => {
+        Itinerarios.hasMany(models.ItinerarioDetalle, {
+            foreignKey: 'id_itinerarios',
+            targetKey: 'id_itinerarios'
+        });
+    };
     
     return Itinerarios;
 }

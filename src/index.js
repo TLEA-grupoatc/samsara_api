@@ -48,10 +48,10 @@ consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('midd
 const alerta = app.database.models.Alertas;
 const geogaso = app.database.models.GeoGaso;
 const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
-    const itine = app.database.models.Itinerarios;
-    const itineDet = app.database.models.ItinerarioDetalle;
+const itine = app.database.models.Itinerarios;
+const itineDet = app.database.models.ItinerarioDetalle;
 
-     const axios = require('axios');
+  const axios = require('axios');
 const Samsara = require("@api/samsara-dev-rel");
 const fs = require('fs');
 Samsara.auth(process.env.KEYSAM);
@@ -490,7 +490,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
   else if(payload.data?.conditions[0].description === 'Geofence Entry') {
-    var ubi = await ubicacion(payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id']);
+    var ubi = await ultimaubi(payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let fechaInsert = moment(payload.data.happenedAtTime).format('YYYY-MM-DD');
 
@@ -506,6 +506,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       hora_salida: null,
       evento: payload.data.conditions[0].description
     });
+
     await ubiporeco.create(nuevaAlerta.dataValues, {
       fields: [
         'id_samsara', 
@@ -521,57 +522,52 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
 
-
-
+    
     try {
       const cond = payload?.data?.conditions?.[0];
       const entry = cond?.details?.geofenceEntry;
       const addr  = entry?.address;
       const veh   = entry?.vehicle;
 
-      // Validaciones mínimas
-      if (!addr?.name || !addr?.formattedAddress || !veh?.name) {
+      if(!addr?.name || !addr?.formattedAddress || !veh?.name) {
         console.warn('Payload incompleto para geofenceEntry.');
         return;
       }
 
       const name = String(addr.name).trim();
-      const prefix = name.split(/\s*-\s*/)[0].toUpperCase(); // ej. "PA - Algo" -> "PA"
+      const prefix = name.split(/\s*-\s*/)[0].toUpperCase();
 
       // // Solo continuar si es PA o TRAMO
       // if (!(prefix === 'PA' || prefix === 'TRAMO')) {
       //   return;
       // }
 
-      // Buscar itinerario del vehículo en esa fecha
       const row = await itine.findOne({
         where: {
           economico: veh.name,
-          fecha: fechaInsert   // Asegúrate que fechaInsert está definido y en el formato correcto
+          fecha: fechaInsert
         }
       });
 
-      if (!row) {
+      if(!row) {
         console.warn(`No hay itinerario para ${veh.name} en ${fechaInsert}`);
         return;
       }
 
-      const geocodeResp = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-        params: {
-          // address: addr.formattedAddress,
-          address: ubi,
-          key: process.env.GOOGLE_MAPS_KEY
-        },
-        timeout: 10000
-      });
+      // const geocodeResp = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+      //   params: {
+      //     address: ubi,
+      //     key: process.env.GOOGLE_MAPS_KEY
+      //   },
+      //   timeout: 10000
+      // });
 
-      if (geocodeResp.data.status !== 'OK' || !geocodeResp.data.results?.length) {
-        // console.warn(`No se pudo geocodificar la dirección: ${addr.formattedAddress}`);
-        console.warn(`No se pudo geocodificar la dirección: ${ubi}`);
-        return;
-      }
+      // if (geocodeResp.data.status !== 'OK' || !geocodeResp.data.results?.length) {
+      //   console.warn(`No se pudo geocodificar la dirección: ${ubi}`);
+      //   return;
+      // }
 
-      const { lat, lng } = geocodeResp.data.results[0].geometry.location;
+      // const { lat, lng } = geocodeResp.data.results[0].geometry.location;
 
       async function googleTravelTime({lat1, lon1, lat2, lon2, mode = 'driving',apiKey = process.env.GOOGLE_MAPS_KEY, useTraffic = true}) {
         const params = new URLSearchParams({
@@ -580,7 +576,6 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
           mode
         });
 
-        // Tráfico (requiere facturación habilitada en Google)
         if (mode === 'driving' && useTraffic) {
           params.set('departure_time', 'now');
         }
@@ -588,7 +583,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
         const url = `https://maps.googleapis.com/maps/api/directions/json?${params.toString()}&key=${apiKey}`;
         const { data } = await axios.get(url, { timeout: 10000 });
 
-        if (data.status !== 'OK' || !data.routes?.length) {
+        if(data.status !== 'OK' || !data.routes?.length) {
           throw new Error(`Google Directions error: ${data.status}`);
         }
 
@@ -603,10 +598,9 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
         };
       }
 
-      // Calcular distancia/tiempo entre posición geocodificada y origen del itinerario
       const travel = await googleTravelTime({
-        lat1: lat,
-        lon1: lng,
+        lat1: ubi.latitud,
+        lon1: ubi.longitud,
         lat2: Number(row.origen_latitud),
         lon2: Number(row.origen_longitud),
         mode: 'driving',
@@ -614,18 +608,18 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
         useTraffic: true
       });
 
-      // Crear detalle del itinerario
       await itineDet.create({
         id_itinerarios: row.id_itinerarios,
+        economico: payload.data.conditions[0]['details']['deviceMovement']['vehicle']['name'],
         operador: row.operador,
-        latitud: lat,
-        longitud: lng,
-        direccion: ubi,
+        latitud: ubi.latitud,
+        longitud: ubi.longitud,
+        direccion: ubi.location,
         geocerca: name,
-        combustible: 0,
+        combustible: ubi.fuelpercent,
         km: travel.distance_km,
-        tiempo: Math.round(travel.duration_sec / 60), // minutos
-        fecha: fechaInsert // o moment(row.fecha_orden).format('YYYY-MM-DD') si es lo que necesitas
+        tiempo: Math.round(travel.duration_sec / 60),
+        fecha: fechaInsert
       }, {
         fields: [
           'id_itinerarios',
@@ -635,7 +629,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
           'direccion',
           'geocerca',
           'combustible',
-          'km',        // <— antes faltaba
+          'km',
           'tiempo',
           'fecha'
         ]
@@ -701,6 +695,74 @@ async function ubicacion(idsam) {
       return null;
     }
   } catch (error) {
+    console.error('Error fetching vehicle stats:', error.message);
+    return null;
+  }
+}
+
+async function ultimaubi(iduni) {
+  try {
+    const result = await Samsara.getVehicleStats({
+      vehicleIds: iduni,
+      types: 'ecuSpeedMph,gps,obdOdometerMeters,fuelPercents'
+    });
+
+    // }).then(async result => {
+
+
+
+        
+     if(result && result.data && result.data.data.length > 0) {
+        const elements = result['data']['data'];
+        var resultados = [];
+        var operador = '';
+        
+        for(const element of elements) {
+            // Samsara.getVehicle({id: element.id}).then(vehicle => {
+            //     console.log('Información del vehículo:', vehicle['data']['data']['staticAssignedDriver']['name']);
+            //     operador = vehicle['data']['data']['staticAssignedDriver']['name'];
+            // });
+
+            // console.log('Información del vehículo:', element.name, 'ID:', element.id);
+            
+            var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
+            const momentFechaKm = moment(element['ecuSpeedMph'].time).subtract(6, 'hours');
+            const momentFechaGps = moment(element['gps'].time).subtract(6, 'hours');
+            const momentFechaOdo = moment(element['obdOdometerMeters'].time).subtract(6, 'hours');
+            const fechaActualMX = moment().utcOffset('-06:00');
+            const fechaGpsMX = moment(momentFechaGps).utcOffset('-06:00');
+            const horasTranscurridas = fechaActualMX.diff(fechaGpsMX, 'hours', true);
+            var horasfinales = horasTranscurridas - 6;
+
+            resultados.push({
+                id_unidad: element.id,
+                unidad: element.name,
+                operador: operador,
+                fechahorakm: momentFechaKm.toISOString().replace('.000Z', 'Z'),
+                km: miakm.toFixed(),
+                fechahoragps: momentFechaGps.toISOString().replace('.000Z', 'Z'),
+                latitud: element['gps'].latitude,
+                longitud: element['gps'].longitude,
+                location: element['gps'].reverseGeo?.formattedLocation ?? null,
+                geocerca: element['gps'].address?.name ?? 'SIN GEOCERCA',
+                fechaodo: momentFechaOdo.toISOString().replace('.000Z', 'Z'),
+                odometer: element['obdOdometerMeters'].value,
+                estadounidad: miakm.toFixed() >= 10 ? 'En Movimiento' : 'Detenido',
+                fuelpercent: element['fuelPercent']?.value ?? 0,
+                horas: horasfinales.toFixed(2)
+            });
+
+        }
+
+      return resultados[0]
+    } 
+    else {
+      console.error('No GPS data found for the given vehicle ID.');
+      return null;
+    }
+      // });
+  }
+  catch (error) {
     console.error('Error fetching vehicle stats:', error.message);
     return null;
   }

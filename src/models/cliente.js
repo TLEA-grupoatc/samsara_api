@@ -7,6 +7,10 @@ module.exports = (sequelize, DataType) => {
         cliente:{
             type: DataType.STRING,
             allowNull: false
+        },
+        activo: {
+            type: DataType.STRING(45),
+            allowNull: true,
         }
     },
     {

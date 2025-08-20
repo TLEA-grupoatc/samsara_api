@@ -494,6 +494,101 @@ module.exports = app => {
         }
     }
 
+    app.arribosExportable = async (req, res) => {
+
+        try {
+
+            const ingresos = await sequelize.query(
+                `
+                    SELECT
+                        PAU.idpickandup AS 'id',
+                        CASE
+                            WHEN PAU.base = 1 THEN 'SALINAS'
+                            WHEN PAU.base = 2 THEN 'SALAMANCA'
+                        END AS base,
+                        PAU.unidad AS 'economico',
+                        PAU.operador,
+                        PAU.division,
+                        PAU.unidad_negocio,
+                        CASE 
+                            WHEN PAU.fk_agenda IS NOT NULL THEN 1
+                            ELSE 0
+                        END AS agendado,
+                        CASE 
+                            WHEN PAU.fk_entrada IS NOT NULL THEN 1
+                            ELSE 0
+                        END AS entrada
+                    FROM
+                        pd_pickandup PAU
+                    WHERE
+                        PAU.fk_entrada IS NOT NULL
+                        AND DATE(PAU.creado_el) >= CURDATE() - INTERVAL 62 DAY;
+                `,
+                {
+                    type: sequelize.QueryTypes.SELECT,
+                }
+            );
+            
+            return res.status(200).json({ 
+                OK: true,
+                msg: 'Obtenido correctamente',
+                result: ingresos,
+            });
+        } catch (error) {
+            console.error('Error en obtener arribos exportable:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.estatusUnidades = async (req, res) => {
+
+        try {
+
+            const unidades = await sequelize.query(
+                `
+                    SELECT
+                        CASE
+                            WHEN PAU.base = 1 THEN 'MTY'
+                            WHEN PAU.base = 2 THEN 'SAL'
+                        END AS base,
+                        PAU.unidad,
+                        PAU.operador,
+                        PAU.division,
+                        PAU.unidad_negocio,
+                        DATE(A.fecha_arribo_programado) AS fecha_agenda,
+                        DATE(E.fecha_entrada) AS fecha_entrada,
+                        CASE
+                            WHEN EV.ingreso_mtto IS NULL THEN NULL
+                            WHEN EV.ingreso_mtto = 0 THEN NULL
+                            WHEN EV.ingreso_mtto = 1 THEN DATE(EV.creado_el)
+                        END AS ingreso_mtto,
+                        DATE(EV.creado_el) AS fecha_ingreso_mtto,
+                        DATE(S.fecha_salida) AS fecha_salida
+                    FROM
+                        pd_pickandup PAU
+                        LEFT JOIN pd_agenda A ON PAU.fk_agenda = A.id_agenda
+                        LEFT JOIN pd_entrada E ON PAU.fk_entrada = E.id_entrada
+                        LEFT JOIN pd_evidencias EV ON PAU.fk_evidencias = EV.id_evidencias
+                        LEFT JOIN pd_salida S ON PAU.fk_salida = S.id_salida;
+                `,
+                {
+                    type: sequelize.QueryTypes.SELECT,
+                }
+            );
+            
+            return res.status(200).json(unidades);
+        } catch (error) {
+            console.error('Error en obtener estatus unidades conexion:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     return app;
 }
 

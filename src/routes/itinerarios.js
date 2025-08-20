@@ -3,9 +3,12 @@ module.exports = app => {
     const Iti = app.controllers.itinerarios;
 
     app.get('/getItinerarios', Iti.getItinerarios);
+    
+    app.get('/getItinerariosDetalle', Iti.getItinerariosDetalle);
+
+    app.get('/getInnerItinerarios', Iti.getInnerItinerarios);
 
     app.get('/itinerarioP', Iti.itinerarioP);
-    
     
     app.get('/CalculoDeRuta', Iti.CalculoDeRuta);
 }

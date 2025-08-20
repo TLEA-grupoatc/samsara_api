@@ -4,9 +4,16 @@ module.exports = app => {
 
     const axios = require('axios');
     const itine = app.database.models.Itinerarios;
+    const itineDet = app.database.models.ItinerarioDetalle;
 
-    app.getItinerarios = async (req, res) => {
+    app.getItinerarios = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD');
+
         itine.findAll({
+            where: {
+                fecha: hoy
+            }
         }).then(result => {
             res.json({
                 OK: true,
@@ -18,6 +25,52 @@ module.exports = app => {
                 msg: error.message
             });
         });
+    }
+
+    app.getItinerariosDetalle = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD');
+
+        itineDet.findAll({
+            where: {
+                fecha: hoy
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Resumen: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.getInnerItinerarios = (req, res) => {
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD');
+
+        itine.findAll({
+            where: {
+                fecha: hoy
+            },
+            include: [{
+                model: itineDet,
+                required: true,
+            }]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Resumen: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });   
     }
 
     app.itinerarioP = async (req, res) => {
@@ -61,6 +114,45 @@ module.exports = app => {
                 const locationUno = responseUno.data.results[0].geometry.location;
                 const locationDos = responseDos.data.results[0].geometry.location;
 
+                      async function googleTravelTime({lat1, lon1, lat2, lon2, mode = 'driving',apiKey = process.env.GOOGLE_MAPS_KEY, useTraffic = true}) {
+                        const params = new URLSearchParams({
+                          origin: `${lat1},${lon1}`,
+                          destination: `${lat2},${lon2}`,
+                          mode
+                        });
+                
+                        if (mode === 'driving' && useTraffic) {
+                          params.set('departure_time', 'now');
+                        }
+                
+                        const url = `https://maps.googleapis.com/maps/api/directions/json?${params.toString()}&key=${apiKey}`;
+                        const { data } = await axios.get(url, { timeout: 10000 });
+                
+                        if(data.status !== 'OK' || !data.routes?.length) {
+                          throw new Error(`Google Directions error: ${data.status}`);
+                        }
+                
+                        const leg = data.routes[0].legs[0];
+                        const duration = leg.duration_in_traffic?.value ?? leg.duration.value;
+                
+                        return {
+                          provider: 'Google',
+                          mode,
+                          distance_km: (leg.distance.value || 0) / 1000,
+                          duration_sec: duration || 0
+                        };
+                      }
+
+                    const travel = await googleTravelTime({
+                        lat1: locationUno.lat,
+                        lon1: locationUno.lng,
+                        lat2: locationDos.lat,
+                        lon2: locationDos.lng,
+                        mode: 'driving',
+                        apiKey: process.env.GOOGLE_MAPS_KEY,
+                        useTraffic: true
+                    });
+
                 let nuevoRegistro = new itine({
                     folio_orden: rr.ordenser_folio,
                     unidad: rr.terminal_clave,
@@ -75,6 +167,8 @@ module.exports = app => {
                     origen_latitud: locationUno.lat,
                     destino_longitud: locationDos.lng,
                     destino_latitud: locationDos.lat,
+                    tiempo: Math.round(travel.duration_sec / 60),
+                    km: travel.distance_km,
                     fecha: moment(rr.fecha_orden).format('YYYY-MM-DD')
                 });
 
@@ -93,6 +187,8 @@ module.exports = app => {
                     'origen_latitud',
                     'destino_longitud',
                     'destino_latitud',
+                    'tiempo',
+                    'km',
                     'fecha'
                     ]
                 });
@@ -113,17 +209,7 @@ module.exports = app => {
             console.error(err);
             res.status(500).json({ error: 'Error general del servidor' });
         }
-}
-
-    
-
-
-
-
-
-
-
-
+    }
 
     app.CalculoDeRuta = async (req, res) => {
         try {
