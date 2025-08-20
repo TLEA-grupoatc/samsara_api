@@ -610,7 +610,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
 
       await itineDet.create({
         id_itinerarios: row.id_itinerarios,
-        economico: payload.data.conditions[0]['details']['deviceMovement']['vehicle']['name'],
+        economico: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['name'],
         operador: row.operador,
         latitud: ubi.latitud,
         longitud: ubi.longitud,
