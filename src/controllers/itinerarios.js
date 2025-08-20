@@ -167,9 +167,10 @@ module.exports = app => {
                     origen_latitud: locationUno.lat,
                     destino_longitud: locationDos.lng,
                     destino_latitud: locationDos.lat,
+                    fecha_carga: moment(rr.fecha_carga).format('YYYY-MM-DD HH:mm:ss'),
                     tiempo: Math.round(travel.duration_sec / 60),
                     km: travel.distance_km,
-                    fecha: moment(rr.fecha_orden).format('YYYY-MM-DD')
+                    fecha: moment(rr.fecha_orden).format('YYYY-MM-DD HH:mm:ss')
                 });
 
                 await itine.create(nuevoRegistro.dataValues, {
@@ -187,6 +188,7 @@ module.exports = app => {
                     'origen_latitud',
                     'destino_longitud',
                     'destino_latitud',
+                    'fecha_carga',
                     'tiempo',
                     'km',
                     'fecha'

@@ -540,106 +540,106 @@ module.exports = app => {
 
             const today = new Date();
 
-            // let result = await pool.request().query("SELECT TOP(10)* FROM vordenser order by fecha_orden desc");
-            let result = await pool.request().query("SELECT vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos \
-                INNER JOIN bitacoras AS bt on bt.clave_bitacora = vos.clave_bitacora \
-                WHERE vos.fecha_orden BETWEEN '" + moment(today).format('YYYY-MM-DD') + "T00:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
-                AND vos.clave_bitacora IS NOT NULL");
+            let result = await pool.request().query("SELECT TOP(10)* FROM vordenser order by fecha_orden desc");
+            // let result = await pool.request().query("SELECT vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos \
+            //     INNER JOIN bitacoras AS bt on bt.clave_bitacora = vos.clave_bitacora \
+            //     WHERE vos.fecha_orden BETWEEN '" + moment(today).format('YYYY-MM-DD') + "T00:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
+            //     AND vos.clave_bitacora IS NOT NULL");
 
             sql.close();
 
-            result['recordsets'][0].forEach(async rr => {
-                const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+            // result['recordsets'][0].forEach(async rr => {
+            //     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
                                
-                var existe = await itine.findAll({
-                    where: {
-                        operador: rr.operador_nombre,
-                        economico: rr.unidad,
-                        origen: rr.origen_nom,
-                        destino: rr.destinatario_nom
-                    }
-                });
+            //     var existe = await itine.findAll({
+            //         where: {
+            //             operador: rr.operador_nombre,
+            //             economico: rr.unidad,
+            //             origen: rr.origen_nom,
+            //             destino: rr.destinatario_nom
+            //         }
+            //     });
 
-                if(existe.length === 0) {
-                    try {
-                        const responseUno = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-                            params: {
-                                address: rr.origen_dom,
-                                key: process.env.GOOGLE_MAPS_KEY
-                            }
-                        });
+            //     if(existe.length === 0) {
+            //         try {
+            //             const responseUno = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+            //                 params: {
+            //                     address: rr.origen_dom,
+            //                     key: process.env.GOOGLE_MAPS_KEY
+            //                 }
+            //             });
 
-                        const responseDos = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-                            params: {
-                                address: rr.destinatario_dom,
-                                key: process.env.GOOGLE_MAPS_KEY
-                            }
-                        });
+            //             const responseDos = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+            //                 params: {
+            //                     address: rr.destinatario_dom,
+            //                     key: process.env.GOOGLE_MAPS_KEY
+            //                 }
+            //             });
 
-                        if(responseUno.data.status !== 'OK') {
-                            return res.status(400).json({ error: 'No se pudo geocodificar la dirección' });
-                        }
+            //             if(responseUno.data.status !== 'OK') {
+            //                 return res.status(400).json({ error: 'No se pudo geocodificar la dirección' });
+            //             }
 
-                        if(responseDos.data.status !== 'OK') {
-                            return res.status(400).json({ error: 'No se pudo geocodificar la dirección' });
-                        }
+            //             if(responseDos.data.status !== 'OK') {
+            //                 return res.status(400).json({ error: 'No se pudo geocodificar la dirección' });
+            //             }
 
-                        const locationUno = responseUno.data.results[0].geometry.location;
-                        const locationDos = responseDos.data.results[0].geometry.location;
+            //             const locationUno = responseUno.data.results[0].geometry.location;
+            //             const locationDos = responseDos.data.results[0].geometry.location;
 
-                        let nuevoRegistro = new itine({
-                            folio_orden: rr.ordenser_folio, 
-                            unidad: rr.terminal_clave, 
-                            numero_empleado: rr.numero_empleado, 
-                            operador: rr.operador_nombre, 
-                            economico: rr.unidad, 
-                            origen: rr.origen_nom, 
-                            destino: rr.destinatario_nom, 
-                            origen_direccion: rr.origen_dom, 
-                            destino_direccion: rr.destinatario_dom, 
-                            origen_longitud: locationUno.lng, 
-                            origen_latitud: locationUno.lat, 
-                            destino_longitud: locationDos.lng, 
-                            destino_latitud: locationDos.lat, 
-                            fecha: moment(rr.fecha_orden).format('YYYY-MM-DD')
-                        });
+            //             let nuevoRegistro = new itine({
+            //                 folio_orden: rr.ordenser_folio, 
+            //                 unidad: rr.terminal_clave, 
+            //                 numero_empleado: rr.numero_empleado, 
+            //                 operador: rr.operador_nombre, 
+            //                 economico: rr.unidad, 
+            //                 origen: rr.origen_nom, 
+            //                 destino: rr.destinatario_nom, 
+            //                 origen_direccion: rr.origen_dom, 
+            //                 destino_direccion: rr.destinatario_dom, 
+            //                 origen_longitud: locationUno.lng, 
+            //                 origen_latitud: locationUno.lat, 
+            //                 destino_longitud: locationDos.lng, 
+            //                 destino_latitud: locationDos.lat, 
+            //                 fecha: moment(rr.fecha_orden).format('YYYY-MM-DD')
+            //             });
 
-                        itine.create(nuevoRegistro.dataValues, {
-                            fields: [
-                                'folio_orden', 
-                                'unidad', 
-                                'numero_empleado', 
-                                'operador', 
-                                'economico',
-                                'origen',
-                                'destino',
-                                'origen_direccion',
-                                'destino_direccion',
-                                'origen_longitud',
-                                'origen_latitud',
-                                'destino_longitud',
-                                'destino_latitud', 
-                                'fecha'
-                            ]
-                        })
-                        .then(result => {
-                            // console.log('ok');
-                        })
-                        .catch(error => {
-                            console.log(error);
-                        });
+            //             itine.create(nuevoRegistro.dataValues, {
+            //                 fields: [
+            //                     'folio_orden', 
+            //                     'unidad', 
+            //                     'numero_empleado', 
+            //                     'operador', 
+            //                     'economico',
+            //                     'origen',
+            //                     'destino',
+            //                     'origen_direccion',
+            //                     'destino_direccion',
+            //                     'origen_longitud',
+            //                     'origen_latitud',
+            //                     'destino_longitud',
+            //                     'destino_latitud', 
+            //                     'fecha'
+            //                 ]
+            //             })
+            //             .then(result => {
+            //                 // console.log('ok');
+            //             })
+            //             .catch(error => {
+            //                 console.log(error);
+            //             });
 
-                    } catch (error) {
-                        console.error(error);
-                        res.status(500).json({ error: 'Error interno del servidor' });
-                    }
-                } 
-                else {
-                    console.log('Ya existe el folio:', existe[0].folio_orden);
-                }
+            //         } catch (error) {
+            //             console.error(error);
+            //             res.status(500).json({ error: 'Error interno del servidor' });
+            //         }
+            //     } 
+            //     else {
+            //         console.log('Ya existe el folio:', existe[0].folio_orden);
+            //     }
                                
-                await sleep(3000);
-            });
+            //     await sleep(3000);
+            // });
             
             res.json({
                 OK: true,

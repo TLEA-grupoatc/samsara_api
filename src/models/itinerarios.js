@@ -57,6 +57,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.FLOAT,
             allowNull: true
         }, 
+        fecha_carga: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         tiempo: {
             type: DataType.INTEGER,
             allowNull: true

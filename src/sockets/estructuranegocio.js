@@ -2,7 +2,7 @@ const moment = require('moment');
 
 module.exports = app => {
 
-    const Unidad = app.database.models.Unidad;
+    const Unidad = app.database.models.Unidades;
     const Coordinador = app.database.models.Coordinador;
     const Cliente = app.database.models.Clientes;
     const Circuito = app.database.models.Circuito;

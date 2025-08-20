@@ -6,7 +6,7 @@ const fs = require('fs');
 module.exports = app => {
 
     const Sequelize = app.database.sequelize;
-    const Unidad = app.database.models.Unidad;
+    const Unidad = app.database.models.Unidades;
     const Cliente = app.database.models.Clientes;
     const Coordinador = app.database.models.Coordinador;
     const Circuito = app.database.models.Circuito;
@@ -485,7 +485,7 @@ module.exports = app => {
                 // console.log('update', update)
 
 
-                const test = await Unidad.update(
+                await Unidad.update(
                     update,
                     {
                         where: { id_unidad: update.id_unidad },

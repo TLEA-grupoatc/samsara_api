@@ -492,7 +492,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   else if(payload.data?.conditions[0].description === 'Geofence Entry') {
     var ubi = await ultimaubi(payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
-    let fechaInsert = moment(payload.data.happenedAtTime).format('YYYY-MM-DD');
+    let fechaInsert = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
 
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id'],
