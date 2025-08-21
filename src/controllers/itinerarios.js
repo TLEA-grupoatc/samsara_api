@@ -54,7 +54,7 @@ module.exports = app => {
 
         itine.findAll({
             where: {
-                fecha: hoy
+                fecha_creacion: hoy
             },
             include: [{
                 model: itineDet,
