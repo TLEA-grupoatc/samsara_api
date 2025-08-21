@@ -623,6 +623,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       }, {
         fields: [
           'id_itinerarios',
+          'economico',
           'operador',
           'latitud',
           'longitud',
