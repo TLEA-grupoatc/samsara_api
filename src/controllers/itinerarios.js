@@ -77,7 +77,7 @@ module.exports = app => {
         try {
             const listaordenes = await axios.get('https://servidorlocal.ngrok.app/itinerariosVO');
             const ordenes = listaordenes.data.Registros || [];
-
+            var today = new Date();
             const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
             for (const rr of ordenes) {
@@ -171,7 +171,7 @@ module.exports = app => {
                     tiempo: Math.round(travel.duration_sec / 60),
                     km: travel.distance_km,
                     fecha: moment(rr.fecha_orden).format('YYYY-MM-DD HH:mm:ss'),
-                    fecha_creacion: moment(now()).format('YYYY-MM-DD')
+                    fecha_creacion: moment(today).format('YYYY-MM-DD')
                 });
 
                 await itine.create(nuevoRegistro.dataValues, {
