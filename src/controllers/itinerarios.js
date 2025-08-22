@@ -6,6 +6,10 @@ module.exports = app => {
     const itine = app.database.models.Itinerarios;
     const itineDet = app.database.models.ItinerarioDetalle;
 
+    const Sequelize = require('sequelize');
+    const { literal } = require('sequelize');
+    const Op = Sequelize.Op;
+
     app.getItinerarios = (req, res) => {
         var today = new Date();
         const hoy = moment(today).format('YYYY-MM-DD');

@@ -1268,18 +1268,21 @@ module.exports = app => {
 
 
 
+    // app.resumenActividadesOperador = (req, res) => {
 
 
-
+    // }
 
 
     app.resumenActividadesOperador = (req, res) => {
         const hoy = moment().format('YYYY-MM-DD');
         const noventadias = moment().subtract(90, 'days').format('YYYY-MM-DD');
+        const anio = req.params.anio || req.query.anio || moment().year();
 
         historico.findAll({
             attributes: [
                 'nombre',
+                [Sequelize.fn('MONTH', Sequelize.col('fecha')), 'mes'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad NOT IN ('TRANS', 'SINV', 'ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'DESC', 'LIQ', 'POSB', 'MTTO', 'ESP', 'RETRA', 'PERM', 'LICENCIA', 'ISS-LOG', 'DNLAB') THEN '' END")), 'VIAJE'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'TRANS' THEN '' END")), 'TRANS'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'SINV' THEN '' END")), 'SINV'],
@@ -1300,13 +1303,36 @@ module.exports = app => {
             ],
             where: {
                 fecha: {
-                    [Op.between]: [noventadias, hoy]
+                    [Op.between]: [
+                        moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                        moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                    ]
                 }
             },
-            group: ['nombre'],
+            group: ['mes', 'nombre'],
             order: [
-                ['nombre', 'ASC']
+                [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'DESC'], ['nombre', 'ASC']
             ],
+
+                //            attributes: [
+                //     'nombre',
+                //     [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'mes'],
+                //     [historico.sequelize.fn('COUNT', historico.sequelize.col('actividad')), 'totaldiasdescansados'],
+                // ],
+                // where: {
+                //     nombre: operadorId,
+                //     actividad: {
+                //         [Op.in]: ['ISS-D', 'DESC']
+                //     },
+                //     fecha: {
+                //         [Op.between]: [
+                //             moment(`${anio}-01-01`).format('YYYY-MM-DD'),
+                //             moment(`${anio}-12-31`).format('YYYY-MM-DD')
+                //         ],
+                //     }
+                // },
+                // group: ['mes', 'nombre'],
+                // order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'DESC']]
         }).then(result => {
             res.json({
                 OK: true,
