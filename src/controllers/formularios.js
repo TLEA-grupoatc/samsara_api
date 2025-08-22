@@ -1519,6 +1519,75 @@ module.exports = app => {
 
 
 
+    app.resumenActividadesOperador = (req, res) => {
+        const hoy = moment().format('YYYY-MM-DD');
+        const noventadias = moment().subtract(90, 'days').format('YYYY-MM-DD');
+
+        historico.findAll({
+            attributes: [
+                'nombre',
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad NOT IN ('TRANS', 'SINV', 'ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'DESC', 'LIQ', 'POSB', 'MTTO', 'ESP', 'RETRA', 'PERM', 'LICENCIA', 'ISS-LOG', 'DNLAB') THEN '' END")), 'VIAJE'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'TRANS' THEN '' END")), 'TRANS'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'SINV' THEN '' END")), 'SINV'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISSUE' THEN '' END")), 'ISSUE'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISS-D' THEN '' END")), 'ISS-D'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'DESVIO' THEN '' END")), 'DESVIO'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'INCA' THEN '' END")), 'INCA'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'DESC' THEN '' END")), 'DESC'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'LIQ' THEN '' END")), 'LIQ'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'POSB' THEN '' END")), 'POSB'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'MTTO' THEN '' END")), 'MTTO'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ESP' THEN '' END")), 'ESP'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'RETRA' THEN '' END")), 'RETRA'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'PERM' THEN '' END")), 'PERM'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'LICENCIA' THEN '' END")), 'LICENCIA'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISS-LOG' THEN '' END")), 'ISS-LOG'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'DNLAB' THEN '' END")), 'DNLAB']
+            ],
+            where: {
+                fecha: {
+                    [Op.between]: [noventadias, hoy]
+                }
+            },
+            group: ['nombre'],
+            order: [
+                ['nombre', 'ASC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Resumen: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

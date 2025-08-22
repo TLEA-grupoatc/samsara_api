@@ -24,9 +24,6 @@ module.exports = app => {
 
     const { parseISO, startOfWeek, endOfWeek, endOfDay, addWeeks, differenceInCalendarWeeks, es, format } = require('date-fns');
 
-
-
-
     app.reporteInmovilizadores = async (req, res) => {
         var listatractos = [
             '281474983153054',
@@ -336,9 +333,140 @@ module.exports = app => {
             '281474997271107',
             '281474997272294'
         ];
+
+
+//   let allResults = [];
+//   const pstartDate = moment().subtract(2, 'days').format('YYYY-MM-DD');
+//   const pendDate   = moment().format('YYYY-MM-DD');
+//   const startDate  = pstartDate.toString() + 'T00:00:00Z';
+//   const endDate    = pendDate.toString()   + 'T23:59:59Z';
+
+//   const latestByVehicle = new Map(); // vehicleId -> item más reciente global
+//   let requestCount = 0;
+
+//   // límites anti-loop por batch
+//   const maxPagesPerBatch = 10;
+
+//   try {
+//     for (let i = 0; i < listatractos.length; i += 5) {
+//       const batch = listatractos.slice(i, i + 5); // 1 por batch
+//       console.log(batch);
+      
+//       let after;                // cursor para paginar
+//       let lastCursor;           // para detectar cursor repetido
+//       let pageCount = 0;        // páginas consumidas en este batch
+
+//       do {
+//         const params = {
+//           vehicleIds: batch,
+//           startTime: startDate,
+//           ...(after ? { after } : {})
+//         };
+
+//         const response = await Samsara.getEngineImmobilizerStates(params);
+//         requestCount += 1;
+
+//         // Throttle cada 5 requests (incluye páginas)
+//         if (requestCount % 5 === 0) {
+//           await new Promise((r) => setTimeout(r, 1000));
+//         }
+
+//         const items = response?.data?.data ?? [];
+//         const pag   = response?.data?.pagination;
+
+//         // Actualizar últimos por vehículo
+//         for (const item of items) {
+//           const prev   = latestByVehicle.get(item.vehicleId);
+//           const currTs = new Date(item.happenedAtTime);
+//           if (!prev || new Date(prev.happenedAtTime) < currTs) {
+//             latestByVehicle.set(item.vehicleId, item);
+//           }
+//         }
+
+//         // --- Validaciones para cortar y brincar al siguiente batch ---
+//         // 1) Si no hay items pero el API insiste en hasNextPage, cortamos.
+//         // if (items.length === 0 && pag?.hasNextPage) {
+//         //   console.warn(`Batch ${batch.join(',')} sin datos pero con hasNextPage=true. Cortando paginación del batch.`);
+//         //   break; // salir del do/while -> siguiente batch
+//         // }
+
+//         // 2) Evitar loop por cursor repetido
+//         if (pag?.hasNextPage && pag?.endCursor && pag.endCursor === lastCursor) {
+//           console.warn(`Batch ${batch.join(',')} con endCursor repetido (${pag.endCursor}). Cortando paginación del batch.`);
+//           break;
+//         }
+
+//         // 3) Límite de páginas por batch
+//         pageCount += 1;
+//         if(pageCount >= maxPagesPerBatch) {
+//           console.warn(`Batch ${batch.join(',')} alcanzó maxPagesPerBatch=${maxPagesPerBatch}. Cortando paginación del batch.`);
+//           break;
+//         }
+
+//         // Manejo normal de paginación
+//         if (pag?.hasNextPage && pag?.endCursor) {
+//           lastCursor = pag.endCursor;
+//           after = pag.endCursor;
+//         } else {
+//           after = undefined; // fin de páginas para este batch
+//         }
+//       } while (after);
+//     }
+
+//     allResults = Array.from(latestByVehicle.values());
+
+//     return res.json({
+//       OK: true,
+//       Resultados: allResults,
+//       Total: allResults.length
+//     });
+//   } catch (err) {
+//     console.error('Fallo en reporteInmovilizadores:', err);
+//     return res.status(500).json({
+//       OK: false,
+//       error: 'Error generando el reporte de inmovilizadores'
+//     });
+//   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         let allResults = [];
 
-        const pstartDate = moment().subtract(7, 'days').format('YYYY-MM-DD');
+        const pstartDate = moment().subtract(3, 'days').format('YYYY-MM-DD');
         const pendDate = moment().format('YYYY-MM-DD');
         const startDate = pstartDate.toString() + 'T00:00:00Z';
         const endDate = pendDate.toString() + 'T23:59:59Z';
@@ -354,8 +482,7 @@ module.exports = app => {
 
                 const params = {
                     vehicleIds: batch,
-                    startTime: startDate,
-                    endTime: endDate
+                    startTime: startDate
                 };
 
                 const response = await Samsara.getEngineImmobilizerStates(params);
@@ -388,8 +515,22 @@ module.exports = app => {
             Resultados: allResults,
             Total: allResults.length
         });
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
+
+    
     app.obtenerReporteUltimaLocacion = async (req, res) => {
         Samsara.getVehicleStats({
             tagIds: '4343814,4244687,4236332,4399105,4531263,3907109',
@@ -441,7 +582,7 @@ module.exports = app => {
                 Reporte: resultados
             });
         });
-    }
+    }    
 
     app.obtenerReporteULYI = async (req, res) => {
         try {
@@ -580,71 +721,6 @@ module.exports = app => {
                 msg: error.message
             });
         });
-    }
-
-    async function enlazarUnidadAOperadorSamsara() {
-        var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
-        var operadores = [];
-        var tractos = [];
-        var listafinal= [];
-
-        const operadoresResult = await Samsara.listDrivers();
-        operadoresResult['data']['data'].forEach(element => {
-            operadores.push({
-                id_operador: element.id,
-                name: element.name
-            });
-        });
-
-        const tractosResult = await Samsara.listVehicles({ limit: '512' });
-        tractosResult['data']['data'].forEach(element => {
-            if(element.name && element.name.startsWith('C-')) {
-                element.name = element.name.replace('C-', 'C');
-            }
-
-            tractos.push({
-                id_unidad: element.id,
-                name: element.name
-            });
-        });
-
-        const listaoperadoresAdvan = await axios.get('https://servidorlocal.ngrok.app/obtenerBitacorasQuinceDias');
-        const listaadvan = listaoperadoresAdvan.data.Registros || [];
-
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        for(const op of listaadvan) {
-            const operador = operadores.find(o => o.name === op.operador);
-            const tracto = tractos.find(t => t.name === op.economico);
-            
-            op.id_operador = operador ? operador.id_operador : null;
-            op.id_unidad = tracto ? tracto.id_unidad : null;
-            op.fecha = fechaHoy;
-            
-            let data = new ope({
-                tracto_actual: op.economico,
-                fecha_actividad: moment().format('YYYY-MM-DD')
-            });
-            
-            ope.update(data.dataValues, {
-                where: {
-                    nombre: op.operador
-                },
-                fields: ['tracto_actual', 'fecha_actividad']
-            });
-            
-            if(op.id_operador && op.id_unidad) {
-                listafinal.push(op);
-                await Samsara.createDriverVehicleAssignment({
-                    driverId: op.id_operador,
-                    vehicleId: op.id_unidad
-                }).then(({ data }) => console.log(data)).catch(err => console.error(err));
-            }
-
-            await delay(250);
-        }
     }
 
     app.obtenerEnlazarOpeSam = async  (req, res) => {
@@ -1659,10 +1735,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
     app.obtenerGraficaGobernadas = async (req, res) => {
     try {
         const today = new Date();
@@ -1726,15 +1798,6 @@ module.exports = app => {
         res.status(412).json({ msg: error.message });
     }
     };
-
-
-
-
-
-
-
-
-
 
     app.obtenerGraficaUnidadesParoMotor = async (req, res) => {
         var today = new Date();
@@ -2105,6 +2168,70 @@ module.exports = app => {
         });
     }
 
+    async function enlazarUnidadAOperadorSamsara() {
+        var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
+        var operadores = [];
+        var tractos = [];
+        var listafinal= [];
+
+        const operadoresResult = await Samsara.listDrivers();
+        operadoresResult['data']['data'].forEach(element => {
+            operadores.push({
+                id_operador: element.id,
+                name: element.name
+            });
+        });
+
+        const tractosResult = await Samsara.listVehicles({ limit: '512' });
+        tractosResult['data']['data'].forEach(element => {
+            if(element.name && element.name.startsWith('C-')) {
+                element.name = element.name.replace('C-', 'C');
+            }
+
+            tractos.push({
+                id_unidad: element.id,
+                name: element.name
+            });
+        });
+
+        const listaoperadoresAdvan = await axios.get('https://servidorlocal.ngrok.app/obtenerBitacorasQuinceDias');
+        const listaadvan = listaoperadoresAdvan.data.Registros || [];
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        for(const op of listaadvan) {
+            const operador = operadores.find(o => o.name === op.operador);
+            const tracto = tractos.find(t => t.name === op.economico);
+            
+            op.id_operador = operador ? operador.id_operador : null;
+            op.id_unidad = tracto ? tracto.id_unidad : null;
+            op.fecha = fechaHoy;
+            
+            let data = new ope({
+                tracto_actual: op.economico,
+                fecha_actividad: moment().format('YYYY-MM-DD')
+            });
+            
+            ope.update(data.dataValues, {
+                where: {
+                    nombre: op.operador
+                },
+                fields: ['tracto_actual', 'fecha_actividad']
+            });
+            
+            if(op.id_operador && op.id_unidad) {
+                listafinal.push(op);
+                await Samsara.createDriverVehicleAssignment({
+                    driverId: op.id_operador,
+                    vehicleId: op.id_unidad
+                }).then(({ data }) => console.log(data)).catch(err => console.error(err));
+            }
+
+            await delay(250);
+        }
+    }
 
     function parseDateLocal(yyyy_mm_dd) {
         if(!yyyy_mm_dd) return null;

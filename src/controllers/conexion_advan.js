@@ -540,7 +540,7 @@ module.exports = app => {
 
             const today = new Date();
 
-            let result = await pool.request().query("SELECT TOP(10)* FROM vordenser order by fecha_orden desc");
+            let result = await pool.request().query("SELECT TOP(10)* FROM vordenser where cartaporte is not null order by fecha_orden desc");
             // let result = await pool.request().query("SELECT vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos \
             //     INNER JOIN bitacoras AS bt on bt.clave_bitacora = vos.clave_bitacora \
             //     WHERE vos.fecha_orden BETWEEN '" + moment(today).format('YYYY-MM-DD') + "T00:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
