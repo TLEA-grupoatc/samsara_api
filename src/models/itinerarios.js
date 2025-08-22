@@ -1,3 +1,5 @@
+const { STRING } = require("sequelize");
+
 module.exports = (sequelize, DataType) => {
     const Itinerarios = sequelize.define('Itinerarios',{
         id_itinerarios: {
@@ -57,6 +59,22 @@ module.exports = (sequelize, DataType) => {
             type: DataType.FLOAT,
             allowNull: true
         }, 
+        origen_desc: {
+            type: DataType.STRING,
+            allowNull: true
+        },
+        destino_desc: {
+            type: DataType.STRING,
+            allowNull: true
+        },
+        ruta_destino_os: {
+            type: DataType.STRING,
+            allowNull: true
+        },
+        ruta_origen_os: {
+            type: DataType.STRING,
+            allowNull: true
+        },
         fecha_carga: {
             type: DataType.STRING,
             allowNull: true

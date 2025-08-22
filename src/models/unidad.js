@@ -152,6 +152,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING(100),  
             allowNull: true
         },
+        categoria: {
+            type: DataType.STRING(45),  
+            allowNull: true
+        },
         operador: {
             type: DataType.STRING(100),  
             allowNull: true

@@ -15,6 +15,47 @@ module.exports = app => {
 
     const docunidad = app.database.models.DocsUnidades;
 
+    
+    app.obtenerEstructura = async (req, res) => {
+
+        try {
+            const unidad = await Sequelize.query(
+                `
+                    SELECT
+                        U.name AS economico,
+                        U.division,
+                        U.tag AS unidad,
+                        CLI.cliente,
+                        COR.nombre_coor AS coordinador,
+                        CIR.nombre_circuito AS circuito
+                    FROM
+                        unidad U
+                        LEFT JOIN cliente CLI ON U.idcliente = CLI.id_cliente
+                        LEFT JOIN coordinador COR ON U.idcoordinador = COR.id_coordinador
+                        LEFT JOIN circuito CIR ON U.idcircuito = CIR.id_circuito
+                    WHERE
+                        U.estado = 'A'
+                    ORDER BY
+                        U.name ASC;
+                `,
+                {
+                    type: Sequelize.QueryTypes.SELECT,
+                }
+            );
+
+            // console.log(unidad[0]);
+
+            return res.status(200).json(unidad);
+
+        } catch (error) {
+            console.error('Error al obtener estructura:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     app.obtenerDetallesUnidad = async (req, res) => {
 
         try {
@@ -30,6 +71,7 @@ module.exports = app => {
                         U.model,
                         U.year,
                         U.estructura,
+                        U.categoria,
                         U.division,
                         U.tag,
                         U.idcliente,

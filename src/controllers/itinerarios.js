@@ -49,12 +49,14 @@ module.exports = app => {
     }
 
     app.getInnerItinerarios = (req, res) => {
-        var today = new Date();
-        const hoy = moment(today).format('YYYY-MM-DD');
+        const hoy = moment().format('YYYY-MM-DD');
+        const cincodias = moment().subtract(90, 'days').format('YYYY-MM-DD');
 
         itine.findAll({
             where: {
-                fecha_creacion: hoy
+                fecha_creacion: {
+                    [Op.between]: [cincodias, hoy]
+                }
             },
             include: [{
                 model: itineDet,
@@ -159,14 +161,18 @@ module.exports = app => {
                     numero_empleado: rr.numero_empleado,
                     operador: rr.operador_nombre,
                     economico: rr.unidad,
-                    origen: rr.origen_nom,
-                    destino: rr.destinatario_nom,
+                    origen: rr.origen_nom.trim(),
+                    destino: rr.destinatario_nom.trim(),
                     origen_direccion: rr.origen_dom,
                     destino_direccion: rr.destinatario_dom,
                     origen_longitud: locationUno.lng,
                     origen_latitud: locationUno.lat,
                     destino_longitud: locationDos.lng,
                     destino_latitud: locationDos.lat,
+                    origen_desc: rr.origen_desc.trim(),
+                    destino_desc: rr.destino_desc.trim(),
+                    ruta_destino_os: rr.ruta_destino_os.trim(),
+                    ruta_origen_os: rr.ruta_origen_os.trim(),
                     fecha_carga: moment(rr.fecha_carga).format('YYYY-MM-DD HH:mm:ss'),
                     tiempo: Math.round(travel.duration_sec / 60),
                     km: travel.distance_km,
@@ -189,6 +195,10 @@ module.exports = app => {
                     'origen_latitud',
                     'destino_longitud',
                     'destino_latitud',
+                    'origen_desc',
+                    'destino_desc',
+                    'ruta_destino_os',
+                    'ruta_origen_os',
                     'fecha_carga',
                     'tiempo',
                     'km',

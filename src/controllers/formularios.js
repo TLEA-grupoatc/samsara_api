@@ -134,55 +134,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.obtenerOperadoresConHistorico = async (req, res) => {
         const year = parseInt(req.query.year) || moment().year();
         const month = parseInt(req.query.month) || moment().month() + 1;
@@ -268,171 +219,6 @@ module.exports = app => {
             res.status(500).json({ OK: false, msg: err.message });
         }
     };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // app.obtenerOperadoresConHistorico = async (req, res) => {
-    //     const year = req.query.year ? parseInt(req.query.year) : moment().year();
-    //     const month = req.query.month ? parseInt(req.query.month) : moment().month() + 1; // month is 1-based for users
-
-    //     const monthPadded = month.toString().padStart(2, '0');
-    //     const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
-    //     const endOfMonth = moment(startOfMonth).endOf('month').startOf('day');
-    //     const daysInMonth = endOfMonth.date();
-
-    //     let empleadosExternos = [];
-    //     let listaTractosAsignados = [];
-    //     let listaUltimaLiquidacion = [];
-    //     let listaViajes = [];
-
-    //     try {
-    //         const response = await axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos');
-    //         listaViajes = response.data.Registros || [];
-    //     }
-    //     catch (err) {
-    //         listaViajes = [];
-    //     }
-
-    //     try {
-    //         const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
-    //         empleadosExternos = response.data.Empleados || [];
-    //     }
-    //     catch (err) {
-    //         empleadosExternos = [];
-    //     }
-
-    //     try {
-    //         listaTractosAsignados = await operador.findAll({
-    //             order: [
-    //                 ['nombre', 'ASC']
-    //             ]
-    //         });
-    //     }
-    //     catch (err) {
-    //         listaTractosAsignados = [];
-    //     }
-
-    //     try {
-    //         listaUltimaLiquidacion = await liquidacion.findAll({
-    //             attributes: [
-    //                 'operador',
-    //                 [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
-    //             ],
-    //             where: {
-    //                 estado: 'COMPLETO'
-    //             },
-    //             group: ['operador'],
-    //             order: [
-    //                 ['operador', 'DESC']
-    //             ]
-    //         });
-            
-    //     }
-    //     catch (err) {
-    //         listaUltimaLiquidacion = [];
-    //     }
-
-    //     try {
-    //         const operadoresResponse = await axios.get('https://servidorlocal.ngrok.app/listadoOperadores');
-    //         const operadores = operadoresResponse.data.Registros || [];
-
-    //         const actividades = await historico.findAll({
-    //             where: {
-    //                 fecha: {
-    //                     [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')],
-    //                 }
-    //             },
-    //             order: [
-    //                 ['fecha', 'DESC']
-    //             ]
-    //         });
-
-    //         const operadoresConActividades = operadores.map(op => {
-    //             const actividadesDelOperador = actividades.filter(h => h.nombre === op.OPERADOR_NOMBRE);
-    //             const empleadoExterno = empleadosExternos.find(e => Number(e.numero_empleado) == Number(op.operador_num_externo));
-    //             const tractos = listaTractosAsignados.find(e => e.nombre == op.OPERADOR_NOMBRE);
-    //             const ultimaLiquidacion = listaUltimaLiquidacion.find(e => e.operador == op.OPERADOR_NOMBRE);
-    //             const viajes = listaViajes.find(e => e.operador == op.OPERADOR_NOMBRE);
-
-    //             const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
-    //             const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
-    //             const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
-    //             const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
-    //             const conexperiencia = tractos && tractos.experiencia ? tractos.experiencia : 0;
-    //             const conclase = tractos && tractos.clase ? tractos.clase : '';
-    //             const conlicencia = tractos && tractos.licencia ? tractos.licencia : '';
-    //             const fechaliquidacion = ultimaLiquidacion && ultimaLiquidacion.fecha_pago ? ultimaLiquidacion.fecha_pago : "";
-                
-    //             const viajesLargos = viajes && viajes.viajeLargo ? viajes.viajeLargo : 0;
-    //             const viajesCortos = viajes && viajes.viajeCorto ? viajes.viajeCorto : 0;
-
-    //             const registros = Array.from({ length: daysInMonth }, (_, index) => {
-    //                 const fecha = moment(startOfMonth).add(index, 'days').format('YYYY-MM-DD');
-    //                 const titulo = `Día ${index + 1}: ${moment(fecha).format('YYYY-MM-DD')}`;
-    //                 const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
-
-    //                 return {
-    //                     titulo,
-    //                     numeroEmpleado: op.operador_num_externo,
-    //                     operador: op.OPERADOR_NOMBRE,
-    //                     unidad: op.operador_terminal,
-    //                     actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad ? actividad.actividad : "",
-    //                     comentarios: actividad ? actividad.comentarios : "",
-    //                     id_historico: actividad ? actividad.id_historico : null
-    //                 };
-    //             });
-
-    //             return {
-    //                 ...op,
-    //                 avatar,
-    //                 tractoTitular,
-    //                 tractoActual,
-    //                 esconflictivo,
-    //                 conexperiencia,
-    //                 conclase,
-    //                 conlicencia,
-    //                 viajesLargos,
-    //                 viajesCortos,
-    //                 fechaliquidacion,
-    //                 registros
-    //             };
-    //         });
-
-    //         res.json({
-    //             OK: true,
-    //             Operadores: operadoresConActividades
-    //         });
-    //     }
-    //     catch (error) {
-    //         res.status(412).json({
-    //             OK: false,
-    //             msg: error.message
-    //         });
-    //     }
-    // }
 
     app.obtenerOperadoresConHistoricoConFiltro = async (req, res) => {
         const year = req.params.year ? parseInt(req.params.year) : moment().year();
@@ -987,50 +773,6 @@ module.exports = app => {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.actualizarOperador = (req, res) => {
         let body = req.body;
 
@@ -1519,6 +1261,18 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
     app.resumenActividadesOperador = (req, res) => {
         const hoy = moment().format('YYYY-MM-DD');
         const noventadias = moment().subtract(90, 'days').format('YYYY-MM-DD');
@@ -1565,16 +1319,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1791,13 +1535,8 @@ module.exports = app => {
         });
     }
 
-
-
     app.crearActividadOperador = async (req, res) => {
         const body = req.body.todo;
-
-        console.log(body);
-        
 
         try {
             const promesas = body.map(element => {
@@ -1812,11 +1551,12 @@ module.exports = app => {
                     usuario: element.usuario
                 };
 
-                if(element.id_historico == undefined || element.id_historico == null) {
+                if(element.id_historico == undefined || element.id_historico == null) {         
                     return historico.create(nuevoRegistro, {
                         fields: Object.keys(nuevoRegistro)
                     });
-                } else {
+                }
+                else {
                     return historico.update(nuevoRegistro, {
                         where: { id_historico: element.id_historico },
                         fields: Object.keys(nuevoRegistro)
@@ -1830,14 +1570,14 @@ module.exports = app => {
                 OK: true,
                 Actividad: result
             });
-        } catch (error) {
+        } 
+        catch (error) {
             res.status(412).json({
                 OK: false,
                 msg: error.message
             });
         }
     };
-
 
     app.crearActividadOperadorIndividual = (req, res) => {
         let body = req.body;
@@ -1921,16 +1661,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
-
-
 
     app.obtenerActividadesDOXOperador = (req, res) => {
         actviidaddo.findAll({
@@ -2515,20 +2245,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.obtenerUltimaActividadOperador = async (req, res) => {
         try {
             const results = await historico.findAll({
@@ -2574,18 +2290,6 @@ module.exports = app => {
         }
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
     app.obtenerCronogramaActividadDo = (req, res) => {
         const year = req.params.year ? parseInt(req.params.year) : moment().year();

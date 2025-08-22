@@ -17,6 +17,8 @@ module.exports = app => {
     app.get('/estructura-negocio/resumendivisiones', EstructuraNegocio.obtenerResumenUnidades );
     app.get('/estructura-negocio/resumenestructuras', EstructuraNegocio.obtenerResumenPorEstructuras );
     
+    app.get('/estructura-negocio/obtenerestructura', EstructuraNegocio.obtenerEstructura );
+
     app.post('/estructura-negocio/actualizarcampanas', [verificarToken], EstructuraNegocio.actualizarCampanas );
 
     app.post('/estructura-negocio/crearcoordinador', [verificarToken], EstructuraNegocio.crearNuevoCoordinador );
