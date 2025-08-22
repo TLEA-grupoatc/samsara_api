@@ -677,9 +677,9 @@ module.exports = app => {
             if(fechagobernada && fechaparomotor){
                 await Unidad.update(
                     {
-                        fechagobernada: fechagobernada,
+                        fechagobernada: moment(fechagobernada).toDate(),
                         gobernada: gobernada,
-                        fechaparomotor: fechaparomotor,
+                        fechaparomotor: moment(fechaparomotor).toDate(),
                         paromotor: paromotor,
                     },
                     { 
@@ -690,7 +690,7 @@ module.exports = app => {
             } else if (fechagobernada){
                 await Unidad.update(
                     {
-                        fechagobernada: fechagobernada,
+                        fechagobernada: moment(fechagobernada).toDate(),
                         gobernada: gobernada,
                     },
                     { 
@@ -701,7 +701,7 @@ module.exports = app => {
             } else if (fechaparomotor){
                 await Unidad.update(
                     {
-                        fechaparomotor: fechaparomotor,
+                        fechaparomotor: moment(fechaparomotor).toDate(),
                         paromotor: paromotor,
                     },
                     { 

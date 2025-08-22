@@ -1268,10 +1268,9 @@ module.exports = app => {
 
 
 
-    // app.resumenActividadesOperador = (req, res) => {
+    app.resumenCantidadActividadeOperador = (req, res) => {
 
-
-    // }
+    }
 
 
     app.resumenActividadesOperador = (req, res) => {
@@ -1312,27 +1311,7 @@ module.exports = app => {
             group: ['mes', 'nombre'],
             order: [
                 [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'DESC'], ['nombre', 'ASC']
-            ],
-
-                //            attributes: [
-                //     'nombre',
-                //     [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'mes'],
-                //     [historico.sequelize.fn('COUNT', historico.sequelize.col('actividad')), 'totaldiasdescansados'],
-                // ],
-                // where: {
-                //     nombre: operadorId,
-                //     actividad: {
-                //         [Op.in]: ['ISS-D', 'DESC']
-                //     },
-                //     fecha: {
-                //         [Op.between]: [
-                //             moment(`${anio}-01-01`).format('YYYY-MM-DD'),
-                //             moment(`${anio}-12-31`).format('YYYY-MM-DD')
-                //         ],
-                //     }
-                // },
-                // group: ['mes', 'nombre'],
-                // order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'DESC']]
+            ]
         }).then(result => {
             res.json({
                 OK: true,

@@ -525,8 +525,8 @@ module.exports = app => {
 
             const today = new Date();
 
-            // let result = await pool.request().query("SELECT TOP(10)* FROM vordenser where cartaporte is not null order by fecha_orden desc");
-            let result = await pool.request().query("SELECT TOP(10)* vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos ");
+            let result = await pool.request().query("SELECT TOP(10)* FROM vordenser where fecha_reporte_entrega is not null order by fecha_orden desc");
+            // let result = await pool.request()/.query("SELECT TOP(10)* vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos ");
 
             sql.close();
 
