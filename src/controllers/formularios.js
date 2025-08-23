@@ -1269,8 +1269,8 @@ module.exports = app => {
 
 
     app.resumenCantidadActividadeOperador = async (req, res) => {
-        const year = parseInt(req.query.year) || moment().year();
-        const month = parseInt(req.query.month) || moment().month() + 1;
+        const year = parseInt(req.params.year);
+        const month = parseInt(req.params.month);
 
         const monthStr = month.toString().padStart(2, '0');
         const startOfMonth = moment(`${year}-${monthStr}-01`).startOf('day');
@@ -1294,8 +1294,8 @@ module.exports = app => {
                 axios.get('https://servidorlocal.ngrok.app/listadoOperadores'),
                 historico.findAll({
                     where: {
-                        // fecha: { [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')] }
-                        fecha: { [Op.between]: ['2025-08-13', '2025-08-13'] }
+                        fecha: { [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')] }
+                        // fecha: { [Op.between]: ['2025-08-13', '2025-08-13'] }
                     },
                     order: [['fecha', 'DESC']]
                 })
@@ -1347,6 +1347,8 @@ module.exports = app => {
                     registros
                 };
             });
+
+            var datos = [];
 
             operadoresConActividades.forEach((re) => {
             const detalleRegistros = re.registros?.map((r) => ({

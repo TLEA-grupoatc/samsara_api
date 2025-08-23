@@ -105,7 +105,7 @@ module.exports = app => {
     app.get('/obtenerUltimaActividadOperador', Fo.obtenerUltimaActividadOperador);
     
     
-    app.get('/resumenCantidadActividadeOperador', Fo.resumenCantidadActividadeOperador);
+    app.get('/resumenCantidadActividadeOperador/:year/:month', Fo.resumenCantidadActividadeOperador);
     
     app.get('/resumenActividadesOperador', Fo.resumenActividadesOperador);
 
