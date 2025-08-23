@@ -98,24 +98,6 @@ module.exports = app => {
                 });
 
                 if(existe.length === 0) {
-                    if(rr.fecha_reporte_entrega != null) {
-                        let data = new itine({
-                            fecha_reporte_entrega: rr.fecha_reporte_entrega,
-                        });
-    
-                        itine.update(data.dataValues, {
-                            where: {
-                                id_itinerarios: rr.id_itinerarios
-                            },
-                            fields: ['fecha_reporte_entrega']
-                        }).then(result => {
-                            console.log('Se Actualizo la fecha entrega: ', rr.folio_orden);
-                        }).catch(err => {
-                            console.log(err);
-                        });
-                    }
-
-
                     try {
                         const responseUno = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
                             params: {
@@ -236,6 +218,23 @@ module.exports = app => {
                 } 
                 else {
                     console.log('Ya existe el folio:', existe[0].folio_orden);
+                    if(existe[0].fecha_reporte_entrega != null) {
+                        let data = new itine({
+                            fecha_reporte_entrega: existe[0].fecha_reporte_entrega,
+                        });
+    
+                        itine.update(data.dataValues, {
+                            where: {
+                                id_itinerarios: existe[0].id_itinerarios
+                            },
+                            fields: ['fecha_reporte_entrega']
+                        }).then(result => {
+                            console.log('Se Actualizo la fecha entrega: ', existe[0].folio_orden);
+                        }).catch(err => {
+                            console.log(err);
+                        });
+                    }
+
                 }
 
                 await sleep(1000);
