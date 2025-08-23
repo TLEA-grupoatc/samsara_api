@@ -105,7 +105,16 @@ module.exports = app => {
     app.get('/obtenerUltimaActividadOperador', Fo.obtenerUltimaActividadOperador);
     
     
+    app.get('/resumenCantidadActividadeOperador', Fo.resumenCantidadActividadeOperador);
+    
     app.get('/resumenActividadesOperador', Fo.resumenActividadesOperador);
+
+
+
+
+
+
+
 
 
     app.get('/obtenerCronogramaActividadDo/:year/:month', verificarToken, Fo.obtenerCronogramaActividadDo);

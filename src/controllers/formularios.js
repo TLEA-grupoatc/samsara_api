@@ -1268,8 +1268,125 @@ module.exports = app => {
 
 
 
-    app.resumenCantidadActividadeOperador = (req, res) => {
+    app.resumenCantidadActividadeOperador = async (req, res) => {
+        const year = parseInt(req.query.year) || moment().year();
+        const month = parseInt(req.query.month) || moment().month() + 1;
 
+        const monthStr = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthStr}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month');
+        const daysInMonth = endOfMonth.date();
+        const fechasMes = Array.from({ length: daysInMonth }, (_, i) => moment(startOfMonth).add(i, 'days').format('YYYY-MM-DD'));
+
+        try {
+            const [viajesResp, empleadosResp, tractosAsignados, ultimasLiquidaciones, operadoresResp, actividades] = await Promise.all([
+                axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
+                axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
+                operador.findAll({ order: [['nombre', 'ASC']] }),
+                liquidacion.findAll({
+                    attributes: [
+                        'operador',
+                        [Sequelize.fn('MAX', Sequelize.col('fecha_pago')), 'fecha_pago']
+                    ],
+                    where: { estado: 'COMPLETO' },
+                    group: ['operador']
+                }),
+                axios.get('https://servidorlocal.ngrok.app/listadoOperadores'),
+                historico.findAll({
+                    where: {
+                        // fecha: { [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')] }
+                        fecha: { [Op.between]: ['2025-08-13', '2025-08-13'] }
+                    },
+                    order: [['fecha', 'DESC']]
+                })
+            ]);
+
+            const empleadosMap = Object.fromEntries(empleadosResp.data.Empleados.map(e => [e.numero_empleado, e]));
+            const tractosMap = Object.fromEntries(tractosAsignados.map(t => [t.nombre, t]));
+            const liquidacionesMap = Object.fromEntries(ultimasLiquidaciones.map(l => [l.operador, l]));
+            const viajesMap = Object.fromEntries(viajesResp.data.Registros.map(v => [v.operador, v]));
+
+            const operadores = operadoresResp.data.Registros || [];
+
+            const operadoresConActividades = operadores.map(op => {
+            const nombre = op.OPERADOR_NOMBRE;
+            const numEmpleado = Number(op.operador_num_externo);
+            const actividadesDelOperador = actividades.filter(a => a.nombre === nombre);
+            const empleado = empleadosMap[numEmpleado] || {};
+            const tracto = tractosMap[nombre] || {};
+            const liquidacion = liquidacionesMap[nombre] || {};
+            const viajes = viajesMap[nombre] || {};
+
+            const avatar = empleado?.avatar ? `https://api-rh.tlea.online/${empleado.avatar}` : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+
+            const registros = fechasMes.map((fecha, i) => {
+                const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
+                return {
+                    titulo: `Día ${i + 1}: ${fecha}`,
+                    numeroEmpleado: op.operador_num_externo,
+                    operador: nombre,
+                    unidad: op.operador_terminal,
+                    actividad: fecha > moment().format('YYYY-MM-DD') ? "B" : actividad?.actividad || "",
+                    comentarios: actividad?.comentarios || "",
+                    id_historico: actividad?.id_historico || null
+                };
+            });
+
+            return {
+                    ...op,
+                    avatar,
+                    tractoTitular: tracto.tracto_titular || "",
+                    tractoActual: tracto.tracto_actual || "",
+                    esconflictivo: tracto.conflictivo || 0,
+                    conexperiencia: tracto.experiencia || 0,
+                    conclase: tracto.clase || '',
+                    conlicencia: tracto.licencia || '',
+                    viajesLargos: viajes.viajeLargo || 0,
+                    viajesCortos: viajes.viajeCorto || 0,
+                    fechaliquidacion: liquidacion.fecha_pago || "",
+                    registros
+                };
+            });
+
+            operadoresConActividades.forEach((re) => {
+            const detalleRegistros = re.registros?.map((r) => ({
+                titulo: r.titulo,
+                actividad: r.actividad
+            })) || [];
+
+            if (detalleRegistros.length === 0) {
+                datos.push({
+                operadorTerminal: re.unidad,
+                operadorTipo: re.SUBTIPO_DESCRIP,
+                operadorNumExterno: re.operador_num_externo,
+                operadorNombre: re.OPERADOR_NOMBRE,
+                avatar: re.avatar,
+                estado: 'Activo',
+                titulo: '',
+                actividad: ''
+                });
+            } 
+            else {
+                detalleRegistros.forEach((detalle) => {
+                datos.push({
+                    operadorTerminal: re.unidad,
+                    operadorTipo: re.SUBTIPO_DESCRIP,
+                    operadorNumExterno: re.operador_num_externo,
+                    operadorNombre: re.OPERADOR_NOMBRE,
+                    avatar: re.avatar,
+                    estado: 'Activo',
+                    titulo: detalle.titulo,
+                    actividad: detalle.actividad
+                });
+                });
+            }
+            });
+
+            res.json({ OK: true, Operadores: datos });
+        }
+        catch (err) {
+            res.status(500).json({ OK: false, msg: err.message });
+        }
     }
 
 
@@ -1286,7 +1403,7 @@ module.exports = app => {
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'TRANS' THEN '' END")), 'TRANS'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'SINV' THEN '' END")), 'SINV'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISSUE' THEN '' END")), 'ISSUE'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISS-D' THEN '' END")), 'ISS-D'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISS-D' THEN '' END")), 'ISSD'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'DESVIO' THEN '' END")), 'DESVIO'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'INCA' THEN '' END")), 'INCA'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'DESC' THEN '' END")), 'DESC'],
@@ -1297,7 +1414,7 @@ module.exports = app => {
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'RETRA' THEN '' END")), 'RETRA'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'PERM' THEN '' END")), 'PERM'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'LICENCIA' THEN '' END")), 'LICENCIA'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISS-LOG' THEN '' END")), 'ISS-LOG'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISS-LOG' THEN '' END")), 'ISSLOG'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'DNLAB' THEN '' END")), 'DNLAB']
             ],
             where: {
@@ -1310,7 +1427,7 @@ module.exports = app => {
             },
             group: ['mes', 'nombre'],
             order: [
-                [historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'DESC'], ['nombre', 'ASC']
+                ['nombre', 'ASC']
             ]
         }).then(result => {
             res.json({
