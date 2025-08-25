@@ -166,6 +166,8 @@ module.exports = app => {
                             numero_empleado: rr.numero_empleado,
                             operador: rr.operador_nombre,
                             economico: rr.unidad,
+                            cliente: rr.cliente_nombre,
+                            clave_bitacora: rr.clave_bitacora,
                             origen: rr.origen_nom.trim(),
                             destino: rr.destinatario_nom.trim(),
                             origen_direccion: rr.origen_dom,
@@ -182,7 +184,8 @@ module.exports = app => {
                             tiempo: Math.round(travel.duration_sec / 60),
                             km: travel.distance_km,
                             fecha: moment(rr.fecha_orden).format('YYYY-MM-DD HH:mm:ss'),
-                            fecha_creacion: moment(today).format('YYYY-MM-DD')
+                            fecha_creacion: moment(today).format('YYYY-MM-DD'),
+                            fecha_reporte_entrega: null
                         });
 
                         await itine.create(nuevoRegistro.dataValues, {
@@ -192,6 +195,8 @@ module.exports = app => {
                                 'numero_empleado',
                                 'operador',
                                 'economico',
+                                'cliente',
+                                'clave_bitacora',
                                 'origen',
                                 'destino',
                                 'origen_direccion',
@@ -208,7 +213,8 @@ module.exports = app => {
                                 'tiempo',
                                 'km',
                                 'fecha',
-                                'fecha_creacion'
+                                'fecha_creacion',
+                                'fecha_reporte_entrega,'
                             ]
                         });
                     } 
@@ -218,9 +224,10 @@ module.exports = app => {
                 } 
                 else {
                     console.log('Ya existe el folio:', existe[0].folio_orden);
-                    if(existe[0].fecha_reporte_entrega != null) {
+  
+                    if(rr.fecha_reporte_entrega != null) {
                         let data = new itine({
-                            fecha_reporte_entrega: existe[0].fecha_reporte_entrega,
+                            fecha_reporte_entrega: rr.fecha_reporte_entrega,
                         });
     
                         itine.update(data.dataValues, {
@@ -237,7 +244,7 @@ module.exports = app => {
 
                 }
 
-                await sleep(1000);
+                await sleep(500);
             }
 
             res.json({ OK: true });

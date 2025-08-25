@@ -27,6 +27,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: false
         }, 
+        cliente: {
+            type: DataType.STRING,
+            allowNull: false
+        }, 
+        clave_bitacora: {
+            type: DataType.STRING,
+            allowNull: false
+        }, 
         origen: {
             type: DataType.STRING,
             allowNull: false
