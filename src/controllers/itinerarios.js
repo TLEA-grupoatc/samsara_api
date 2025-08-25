@@ -227,7 +227,7 @@ module.exports = app => {
   
                     if(rr.fecha_reporte_entrega != null) {
                         let data = new itine({
-                            fecha_reporte_entrega: rr.fecha_reporte_entrega,
+                            fecha_reporte_entrega: moment(rr.fecha_reporte_entrega).format('YYYY-MM-DD HH:mm:ss'),
                         });
     
                         itine.update(data.dataValues, {
