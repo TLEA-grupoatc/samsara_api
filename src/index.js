@@ -365,6 +365,8 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
 app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
+  console.log(payload.data?.conditions[0].description);
+
   if(payload.data?.conditions[0].description === 'Asset starts moving') {
     var ubi = await ubicacion(payload.data.conditions[0]['details']['deviceMovement']['vehicle']['id']);
     let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
@@ -500,7 +502,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       motor: 1,
       geocerca: payload.data.conditions[0]['details']['geofenceEntry']['address']['name'],
       ubicacion: payload.data.conditions[0]['details']['geofenceEntry']['address']['formattedAddress'],
-      ubicacion_snapshot: ubi,
+      ubicacion_snapshot: ubi.location,
       hora_entrada: fechahora,
       movimiento: 'Entro a Geocerca',
       hora_salida: null,
@@ -522,7 +524,6 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
 
-    
     try {
       const cond = payload?.data?.conditions?.[0];
       const entry = cond?.details?.geofenceEntry;
