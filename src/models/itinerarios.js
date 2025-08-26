@@ -1,5 +1,3 @@
-const { STRING } = require("sequelize");
-
 module.exports = (sequelize, DataType) => {
     const Itinerarios = sequelize.define('Itinerarios',{
         id_itinerarios: {

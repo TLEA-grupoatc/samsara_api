@@ -54,6 +54,15 @@ module.exports = (sequelize, DataType) => {
         tableName: 'itinerarios_detalle',        
         timestamps: false
     });
+
+    ItinerarioDetalle.associate = (models) => {
+        ItinerarioDetalle.belongsTo(models.Itinerarios, {
+            foreignKey: 'id_itinerarios',
+            targetKey: 'id_itinerarios'
+        });
+    };
+    
+
     
     return ItinerarioDetalle;
 }

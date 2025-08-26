@@ -961,6 +961,65 @@ module.exports = app => {
         }
     }
 
+    
+    app.obtenerUnidadesGobernadas = async (req, res) => {
+
+        try {
+            const gobernadas = await Sequelize.query(
+                `
+                    SELECT
+                        U.id_unidad,
+                        U.name AS economico,
+                        U.division,
+                        U.tag AS unidad,
+                        CLI.cliente,
+                        U.make AS marca,
+                        U.model AS modelo,
+                        U.year AS año,
+                        U.licensePlate AS placa,
+                        U.vin,
+                        CASE
+                            WHEN U.gobernada = 1 THEN 'Gobernada'
+                            WHEN U.gobernada = 0 THEN 'No Gobernada'
+                        END AS Unidad_Gobernada,
+                        U.fechagobernada,
+                        CASE
+                            WHEN U.paromotor = 1 THEN 'Instalado'
+                            WHEN U.paromotor = 0 THEN 'No Instalado'
+                        END AS Unidad_ParoMotor,
+                        U.fechaparomotor AS Fecha_ParoMotor
+                    FROM
+                        unidad U
+                        LEFT JOIN cliente CLI ON U.idcliente = CLI.id_cliente
+                        LEFT JOIN coordinador COR ON U.idcoordinador = COR.id_coordinador
+                        LEFT JOIN circuito CIR ON U.idcircuito = CIR.id_circuito
+                    WHERE
+                        U.estado = 'A'
+                    ORDER BY
+                        U.name ASC;
+                `,
+                {
+                    type: Sequelize.QueryTypes.SELECT,
+                }
+            );
+
+            // console.log(unidad[0]);
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Unidades gobernadas obtenidas correctamente',
+                result: gobernadas
+            });
+
+        } catch (error) {
+            console.error('Error al obtener detalles de unidad:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     // app.crearFamilia = async (req, res) => {
 
     //     // let t;

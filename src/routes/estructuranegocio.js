@@ -18,6 +18,7 @@ module.exports = app => {
     app.get('/estructura-negocio/resumenestructuras', EstructuraNegocio.obtenerResumenPorEstructuras );
     
     app.get('/estructura-negocio/obtenerestructura', EstructuraNegocio.obtenerEstructura );
+    app.get('/estructura-negocio/obtenergobernadas', EstructuraNegocio.obtenerUnidadesGobernadas );
 
     app.post('/estructura-negocio/actualizarcampanas', [verificarToken], EstructuraNegocio.actualizarCampanas );
 

@@ -52,11 +52,39 @@ module.exports = app => {
         });
     }
 
-    app.getInnerItinerarios = (req, res) => {
-        const hoy = moment().format('YYYY-MM-DD');
-        const cincodias = moment().subtract(90, 'days').format('YYYY-MM-DD');
+    // app.getInnerItinerarios = (req, res) => {
+    //     const hoy = moment().format('YYYY-MM-DD');
+    //     const cincodias = moment().subtract(90, 'days').format('YYYY-MM-DD');
 
-        itine.findAll({
+    //     itine.findAll({
+    //         where: {
+    //             fecha_creacion: {
+    //                 [Op.between]: [cincodias, hoy]
+    //             }
+    //         },
+    //         include: [{
+    //             model: itineDet,
+    //             required: true,
+    //         }]
+    //     }).then(result => {
+    //         res.json({
+    //             OK: true,
+    //             Resumen: result
+    //         })
+    //     })
+    //     .catch(error => {
+    //         res.status(412).json({
+    //             msg: error.message
+    //         });
+    //     });   
+    // }
+
+app.getInnerItinerarios = async (req, res) => {
+    const hoy = moment().format('YYYY-MM-DD');
+    const cincodias = moment().subtract(90, 'days').format('YYYY-MM-DD');
+
+    try {
+        const resultados = await itine.findAll({
             where: {
                 fecha_creacion: {
                     [Op.between]: [cincodias, hoy]
@@ -64,20 +92,54 @@ module.exports = app => {
             },
             include: [{
                 model: itineDet,
-                required: true,
+                as: 'ItinerarioDetalles', // asegúrate que el alias coincida con la relación
+                required: true
             }]
-        }).then(result => {
-            res.json({
-                OK: true,
-                Resumen: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
+        });
+
+        const datosFiltrados = resultados.map(itinerario => {
+            const agrupadosPorHora = new Map();
+
+            // Agrupar por hora y seleccionar el más reciente
+            itinerario.ItinerarioDetalles.forEach(det => {
+                const horaClave = moment(det.fecha).format('YYYY-MM-DD HH:00');
+
+                if (!agrupadosPorHora.has(horaClave)) {
+                    agrupadosPorHora.set(horaClave, det);
+                } else {
+                    const existente = agrupadosPorHora.get(horaClave);
+                    if (moment(det.fecha).isAfter(moment(existente.fecha))) {
+                        agrupadosPorHora.set(horaClave, det);
+                    }
+                }
             });
-        });   
+
+            const detallesPorHora = Array.from(agrupadosPorHora.values());
+
+            // Clonar el itinerario y reemplazar detalles
+            const itinerarioFinal = {
+                ...itinerario.toJSON(),
+                ItinerarioDetalles: detallesPorHora
+            };
+
+            return itinerarioFinal;
+        });
+
+        res.json({
+            OK: true,
+            Total: datosFiltrados.length,
+            Resumen: datosFiltrados
+        });
+
+    } catch (error) {
+        res.status(412).json({
+            OK: false,
+            msg: error.message
+        });
     }
+};
+
+
 
     app.itinerarioP = async (req, res) => {
         try {
@@ -244,7 +306,7 @@ module.exports = app => {
 
                 }
 
-                await sleep(500);
+                // await sleep(500);
             }
 
             res.json({ OK: true });
