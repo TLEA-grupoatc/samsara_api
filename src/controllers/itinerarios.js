@@ -65,20 +65,36 @@ module.exports = app => {
                 },
                 include: [{
                     model: itineDet,
-                    as: 'ItinerarioDetalles',
+                    as: 'ItinerarioDetalles', // asegúrate que el alias coincida con la relación
                     required: true
                 }]
             });
 
             const datosFiltrados = resultados.map(itinerario => {
-                const detallesConCasilla = itinerario.ItinerarioDetalles.map((det, idx) => ({
-                    ...det.toJSON(),
-                    casilla: idx + 1
-                }));
+                const agrupadosPorHora = new Map();
+
+                itinerario.ItinerarioDetalles.forEach(det => {
+                    const horaClave = moment(det.fecha).format('YYYY-MM-DD HH:00');
+
+                    if(!agrupadosPorHora.has(horaClave)) {
+                            casilla = 1;
+                        agrupadosPorHora.set(horaClave, det);
+                    } 
+                    else {
+                        const existente = agrupadosPorHora.get(horaClave);
+                        if (moment(det.fecha).isAfter(moment(existente.fecha))) {
+                            agrupadosPorHora.set(horaClave, det);
+                        }
+                    }
+                });
+
+                const detallesPorHora = Array.from(agrupadosPorHora.values(), (det, index) => {
+                    return { ...det.toJSON(), casilla: index + 1 };
+                });
 
                 const itinerarioFinal = {
                     ...itinerario.toJSON(),
-                    ItinerarioDetalles: detallesConCasilla
+                    ItinerarioDetalles: detallesPorHora
                 };
 
                 return itinerarioFinal;
