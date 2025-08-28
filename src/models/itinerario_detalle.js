@@ -45,6 +45,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         }, 
+        velocidad: {
+            type: DataType.INTEGER,
+            allowNull: true
+        }, 
+        estado: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         fecha: {
             type: DataType.STRING,
             allowNull: true

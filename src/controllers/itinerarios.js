@@ -1,5 +1,5 @@
 const moment = require('moment');
-
+const dotenv = require('dotenv').config();
 module.exports = app => {
 
     const axios = require('axios');
@@ -52,101 +52,129 @@ module.exports = app => {
         });
     }
 
-    // app.getInnerItinerarios = (req, res) => {
-    //     const hoy = moment().format('YYYY-MM-DD');
-    //     const cincodias = moment().subtract(90, 'days').format('YYYY-MM-DD');
+    app.getInnerItinerarios = async (req, res) => {
+        const hoy = moment().format('YYYY-MM-DD');
+        const cincodias = moment().subtract(90, 'days').format('YYYY-MM-DD');
 
-    //     itine.findAll({
-    //         where: {
-    //             fecha_creacion: {
-    //                 [Op.between]: [cincodias, hoy]
-    //             }
-    //         },
-    //         include: [{
-    //             model: itineDet,
-    //             required: true,
-    //         }]
-    //     }).then(result => {
-    //         res.json({
-    //             OK: true,
-    //             Resumen: result
-    //         })
-    //     })
-    //     .catch(error => {
-    //         res.status(412).json({
-    //             msg: error.message
-    //         });
-    //     });   
-    // }
-
-app.getInnerItinerarios = async (req, res) => {
-    const hoy = moment().format('YYYY-MM-DD');
-    const cincodias = moment().subtract(90, 'days').format('YYYY-MM-DD');
-
-    try {
-        const resultados = await itine.findAll({
-            where: {
-                fecha_creacion: {
-                    [Op.between]: [cincodias, hoy]
-                }
-            },
-            include: [{
-                model: itineDet,
-                as: 'ItinerarioDetalles', // asegúrate que el alias coincida con la relación
-                required: true
-            }]
-        });
-
-        const datosFiltrados = resultados.map(itinerario => {
-            const agrupadosPorHora = new Map();
-
-            // Agrupar por hora y seleccionar el más reciente
-            itinerario.ItinerarioDetalles.forEach(det => {
-                const horaClave = moment(det.fecha).format('YYYY-MM-DD HH:00');
-
-                if (!agrupadosPorHora.has(horaClave)) {
-                    agrupadosPorHora.set(horaClave, det);
-                } else {
-                    const existente = agrupadosPorHora.get(horaClave);
-                    if (moment(det.fecha).isAfter(moment(existente.fecha))) {
-                        agrupadosPorHora.set(horaClave, det);
+        try {
+            const resultados = await itine.findAll({
+                where: {
+                    fecha_creacion: {
+                        [Op.between]: [cincodias, hoy]
                     }
-                }
+                },
+                include: [{
+                    model: itineDet,
+                    as: 'ItinerarioDetalles', // asegúrate que el alias coincida con la relación
+                    required: true
+                }]
             });
 
-            const detallesPorHora = Array.from(agrupadosPorHora.values());
+            const datosFiltrados = resultados.map(itinerario => {
+                const agrupadosPorHora = new Map();
 
-            // Clonar el itinerario y reemplazar detalles
-            const itinerarioFinal = {
-                ...itinerario.toJSON(),
-                ItinerarioDetalles: detallesPorHora
-            };
+                // Agrupar por hora y seleccionar el más reciente
+                itinerario.ItinerarioDetalles.forEach(det => {
+                    const horaClave = moment(det.fecha).format('YYYY-MM-DD HH:00');
 
-            return itinerarioFinal;
-        });
+                    if (!agrupadosPorHora.has(horaClave)) {
+                        agrupadosPorHora.set(horaClave, det);
+                    } else {
+                        const existente = agrupadosPorHora.get(horaClave);
+                        if (moment(det.fecha).isAfter(moment(existente.fecha))) {
+                            agrupadosPorHora.set(horaClave, det);
+                        }
+                    }
+                });
 
-        res.json({
-            OK: true,
-            Total: datosFiltrados.length,
-            Resumen: datosFiltrados
-        });
+                const detallesPorHora = Array.from(agrupadosPorHora.values());
 
-    } catch (error) {
-        res.status(412).json({
-            OK: false,
-            msg: error.message
-        });
-    }
-};
+                // Clonar el itinerario y reemplazar detalles
+                const itinerarioFinal = {
+                    ...itinerario.toJSON(),
+                    ItinerarioDetalles: detallesPorHora
+                };
 
+                return itinerarioFinal;
+            });
 
+            res.json({
+                OK: true,
+                Total: datosFiltrados.length,
+                Resumen: datosFiltrados
+            });
+
+        } catch (error) {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        }
+    };
 
     app.itinerarioP = async (req, res) => {
         try {
             const listaordenes = await axios.get('https://servidorlocal.ngrok.app/itinerariosVO');
             const ordenes = listaordenes.data.Registros || [];
+    
+            const listdeubicaciones = await axios.get('https://apisamsara.tlea.online/obtenerReporteUltimaLocacion');
+            // const ubicaciones = agruparOrdenes(listdeubicaciones.data.Reporte || []);
+            const ubicaciones = listdeubicaciones.data.Reporte || [];
+
+            
+const grupos = agruparManteniendoFormato(ordenes);
+console.log(grupos);
+
+            // const grupos = ord
+            
             var today = new Date();
             const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// === Helpers mínimos (no cambian tu formato) ===
+function normalizeKey(v) {
+  return (v ?? '')
+    .toString()
+    .trim()
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/\s+/g, ' ');
+}
+
+function groupKey(o) {
+  return [
+    normalizeKey(o.clave_bitacora),
+    normalizeKey(o.operador_nombre),
+    normalizeKey(o.origen_dom),
+    normalizeKey(o.destinatario_dom),
+  ].join('|');
+}
+
+// === Agrupar manteniendo formato (solo agrega `unidades`) ===
+function agruparManteniendoFormato(ordenes = []) {
+  const map = new Map();
+
+  for (const o of ordenes) {
+    const k = groupKey(o);
+    let g = map.get(k);
+    if (!g) {
+      // Clon superficial del primer elemento del grupo y agregamos `unidades`
+      g = { ...o, unidades: [] };
+      g.__unidadesSet = new Set(); // interno temporal
+      map.set(k, g);
+    }
+    if (o.unidad != null) g.__unidadesSet.add(o.unidad);
+  }
+
+  // Finalizar: Set -> Array y limpiar campo interno
+  return Array.from(map.values()).map(g => {
+    g.unidades = Array.from(g.__unidadesSet);
+    delete g.__unidadesSet;
+    return g;
+  });
+}
+
+
 
             for(const rr of ordenes) {
                 const existe = await itine.findAll({
@@ -303,10 +331,89 @@ app.getInnerItinerarios = async (req, res) => {
                             console.log(err);
                         });
                     }
-
+                    else {
+                        for(const ubi of ubicaciones) {
+                            
+                            // if(rr.operador === ubi.operador && rr.economico === ubi.unidad) {
+                            if(existe[0].economico === ubi.unidad) {
+                                async function googleTravelTime({lat1, lon1, lat2, lon2, mode = 'driving', apiKey = process.env.GOOGLE_MAPS_KEY, useTraffic = true}) {
+                                    const params = new URLSearchParams({
+                                        origin: `${lat1},${lon1}`,
+                                        destination: `${lat2},${lon2}`,
+                                        mode
+                                    });
+                         
+                            
+                                    if(mode === 'driving' && useTraffic) {
+                                        params.set('departure_time', 'now');
+                                    }
+                            
+                                    const url = `https://maps.googleapis.com/maps/api/directions/json?${params.toString()}&key=${apiKey}`;
+                                    const { data } = await axios.get(url, { timeout: 10000 });
+                            
+                                    if(data.status !== 'OK' || !data.routes?.length) {
+                                        throw new Error(`Google Directions error: ${data.status}`);
+                                    }
+                            
+                                    const leg = data.routes[0].legs[0];
+                                    const duration = leg.duration_in_traffic?.value ?? leg.duration.value;
+                            
+                                    return {
+                                        provider: 'Google',
+                                        mode,
+                                        distance_km: (leg.distance.value || 0) / 1000,
+                                        duration_sec: duration || 0
+                                    };
+                                }
+                                
+                                const travel = await googleTravelTime({
+                                    lat1: ubi.latitud,
+                                    lon1: ubi.longitud,
+                                    lat2: Number(existe[0].destino_latitud),
+                                    lon2: Number(existe[0].destino_longitud),
+                                    mode: 'driving',
+                                    apiKey: process.env.GOOGLE_MAPS_KEY,
+                                    useTraffic: true
+                                });
+                        
+                                await itineDet.create({
+                                    id_itinerarios: existe[0].id_itinerarios,
+                                    economico: existe[0].unidad,
+                                    operador: existe[0].operador,
+                                    latitud: ubi.latitud,
+                                    longitud: ubi.longitud,
+                                    direccion: ubi.location,
+                                    geocerca: ubi.geocerca,
+                                    combustible: ubi.fuelpercent,
+                                    km: travel.distance_km,
+                                    tiempo: Math.round(travel.duration_sec / 60),
+                                    velocidad: ubi.km,
+                                    estado: ubi.estadounidad,
+                                    fecha: moment(existe[0].fechahoragps).format('YYYY-MM-DD HH:mm:ss'),
+                                }, 
+                                {
+                                    fields: [
+                                        'id_itinerarios',
+                                        'economico',
+                                        'operador',
+                                        'latitud',
+                                        'longitud',
+                                        'direccion',
+                                        'geocerca',
+                                        'combustible',
+                                        'km',
+                                        'tiempo',
+                                        'velocidad',
+                                        'estado',
+                                        'fecha'
+                                    ]
+                                });
+                            }
+                        }
+                    }
                 }
 
-                // await sleep(500);
+                await sleep(1000);
             }
 
             res.json({ OK: true });
