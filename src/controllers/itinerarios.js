@@ -120,63 +120,59 @@ module.exports = app => {
             const ordenes = listaordenes.data.Registros || [];
     
             const listdeubicaciones = await axios.get('https://apisamsara.tlea.online/obtenerReporteUltimaLocacion');
-            // const ubicaciones = agruparOrdenes(listdeubicaciones.data.Reporte || []);
             const ubicaciones = listdeubicaciones.data.Reporte || [];
-
             
-const grupos = agruparManteniendoFormato(ordenes);
-console.log(grupos);
+            const grupos = agruparManteniendoFormato(ordenes);
+            console.log(grupos);
 
             // const grupos = ord
             
             var today = new Date();
             const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// === Helpers mínimos (no cambian tu formato) ===
-function normalizeKey(v) {
-  return (v ?? '')
-    .toString()
-    .trim()
-    .toUpperCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/\s+/g, ' ');
-}
+            // === Helpers mínimos (no cambian tu formato) ===
+            function normalizeKey(v) {
+            return (v ?? '')
+                .toString()
+                .trim()
+                .toUpperCase()
+                .normalize('NFD')
+                .replace(/\p{Diacritic}/gu, '')
+                .replace(/\s+/g, ' ');
+            }
 
-function groupKey(o) {
-  return [
-    normalizeKey(o.clave_bitacora),
-    normalizeKey(o.operador_nombre),
-    normalizeKey(o.origen_dom),
-    normalizeKey(o.destinatario_dom),
-  ].join('|');
-}
+            function groupKey(o) {
+            return [
+                normalizeKey(o.clave_bitacora),
+                normalizeKey(o.operador_nombre),
+                normalizeKey(o.origen_dom),
+                normalizeKey(o.destinatario_dom),
+            ].join('|');
+            }
 
-// === Agrupar manteniendo formato (solo agrega `unidades`) ===
-function agruparManteniendoFormato(ordenes = []) {
-  const map = new Map();
+            // === Agrupar manteniendo formato (solo agrega `unidades`) ===
+            function agruparManteniendoFormato(ordenes = []) {
+            const map = new Map();
 
-  for (const o of ordenes) {
-    const k = groupKey(o);
-    let g = map.get(k);
-    if (!g) {
-      // Clon superficial del primer elemento del grupo y agregamos `unidades`
-      g = { ...o, unidades: [] };
-      g.__unidadesSet = new Set(); // interno temporal
-      map.set(k, g);
-    }
-    if (o.unidad != null) g.__unidadesSet.add(o.unidad);
-  }
+            for (const o of ordenes) {
+                const k = groupKey(o);
+                let g = map.get(k);
+                if (!g) {
+                // Clon superficial del primer elemento del grupo y agregamos `unidades`
+                g = { ...o, unidades: [] };
+                g.__unidadesSet = new Set(); // interno temporal
+                map.set(k, g);
+                }
+                if (o.unidad != null) g.__unidadesSet.add(o.unidad);
+            }
 
-  // Finalizar: Set -> Array y limpiar campo interno
-  return Array.from(map.values()).map(g => {
-    g.unidades = Array.from(g.__unidadesSet);
-    delete g.__unidadesSet;
-    return g;
-  });
-}
-
-
+            // Finalizar: Set -> Array y limpiar campo interno
+            return Array.from(map.values()).map(g => {
+                g.unidades = Array.from(g.__unidadesSet);
+                delete g.__unidadesSet;
+                return g;
+            });
+            }
 
             for(const rr of ordenes) {
                 const existe = await itine.findAll({
@@ -277,7 +273,8 @@ function agruparManteniendoFormato(ordenes = []) {
                             km: travel.distance_km,
                             fecha: moment(rr.fecha_orden).format('YYYY-MM-DD HH:mm:ss'),
                             fecha_creacion: moment(today).format('YYYY-MM-DD'),
-                            fecha_reporte_entrega: null
+                            fecha_reporte_entrega: null,
+                            fecha_cierre_itinerario: null
                         });
 
                         await itine.create(nuevoRegistro.dataValues, {
@@ -306,7 +303,8 @@ function agruparManteniendoFormato(ordenes = []) {
                                 'km',
                                 'fecha',
                                 'fecha_creacion',
-                                'fecha_reporte_entrega,'
+                                'fecha_reporte_entrega',
+                                'fecha_cierre_itinerario'
                             ]
                         });
                     } 
@@ -335,8 +333,6 @@ function agruparManteniendoFormato(ordenes = []) {
                     }
                     else {
                         for(const ubi of ubicaciones) {
-                            
-                            // if(rr.operador === ubi.operador && rr.economico === ubi.unidad) {
                             if(existe[0].economico === ubi.unidad) {
                                 async function googleTravelTime({lat1, lon1, lat2, lon2, mode = 'driving', apiKey = process.env.GOOGLE_MAPS_KEY, useTraffic = true}) {
                                     const params = new URLSearchParams({
@@ -377,6 +373,25 @@ function agruparManteniendoFormato(ordenes = []) {
                                     apiKey: process.env.GOOGLE_MAPS_KEY,
                                     useTraffic: true
                                 });
+
+                                var kmrestantes = travel.distance_km;
+
+                                if(kmrestantes <= 10) {
+                                    let data = new itine({
+                                        fecha_cierre_itinerario: moment(today).format('YYYY-MM-DD HH:mm:ss'),
+                                    });
+                
+                                    itine.update(data.dataValues, {
+                                        where: {
+                                            id_itinerarios: existe[0].id_itinerarios
+                                        },
+                                        fields: ['fecha_cierre_itinerario']
+                                    }).then(result => {
+                                        console.log('Se Actualizo la fecha cierre: ', existe[0].folio_orden);
+                                    }).catch(err => {
+                                        console.log(err);
+                                    });
+                                }
                         
                                 await itineDet.create({
                                     id_itinerarios: existe[0].id_itinerarios,
@@ -387,7 +402,7 @@ function agruparManteniendoFormato(ordenes = []) {
                                     direccion: ubi.location,
                                     geocerca: ubi.geocerca,
                                     combustible: ubi.fuelpercent,
-                                    km: travel.distance_km,
+                                    km: kmrestantes,
                                     tiempo: Math.round(travel.duration_sec / 60),
                                     velocidad: ubi.km,
                                     estado: ubi.estadounidad,
