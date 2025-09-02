@@ -123,34 +123,23 @@ module.exports = app => {
             const ubicaciones = listdeubicaciones.data.Reporte || [];
             
             const grupos = agruparManteniendoFormato(ordenes);
-            console.log(grupos);
-
-            // const grupos = ord
             
             var today = new Date();
             const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-            // === Helpers mínimos (no cambian tu formato) ===
             function normalizeKey(v) {
-            return (v ?? '')
-                .toString()
-                .trim()
-                .toUpperCase()
-                .normalize('NFD')
-                .replace(/\p{Diacritic}/gu, '')
-                .replace(/\s+/g, ' ');
+                return (v ?? '').toString().trim().toUpperCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, ' ');
             }
 
             function groupKey(o) {
-            return [
-                normalizeKey(o.clave_bitacora),
-                normalizeKey(o.operador_nombre),
-                normalizeKey(o.origen_dom),
-                normalizeKey(o.destinatario_dom),
-            ].join('|');
+                return [
+                    normalizeKey(o.clave_bitacora),
+                    normalizeKey(o.operador_nombre),
+                    normalizeKey(o.origen_dom),
+                    normalizeKey(o.destinatario_dom),
+                ].join('|');
             }
 
-            // === Agrupar manteniendo formato (solo agrega `unidades`) ===
             function agruparManteniendoFormato(ordenes = []) {
             const map = new Map();
 
