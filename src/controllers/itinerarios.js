@@ -122,7 +122,7 @@ module.exports = app => {
             const listdeubicaciones = await axios.get('https://apisamsara.tlea.online/obtenerReporteUltimaLocacion');
             const ubicaciones = listdeubicaciones.data.Reporte || [];
 
-            const grupos = agruparManteniendoFormato(ordenes);
+            // const grupos = agruparManteniendoFormato(ordenes);
 
             var esregistro = 0;
             var esregistrodetalle = 0;
@@ -130,21 +130,28 @@ module.exports = app => {
             var today = new Date();
             const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-            function agruparManteniendoFormato(arr) {
-                const grupos = arr.reduce((acc, curr) => {
-                    const key = `${curr.operador_nombre}|${curr.unidad}|${curr.clave_bitacora}`;
-                    // const key = `${curr.operador_nombre}|${curr.unidad}|${curr.fecha_orden}|${curr.origen_dom}|${curr.destinatario_dom}`;
-                    if(!acc[key]) {
-                        acc[key] = { ...curr, detalles: [] };
-                    }
+            const agrupados = {};
 
-                    acc[key].detalles.push(curr);
-                    return acc;
-                }, {});
-                return Object.values(grupos);
-            };
+            ordenes.forEach((item) => {
+            const key = `${item.operador_nombre}|${item.clave_bitacora}|${item.unidad}`;
+            
+            if (!agrupados[key]) {
+                agrupados[key] = {
+                ...item,
+                conteo: 1
+                };
+            } else {
+                agrupados[key].conteo += 1;
+            }
+            });
 
-            for(const rr of grupos) {
+            const resultado = Object.values(agrupados);
+
+            // Mostrar resultado
+            // console.table(resultado);
+
+
+            for(const rr of resultado) {
                 if (rr.unidad.startsWith('C')) {
                     rr.unidad = rr.unidad.replace('C', 'C-');
                 }
@@ -519,9 +526,9 @@ module.exports = app => {
             res.json({ 
                 OK: true,
                 ordenesl: ordenes.length,
-                gruposl: grupos.length,
+                gruposl: resultado.length,
                 ordenes: ordenes,
-                grupos: grupos
+                grupos: resultado
             });
         } 
         catch (err) {
