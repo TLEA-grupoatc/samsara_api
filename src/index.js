@@ -66,14 +66,14 @@ cron.schedule('* * * * *', () => {
 });
 
 // cron.schedule('* * * * *', () => { 
-// cron.schedule('0 * * * *', () => {   
-//   app.itinerarioP({}, {
-//     json: (data) => console.log(data),
-//     status: (statusCode) => ({
-//       json: (data) => console.log(statusCode, data)
-//     })
-//   }); 
-// });
+cron.schedule('0 * * * *', () => {   
+  app.itinerarioP({}, {
+    json: (data) => console.log(data),
+    status: (statusCode) => ({
+      json: (data) => console.log(statusCode, data)
+    })
+  }); 
+});
 
 
 app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {

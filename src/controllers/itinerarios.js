@@ -121,49 +121,33 @@ module.exports = app => {
     
             const listdeubicaciones = await axios.get('https://apisamsara.tlea.online/obtenerReporteUltimaLocacion');
             const ubicaciones = listdeubicaciones.data.Reporte || [];
-            
+
             const grupos = agruparManteniendoFormato(ordenes);
+
+            var esregistro = 0;
+            var esregistrodetalle = 0;
             
             var today = new Date();
             const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-            function normalizeKey(v) {
-                return (v ?? '').toString().trim().toUpperCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, ' ');
-            }
+            function agruparManteniendoFormato(arr) {
+                const grupos = arr.reduce((acc, curr) => {
+                    const key = `${curr.operador_nombre}|${curr.unidad}|${curr.clave_bitacora}`;
+                    // const key = `${curr.operador_nombre}|${curr.unidad}|${curr.fecha_orden}|${curr.origen_dom}|${curr.destinatario_dom}`;
+                    if(!acc[key]) {
+                        acc[key] = { ...curr, detalles: [] };
+                    }
 
-            function groupKey(o) {
-                return [
-                    normalizeKey(o.clave_bitacora),
-                    normalizeKey(o.operador_nombre),
-                    normalizeKey(o.origen_dom),
-                    normalizeKey(o.destinatario_dom),
-                ].join('|');
-            }
+                    acc[key].detalles.push(curr);
+                    return acc;
+                }, {});
+                return Object.values(grupos);
+            };
 
-            function agruparManteniendoFormato(ordenes = []) {
-            const map = new Map();
-
-            for (const o of ordenes) {
-                const k = groupKey(o);
-                let g = map.get(k);
-                if (!g) {
-                // Clon superficial del primer elemento del grupo y agregamos `unidades`
-                g = { ...o, unidades: [] };
-                g.__unidadesSet = new Set(); // interno temporal
-                map.set(k, g);
+            for(const rr of grupos) {
+                if (rr.unidad.startsWith('C')) {
+                    rr.unidad = rr.unidad.replace('C', 'C-');
                 }
-                if (o.unidad != null) g.__unidadesSet.add(o.unidad);
-            }
-
-            // Finalizar: Set -> Array y limpiar campo interno
-            return Array.from(map.values()).map(g => {
-                g.unidades = Array.from(g.__unidadesSet);
-                delete g.__unidadesSet;
-                return g;
-            });
-            }
-
-            for(const rr of ordenes) {
                 const existe = await itine.findAll({
                     where: {
                         operador: rr.operador_nombre,
@@ -176,65 +160,65 @@ module.exports = app => {
 
                 if(existe.length === 0) {
                     try {
-                        const responseUno = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-                            params: {
-                                address: rr.origen_dom,
-                                key: process.env.GOOGLE_MAPS_KEY
-                            }
-                        });
+                      
+                        const responseUno = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+                            rr.origen_dom
+                        )}.json?access_token=${process.env.MAPBOX_TOKEN}&limit=1`);
 
-                        const responseDos = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
-                            params: {
-                                address: rr.destinatario_dom,
-                                key: process.env.GOOGLE_MAPS_KEY
-                            }
-                        });
+                        const responseDos = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+                            rr.destinatario_dom
+                        )}.json?access_token=${process.env.MAPBOX_TOKEN}&limit=1`);
 
-                        if(responseUno.data.status !== 'OK' || responseDos.data.status !== 'OK') {
+                        if(responseUno.data.features.length <= 0 || responseDos.data.features.length <= 0) {
                             console.warn(`No se pudo geocodificar alguna dirección para folio ${rr.ordenser_folio}`);
-                            continue; // 👈 ignoramos este registro y seguimos
+                            continue;
                         }
 
-                        const locationUno = responseUno.data.results[0].geometry.location;
-                        const locationDos = responseDos.data.results[0].geometry.location;
+                        const lugarUno = responseUno.data.features[0];
+                        const [longitudUno, latitudUno] = lugarUno.center;
 
-                        async function googleTravelTime({lat1, lon1, lat2, lon2, mode = 'driving',apiKey = process.env.GOOGLE_MAPS_KEY, useTraffic = true}) {
-                            const params = new URLSearchParams({
-                            origin: `${lat1},${lon1}`,
-                            destination: `${lat2},${lon2}`,
-                            mode
-                            });
-                    
-                            if (mode === 'driving' && useTraffic) {
-                            params.set('departure_time', 'now');
+                        const lugarDos = responseDos.data.features[0];
+                        const [longitudDos, latitudDos] = lugarDos.center;
+
+                        async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
+                            const pointA = [lon1, lat1];
+                            const pointB = [lon2, lat2];
+
+                            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+
+                            try {
+                                const response = await axios.get(url);
+                                const data = response.data;
+
+                                if (data.routes.length > 0) {
+                                    const route = data.routes[0];
+                                    const distanciaKm = (route.distance / 1000).toFixed(2);
+                                    const tiempoMin = Math.round(route.duration / 60);
+
+                                    console.log(`Distancia: ${distanciaKm} km`);
+                                    console.log(`Tiempo estimado: ${tiempoMin} minutos`);
+
+                                    return {
+                                        provider: 'MapBox',
+                                        mode: 'driving',
+                                        distance_km: distanciaKm || 0,
+                                        duration_sec: tiempoMin || 0
+                                    };
+                                } 
+                                else {
+                                    console.log("No se encontró ruta. para orden", rr.clave_bitacora);
+                                }
+                            } catch (error) {
+                                console.error("Error:", error.message);
                             }
-                    
-                            const url = `https://maps.googleapis.com/maps/api/directions/json?${params.toString()}&key=${apiKey}`;
-                            const { data } = await axios.get(url, { timeout: 10000 });
-                    
-                            if(data.status !== 'OK' || !data.routes?.length) {
-                            throw new Error(`Google Directions error: ${data.status}`);
-                            }
-                    
-                            const leg = data.routes[0].legs[0];
-                            const duration = leg.duration_in_traffic?.value ?? leg.duration.value;
-                    
-                            return {
-                            provider: 'Google',
-                            mode,
-                            distance_km: (leg.distance.value || 0) / 1000,
-                            duration_sec: duration || 0
-                            };
                         }
 
-                        const travel = await googleTravelTime({
-                            lat1: locationUno.lat,
-                            lon1: locationUno.lng,
-                            lat2: locationDos.lat,
-                            lon2: locationDos.lng,
-                            mode: 'driving',
-                            apiKey: process.env.GOOGLE_MAPS_KEY,
-                            useTraffic: true
+                        const travel = await getRoute({
+                            lat1: latitudUno,
+                            lon1: longitudUno,
+                            lat2: latitudDos,
+                            lon2: longitudDos,
+                            apiKey: process.env.MAPBOX_TOKEN
                         });
 
                         let nuevoRegistro = new itine({
@@ -249,10 +233,10 @@ module.exports = app => {
                             destino: rr.destinatario_nom.trim(),
                             origen_direccion: rr.origen_dom,
                             destino_direccion: rr.destinatario_dom,
-                            origen_longitud: locationUno.lng,
-                            origen_latitud: locationUno.lat,
-                            destino_longitud: locationDos.lng,
-                            destino_latitud: locationDos.lat,
+                            origen_longitud: longitudUno,
+                            origen_latitud: latitudUno,
+                            destino_longitud: longitudDos,
+                            destino_latitud: latitudDos,
                             origen_desc: rr.origen_desc.trim(),
                             destino_desc: rr.destino_desc.trim(),
                             ruta_destino_os: rr.ruta_destino_os.trim(),
@@ -266,7 +250,7 @@ module.exports = app => {
                             fecha_cierre_itinerario: null
                         });
 
-                        await itine.create(nuevoRegistro.dataValues, {
+                        const resultado = await itine.create(nuevoRegistro.dataValues, {
                             fields: [
                                 'folio_orden',
                                 'unidad',
@@ -296,14 +280,115 @@ module.exports = app => {
                                 'fecha_cierre_itinerario'
                             ]
                         });
+
+
+                               for(const ubi of ubicaciones) {
+                                
+                                if(rr.unidad === ubi.unidad) {
+                                
+
+                                async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
+                                    const pointA = [lon1, lat1];
+                                    const pointB = [lon2, lat2];
+
+                                    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+
+                                    try {
+                                        const response = await axios.get(url);
+                                        const data = response.data;
+
+                                        if (data.routes.length > 0) {
+                                            const route = data.routes[0];
+                                            const distanciaKm = (route.distance / 1000).toFixed(2);
+                                            const tiempoMin = Math.round(route.duration / 60);
+
+                                            return {
+                                                provider: 'MapBox',
+                                                mode: 'driving',
+                                                distance_km: distanciaKm || 0,
+                                                duration_sec: tiempoMin || 0
+                                            };
+                                        } 
+                                        else {
+                                            console.log("No se encontró ruta.                                       1111");
+                                        }
+                                    } catch (error) {
+                                        console.error("Error:", error.message);
+                                    }
+                                }
+
+                       
+
+                                const travel = await getRoute({
+                                    lat1: ubi.latitud,
+                                    lon1: ubi.longitud,
+                                    lat2: latitudDos,
+                                    lon2: longitudDos,
+                                    apiKey: process.env.MAPBOX_TOKEN,
+                                });
+
+                                var kmrestantes = travel.distance_km;   
+                                console.log(`1Distancia: ${kmrestantes} km`);
+                                console.log(`1Tiempo estimado: ${Math.round(travel.duration_sec / 60)} minutos`);
+
+                                          if(kmrestantes <= 10) {
+                                    let data = new itine({
+                                        fecha_cierre_itinerario: moment(today).format('YYYY-MM-DD HH:mm:ss'),
+                                    });
+                
+                                    itine.update(data.dataValues, {
+                                        where: {
+                                            id_itinerarios: resultado.id_itinerarios
+                                        },
+                                        fields: ['fecha_cierre_itinerario']
+                                    }).then(result => {
+                                        console.log('Se Actualizo la fecha cierre: ', resultado.folio_orden);
+                                    }).catch(err => {
+                                        console.log(err);
+                                    });
+                                }
+
+                                await itineDet.create({
+                                    id_itinerarios: resultado.id_itinerarios,
+                                    economico: rr.unidad,
+                                    operador: rr.operador_nombre,
+                                    latitud: ubi.latitud,
+                                    longitud: ubi.longitud,
+                                    direccion: ubi.location,
+                                    geocerca: ubi.geocerca,
+                                    combustible: ubi.fuelpercent,
+                                    km: kmrestantes,
+                                    tiempo: Math.round(travel.duration_sec / 60),
+                                    velocidad: ubi.km,
+                                    estado: ubi.estadounidad,
+                                    fecha: moment(rr.fechahoragps).format('YYYY-MM-DD HH:mm:ss'),
+                                }, 
+                                {
+                                    fields: [
+                                        'id_itinerarios',
+                                        'economico',
+                                        'operador',
+                                        'latitud',
+                                        'longitud',
+                                        'direccion',
+                                        'geocerca',
+                                        'combustible',
+                                        'km',
+                                        'tiempo',
+                                        'velocidad',
+                                        'estado',
+                                        'fecha'
+                                    ]
+                                });
+                            }
+                        }
+                        esregistro++;
                     } 
                     catch (error) {
                         console.error('Error en registro', rr.ordenser_folio, error.message);
                     }
                 } 
                 else {
-                    console.log('Ya existe el folio:', existe[0].folio_orden);
-  
                     if(rr.fecha_reporte_entrega != null) {
                         let data = new itine({
                             fecha_reporte_entrega: moment(rr.fecha_reporte_entrega).format('YYYY-MM-DD HH:mm:ss'),
@@ -323,44 +408,49 @@ module.exports = app => {
                     else {
                         for(const ubi of ubicaciones) {
                             if(existe[0].economico === ubi.unidad) {
-                                async function googleTravelTime({lat1, lon1, lat2, lon2, mode = 'driving', apiKey = process.env.GOOGLE_MAPS_KEY, useTraffic = true}) {
-                                    const params = new URLSearchParams({
-                                        origin: `${lat1},${lon1}`,
-                                        destination: `${lat2},${lon2}`,
-                                        mode
-                                    });
-                         
-                            
-                                    if(mode === 'driving' && useTraffic) {
-                                        params.set('departure_time', 'now');
-                                    }
-                            
-                                    const url = `https://maps.googleapis.com/maps/api/directions/json?${params.toString()}&key=${apiKey}`;
-                                    const { data } = await axios.get(url, { timeout: 10000 });
-                            
-                                    if(data.status !== 'OK' || !data.routes?.length) {
-                                        throw new Error(`Google Directions error: ${data.status}`);
-                                    }
-                            
-                                    const leg = data.routes[0].legs[0];
-                                    const duration = leg.duration_in_traffic?.value ?? leg.duration.value;
-                            
-                                    return {
-                                        provider: 'Google',
-                                        mode,
-                                        distance_km: (leg.distance.value || 0) / 1000,
-                                        duration_sec: duration || 0
-                                    };
-                                }
                                 
-                                const travel = await googleTravelTime({
+
+                                async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
+          
+
+                                    const pointA = [lon1, lat1];
+                                    const pointB = [lon2, lat2];
+
+                                    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+
+                                    try {
+                                        const response = await axios.get(url);
+                                        const data = response.data;
+
+                                        if (data.routes.length > 0) {
+                                            const route = data.routes[0];
+                                            const distanciaKm = (route.distance / 1000).toFixed(2);
+                                            const tiempoMin = Math.round(route.duration / 60);
+
+                                 
+                                            return {
+                                                provider: 'MapBox',
+                                                mode: 'driving',
+                                                distance_km: distanciaKm || 0,
+                                                duration_sec: tiempoMin || 0
+                                            };
+                                        } 
+                                        else {
+                                            console.log("No se encontró ruta.                                       22222");
+                                        }
+                                    } catch (error) {
+                                        console.error("Error:", error.message);
+                                    }
+                                }
+
+                       
+
+                                const travel = await getRoute({
                                     lat1: ubi.latitud,
                                     lon1: ubi.longitud,
                                     lat2: Number(existe[0].destino_latitud),
                                     lon2: Number(existe[0].destino_longitud),
-                                    mode: 'driving',
-                                    apiKey: process.env.GOOGLE_MAPS_KEY,
-                                    useTraffic: true
+                                    apiKey: process.env.MAPBOX_TOKEN,
                                 });
 
                                 var kmrestantes = travel.distance_km;
@@ -382,9 +472,13 @@ module.exports = app => {
                                     });
                                 }
                         
+                                             console.log(`2Distancia: ${kmrestantes} km`);
+                                console.log(`2Tiempo estimado: ${Math.round(travel.duration_sec / 60)} minutos`);
+
+                                esregistrodetalle++;
                                 await itineDet.create({
                                     id_itinerarios: existe[0].id_itinerarios,
-                                    economico: existe[0].unidad,
+                                    economico: existe[0].economico,
                                     operador: existe[0].operador,
                                     latitud: ubi.latitud,
                                     longitud: ubi.longitud,
@@ -422,7 +516,13 @@ module.exports = app => {
                 await sleep(1000);
             }
 
-            res.json({ OK: true });
+            res.json({ 
+                OK: true,
+                ordenesl: ordenes.length,
+                gruposl: grupos.length,
+                ordenes: ordenes,
+                grupos: grupos
+            });
         } 
         catch (err) {
             console.error(err);
