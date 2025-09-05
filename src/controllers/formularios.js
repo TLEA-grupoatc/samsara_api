@@ -411,7 +411,7 @@ module.exports = app => {
                 where: {
                     nombre: operadorId,
                     actividad: {
-                        [Op.notIn]: ['ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'DESC', 'LIQ', 'POSB', 'MTTO', 'ESP', 'RETRA', 'PERM', 'LICENCIA', 'ISS-LOG', 'DNLAB']
+                        [Op.notIn]: ['ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'DESC', 'LIQ', 'POSB', 'MTTO', 'ESP', 'RETRA', 'PERM', 'LICENCIA', 'ISS-LOG', 'DNLAB', 'BPROCESO']
                     },
                     fecha: {
                         [Op.between]: [
@@ -445,7 +445,6 @@ module.exports = app => {
                 group: ['mes', 'nombre'],
                 order: [[historico.sequelize.fn('MONTH', historico.sequelize.col('fecha')), 'DESC']]
             });
-
 
             const cartasAcuerdoResult = await docoperador.findAll({
                 attributes: [
@@ -671,12 +670,6 @@ module.exports = app => {
             });
 
             const porcentajeDiasLaboradoPorMes = {};
-            // diaslaboradosResult.forEach(d => {
-            //     const mes = d.dataValues.mes;
-            //     const totalDiasLaborados = Number(d.dataValues.totaldiaslaborados) || 0;
-            //     const diasEnMes = moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
-            //     porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
-            // });
             diaslaboradosResult.forEach(d => {
                 const mes = d.dataValues.mes;
                 const totalDiasLaborados = Number(d.dataValues.totaldiaslaborados) || 0;
@@ -689,17 +682,10 @@ module.exports = app => {
             });
 
             const porcentajeDiasDescansadosPorMes = {};
-            // diaslaboradosResult.forEach(d => {
-            //     const mes = d.dataValues.mes;
-            //     const totalDiasLaborados = Number(d.dataValues.totaldiaslaborados) || 0;
-            //     const diasEnMes = moment(`${anio}-${mes}`, "YYYY-M").daysInMonth();
-            //     porcentajeDiasLaboradoPorMes[mes] = diasEnMes > 0 ? Number(((totalDiasLaborados / diasEnMes) * 100).toFixed(2)) : 0;
-            // });
             diasDescansadosResult.forEach(d => {
                 const mes = d.dataValues.mes;
                 porcentajeDiasDescansadosPorMes[mes] = Number(d.dataValues.totaldiasdescansados) || 0;
             });
-
 
             const quejasPorMes = {};
             quejasResult.forEach(d => {

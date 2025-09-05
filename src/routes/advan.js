@@ -97,4 +97,31 @@ module.exports = app => {
 
     app.get('/operadoresCriticosUL', ca.operadoresCriticosUL);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.get('/pruebainsert', ca.pruebainsert);
+
 }

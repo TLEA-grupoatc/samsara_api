@@ -923,6 +923,187 @@ module.exports = app => {
 
 
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // PRUEBA INSERT
+
+
+
+
+    // tipos de datos  <CLAVE_BITACORA, numeric(10,0),>
+//  ,<CONSECUTIVO, numeric(10,0),>
+//  ,<CONCEPTO_CLAVE, numeric(4,0),>
+//  ,<VALE_RANGO, numeric(4,0),>
+//  ,<IMPORTE, decimal(20,6),>
+//  ,<REFERENCIA, varchar(50),>
+//  ,<VALE_TERMINAL, varchar(5),>
+//  ,<VALE_FOLIO, numeric(10,0),>
+//  ,<VALE_FECHA, smalldatetime,>
+//  ,<POLIZA_CB, varchar(20),>
+//  ,<POLIZA_CXP, varchar(20),>
+//  ,<PERIODO_CB, smalldatetime,>
+//  ,<PERIODO_CXP, smalldatetime,>
+//  ,<STATUS_VALE, numeric(1,0),>
+//  ,<PREFIJO, varchar(10),>
+//  ,<CUENTA_BAN, varchar(50),>
+//  ,<BENEFICIARIO, varchar(70),>
+//  ,<USR_AUTORIZA, varchar(12),>
+//  ,<IMPRESO, numeric(2,0),>
+//  ,<USR_FIRMO, varchar(12),>
+//  ,<OPERADOR_CLAVE, numeric(4,0),>
+//  ,<LIQUIDACION_CLAVE, numeric(10,0),>
+//  ,<PAGADO, numeric(1,0),>
+//  ,<USR_CREA, varchar(12),>
+//  ,<FCH_CREA, datetime,>
+//  ,<USR_MOD, varchar(12),>
+//  ,<FCH_MOD, datetime,>
+//  ,<USR_PAG, varchar(12),>
+//  ,<FCH_PAG, datetime,>
+//  ,<USR_CAN, varchar(12),>
+//  ,<FCH_CAN, datetime,>
+//  ,<vale_saldo, numeric(20,6),>
+//  ,<tmp_pago_tes, numeric(20,6),>
+//  ,<importe_pagado, numeric(20,6),>
+//  ,<OBSERV_VALE, varchar(70),>
+//  ,<TRACTO_NUM_ECO_PROV, varchar(30),>
+//  ,<GASTO_CLAVE, numeric(10,0),>
+//  ,<deduccion_clave, numeric(10,0),>
+//  ,<VALE_FOLIO_SUST, numeric(10,0),>
+//  ,<ban_ayudante, numeric(1,0),>
+//  ,<NO_GEN_POL, numeric(1,0),>
+//  ,<TIPO_ANTICIPO_CLAVE, numeric(5,0),>
+//  ,<CONSEC_OS_MNIOB, numeric(10,0),>
+//  ,<maniobra_clave, numeric(5,0),>
+//  ,<es_maniobra, numeric(1,0),>
+//  ,<PERMISIONARIO_LIQ_CLAVE, numeric(10,0),>
+//  ,<PRELIQUIDACION_CLAVE, numeric(10,0),>
+//  ,<BAN_PRELIQUIDA, numeric(1,0),>
+//  ,<tipoValeSalida, numeric(1,0),>
+//  ,<banAutorizaLayoutLiq, numeric(1,0),>
+//  ,<ID_LAYOUT, numeric(10,0),>
+//  ,<egresoLayout, char(20),>
+//  ,<periodoLayout, smalldatetime,>
+//  ,<fechaLayout, smalldatetime,>
+//  ,<idProcAut, numeric(1,0),>
+//  ,<flagNotifCan, numeric(1,0),>
+
+    // datos       205478	9	12	26	860.000000	GASTO DE VIAJE	MTY3	48425	2025-09-05 00:00:00	1569	NULL	2025-09-30 00:00:00	NULL	0	CMTY		FERRUZCA MONDRAGON ROBERTO CARLOS		0		2576	NULL	1	002358	2025-09-05 08:04:58.000	NULL	NULL	002358	2025-09-05 08:05:03.000	NULL	NULL	0.000000	0.000000	860.000000	GASTO DE VIAJE	TLEA-273	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	2	NULL	NULL	NULL	NULL	NULL	0	0
+
+    app.pruebainsert = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+            // let result = await pool.request().query("INSERT INTO ORDEN_CONCEPTO (CLAVE_BITACORA,CONSECUTIVO,CONCEPTO_CLAVE,VALE_RANGO,IMPORTE,REFERENCIA,VALE_TERMINAL,VALE_FOLIO,VALE_FECHA,POLIZA_CB,POLIZA_CXP,PERIODO_CB,PERIODO_CXP,STATUS_VALE,PREFIJO,CUENTA_BAN,BENEFICIARIO,USR_AUTORIZA,IMPRESO,USR_FIRMO,OPERADOR_CLAVE,LIQUIDACION_CLAVE,PAGADO,USR_CREA,FCH_CREA,USR_MOD,FCH_MOD,USR_PAG,FCH_PAG,USR_CAN,FCH_CAN,vale_saldo,tmp_pago_tes,importe_pagado,OBSERV_VALE,TRACTO_NUM_ECO_PROV,GASTO_CLAVE,deduccion_clave,VALE_FOLIO_SUST,ban_ayudante,NO_GEN_POL,TIPO_ANTICIPO_CLAVE,CONSEC_OS_MNIOB,maniobra_clave,es_maniobra,PERMISIONARIO_LIQ_CLAVE,PRELIQUIDACION_CLAVE,BAN_PRELIQUIDA,tipoValeSalida,banAutorizaLayoutLiq,ID_LAYOUT,egresoLayout,periodoLayout,fechaLayout,idProcAut,flagNotifCan) \
+            //     VALUES (205478, 9, 12, 26, 1.000000, 'GASTO DE VIAJE', 'MTY3', 400000, '2025-09-05 00:00:00', 1569, NULL, '2025-09-30 00:00:00', NULL, 0, 'CMTY', '', 'FERRUZCA MONDRAGON ROBERTO CARLOS', '', 0, '', 2576, NULL, 1, '002358', '2025-09-05 08:04:58.000', NULL, NULL, '002358', '2025-09-05 08:05:03.000', NULL, NULL, 0.000000, 0.000000, 1.000000, 'GASTO DE VIAJE', 'TLEA-273', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 2, NULL, NULL, NULL, NULL, NULL, 0, 0);");
+            
+            
+            
+            let result = await pool.request().query("update ORDEN_CONCEPTO set VALE_FOLIO = 204534 where VALE_FOLIO = 400006;");
+            sql.close();
+            res.json({
+                OK: true,
+                result: result
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
     return app;
 }
