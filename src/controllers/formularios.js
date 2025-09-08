@@ -1405,7 +1405,7 @@ module.exports = app => {
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISS-LOG' THEN '' END")), 'ISSLOG'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'DNLAB' THEN '' END")), 'DNLAB'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'BPROCESO' THEN '' END")), 'BPROCESO'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISSUE-CTE' THEN '' END")), 'ISSUECTE']
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISSUE-CTE' THEN '' END")), 'ISSUECTE'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'TRA-MTTO' THEN '' END")), 'TRAMTTO']
             ],
             where: {
