@@ -51,7 +51,7 @@ const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
 const itine = app.database.models.Itinerarios;
 const itineDet = app.database.models.ItinerarioDetalle;
 
-  const axios = require('axios');
+const axios = require('axios');
 const Samsara = require("@api/samsara-dev-rel");
 const fs = require('fs');
 Samsara.auth(process.env.KEYSAM);

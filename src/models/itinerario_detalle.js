@@ -53,6 +53,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         }, 
+        odometer: {
+            type: DataType.INTEGER,
+            allowNull: true
+        }, 
+        odometrototal: {
+            type: DataType.INTEGER,
+            allowNull: true
+        }, 
         fecha: {
             type: DataType.STRING,
             allowNull: true

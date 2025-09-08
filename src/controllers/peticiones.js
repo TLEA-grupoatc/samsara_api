@@ -541,13 +541,6 @@ module.exports = app => {
             var operador = '';
             
             for(const element of elements) {
-                // Samsara.getVehicle({id: element.id}).then(vehicle => {
-                //     console.log('Información del vehículo:', vehicle['data']['data']['staticAssignedDriver']['name']);
-                //     operador = vehicle['data']['data']['staticAssignedDriver']['name'];
-                // });
-
-                // console.log('Información del vehículo:', element.name, 'ID:', element.id);
-                
                 var miakm = Number(element['ecuSpeedMph'].value) * 1.609;
                 const momentFechaKm = moment(element['ecuSpeedMph'].time).subtract(6, 'hours');
                 const momentFechaGps = moment(element['gps'].time).subtract(6, 'hours');
@@ -569,7 +562,7 @@ module.exports = app => {
                     location: element['gps'].reverseGeo?.formattedLocation ?? null,
                     geocerca: element['gps'].address?.name ?? 'SIN GEOCERCA',
                     fechaodo: momentFechaOdo.toISOString().replace('.000Z', 'Z'),
-                    odometer: element['obdOdometerMeters'].value,
+                    odometer: element['obdOdometerMeters'].value / 1000,
                     estadounidad: miakm.toFixed() >= 10 ? 'En Movimiento' : 'Detenido',
                     fuelpercent: element['fuelPercent']?.value ?? 0,
                     horas: horasfinales.toFixed(2)

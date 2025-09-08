@@ -416,14 +416,11 @@ module.exports = app => {
                         for(const ubi of ubicaciones) {
                             if(existe[0].economico === ubi.unidad) {
                                 
-
                                 async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
-          
-
                                     const pointA = [lon1, lat1];
                                     const pointB = [lon2, lat2];
 
-                                    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+                                    const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
 
                                     try {
                                         const response = await axios.get(url);
@@ -449,8 +446,6 @@ module.exports = app => {
                                         console.error("Error:", error.message);
                                     }
                                 }
-
-                       
 
                                 const travel = await getRoute({
                                     lat1: ubi.latitud,
@@ -479,10 +474,42 @@ module.exports = app => {
                                     });
                                 }
                         
-                                             console.log(`2Distancia: ${kmrestantes} km`);
-                                console.log(`2Tiempo estimado: ${Math.round(travel.duration_sec / 60)} minutos`);
-
                                 esregistrodetalle++;
+
+                                
+
+ async function obtenerOdometroYCombustible(id) {
+  try {
+    const row = await itineDet.findOne({
+      where: { id_itinerarios: id },
+      order: [['fecha', 'DESC']],
+      attributes: ['odometer', 'combustible'],
+      raw: true,
+    });
+
+    const parseNum = (v) => {
+      if (v === null || v === undefined) return 0;
+      const n = Number(String(v).replace(/,/g, '').trim());
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    const odometer = parseNum(row?.odometer);
+    const combustible = parseNum(row?.combustible);
+
+    // Regresa ambos valores juntos
+    return { odometer, combustible };
+  } catch (err) {
+    console.error('Error obteniendo odómetro/combustible:', err);
+    return { odometer: 0, combustible: 0 };
+  }
+}
+
+                        const { odometer: odoAnt, combustible: combAnt } = await obtenerOdometroYCombustible(existe[0].id_itinerarios);
+ 
+                                var restarodometer = Number(ubi.odometer) - Number(odoAnt);
+
+                                console.log(Number(combAnt), '                                  ',  Number(ubi.fuelpercent));
+                                var restarcombustible = Number(combAnt) - Number(ubi.fuelpercent);
                                 await itineDet.create({
                                     id_itinerarios: existe[0].id_itinerarios,
                                     economico: existe[0].economico,
@@ -495,7 +522,9 @@ module.exports = app => {
                                     km: kmrestantes,
                                     tiempo: Math.round(travel.duration_sec / 60),
                                     velocidad: ubi.km,
-                                    estado: ubi.estadounidad,
+                                    estado: restarcombustible < -2 ? 'En Movimiento' : restarcombustible > -1 ? 'Detenido' : 'Sin Cambios',
+                                    odometer: ubi.odometer,
+                                    odometrototal: restarodometer,
                                     fecha: moment(existe[0].fechahoragps).format('YYYY-MM-DD HH:mm:ss'),
                                 }, 
                                 {
@@ -512,6 +541,8 @@ module.exports = app => {
                                         'tiempo',
                                         'velocidad',
                                         'estado',
+                                        'odometer',
+                                        'odometrototal',
                                         'fecha'
                                     ]
                                 });
@@ -592,6 +623,20 @@ module.exports = app => {
             });
         }
     };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     return app;
 }

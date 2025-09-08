@@ -1387,7 +1387,7 @@ module.exports = app => {
             attributes: [
                 'nombre',
                 [Sequelize.fn('MONTH', Sequelize.col('fecha')), 'mes'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad NOT IN ('TRANS', 'SINV', 'ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'DESC', 'LIQ', 'POSB', 'MTTO', 'ESP', 'RETRA', 'PERM', 'LICENCIA', 'ISS-LOG', 'DNLAB') THEN '' END")), 'VIAJE'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad NOT IN ('TRANS', 'SINV', 'ISSUE', 'ISS-D', 'DESVIO', 'INCA', 'DESC', 'LIQ', 'POSB', 'MTTO', 'ESP', 'RETRA', 'PERM', 'LICENCIA', 'ISS-LOG', 'DNLAB', 'BPROCESO', 'ISSUE-CTE', 'TRA-MTTO') THEN '' END")), 'VIAJE'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'TRANS' THEN '' END")), 'TRANS'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'SINV' THEN '' END")), 'SINV'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISSUE' THEN '' END")), 'ISSUE'],
@@ -1403,7 +1403,10 @@ module.exports = app => {
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'PERM' THEN '' END")), 'PERM'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'LICENCIA' THEN '' END")), 'LICENCIA'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISS-LOG' THEN '' END")), 'ISSLOG'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'DNLAB' THEN '' END")), 'DNLAB']
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'DNLAB' THEN '' END")), 'DNLAB'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'BPROCESO' THEN '' END")), 'BPROCESO'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'ISSUE-CTE' THEN '' END")), 'ISSUECTE']
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN HistoricoOperadores.actividad = 'TRA-MTTO' THEN '' END")), 'TRAMTTO']
             ],
             where: {
                 fecha: {
