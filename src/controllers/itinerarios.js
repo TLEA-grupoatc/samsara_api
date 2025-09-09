@@ -152,14 +152,15 @@ module.exports = app => {
 
 
             for(const rr of resultado) {
-                if (rr.unidad.startsWith('C')) {
+                if(rr.unidad.startsWith('C')) {
                     rr.unidad = rr.unidad.replace('C', 'C-');
                 }
+
                 const existe = await itine.findAll({
                     where: {
                         operador: rr.operador_nombre,
                         economico: rr.unidad,
-                        origen: rr.origen_nom,  
+                        origen: rr.origen_nom,
                         destino: rr.destinatario_nom,
                         fecha_reporte_entrega: null
                     }
@@ -355,6 +356,41 @@ module.exports = app => {
                                     });
                                 }
 
+
+
+
+
+
+
+                                
+                                async function obtenerOdometroTotal(id) {
+                                try {
+                                    const row = await itineDet.findAll({
+                                    where: { id_itinerarios: id },
+                                    order: [['fecha', 'DESC']],
+                                    attributes: [Sequelize.fn('SUM', Sequelize.col('odometer')), 'odometer'],
+                                    raw: true,
+                                    });
+
+                                    const parseNum = (v) => {
+                                    if (v === null || v === undefined) return 0;
+                                    const n = Number(String(v).replace(/,/g, '').trim());
+                                    return Number.isFinite(n) ? n : 0;
+                                    };
+
+                                    const odometer = parseNum(row?.odometer);
+                                    const combustible = parseNum(row?.combustible);
+
+                                    // Regresa ambos valores juntos
+                                    return { odometer, combustible };
+                                } catch (err) {
+                                    console.error('Error obteniendo odómetro/combustible:', err);
+                                    return { odometer: 0, combustible: 0 };
+                                }
+                                }
+
+                                const { odometer: odoAntc, combustible: combAntc } = await obtenerOdometroTotal(existe[0].id_itinerarios);
+
                                 await itineDet.create({
                                     id_itinerarios: resultado.id_itinerarios,
                                     economico: rr.unidad,
@@ -368,6 +404,8 @@ module.exports = app => {
                                     tiempo: Math.round(travel.duration_sec / 60),
                                     velocidad: ubi.km,
                                     estado: ubi.estadounidad,
+                                    odometer: ubi.odometer,
+                                    odometrototal: odoAntc + ubi.odometer,
                                     fecha: moment(rr.fechahoragps).format('YYYY-MM-DD HH:mm:ss'),
                                 }, 
                                 {
@@ -452,7 +490,7 @@ module.exports = app => {
                                     lon1: ubi.longitud,
                                     lat2: Number(existe[0].destino_latitud),
                                     lon2: Number(existe[0].destino_longitud),
-                                    apiKey: process.env.MAPBOX_TOKEN,
+                                    apiKey: process.env.MAPBOX_TOKEN
                                 });
 
                                 var kmrestantes = travel.distance_km;
@@ -473,43 +511,69 @@ module.exports = app => {
                                         console.log(err);
                                     });
                                 }
-                        
-                                esregistrodetalle++;
+
+                                async function obtenerOdometroYCombustible(id) {
+                                try {
+                                    const row = await itineDet.findOne({
+                                    where: { id_itinerarios: id },
+                                    order: [['fecha', 'DESC']],
+                                    attributes: ['odometer', 'combustible'],
+                                    raw: true,
+                                    });
+
+                                    const parseNum = (v) => {
+                                    if (v === null || v === undefined) return 0;
+                                    const n = Number(String(v).replace(/,/g, '').trim());
+                                    return Number.isFinite(n) ? n : 0;
+                                    };
+
+                                    const odometer = parseNum(row?.odometer);
+                                    const combustible = parseNum(row?.combustible);
+
+                                    // Regresa ambos valores juntos
+                                    return { odometer, combustible };
+                                } catch (err) {
+                                    console.error('Error obteniendo odómetro/combustible:', err);
+                                    return { odometer: 0, combustible: 0 };
+                                }
+                                }
+
+                                   async function obtenerOdometroTotal(id) {
+                                    try {
+                                        const row = await itineDet.findAll({
+                                            where: { id_itinerarios: id },
+                                            attributes: [[Sequelize.fn('SUM', Sequelize.col('odometer')), 'total']],
+                                            raw: true
+                                        });
+                                        console.log(id);
+                                        
+                                        console.log(row);
+                                        
+
+                                        const parseNum = (v) => {
+                                        if (v === null || v === undefined) return 0;
+                                            const n = Number(String(v).replace(/,/g, '').trim());
+                                            return Number.isFinite(n) ? n : 0;
+                                        };
+
+                                        const odometer = parseNum(row[0]?.total);
+
+                                        return { odometer: odometer.toFixed() };
+                                    } 
+                                    catch (err) {
+                                        console.error('Error obteniendo odómetro/combustible:', err);
+                                        return { odometer: 0, combustible: 0 };
+                                    }
+                                }
+
+                                const { odometer: odoAnt, combustible: combAnt } = await obtenerOdometroYCombustible(existe[0].id_itinerarios);
+                                const { odometer: odoAntc } = await obtenerOdometroTotal(existe[0].id_itinerarios);
 
                                 
-
- async function obtenerOdometroYCombustible(id) {
-  try {
-    const row = await itineDet.findOne({
-      where: { id_itinerarios: id },
-      order: [['fecha', 'DESC']],
-      attributes: ['odometer', 'combustible'],
-      raw: true,
-    });
-
-    const parseNum = (v) => {
-      if (v === null || v === undefined) return 0;
-      const n = Number(String(v).replace(/,/g, '').trim());
-      return Number.isFinite(n) ? n : 0;
-    };
-
-    const odometer = parseNum(row?.odometer);
-    const combustible = parseNum(row?.combustible);
-
-    // Regresa ambos valores juntos
-    return { odometer, combustible };
-  } catch (err) {
-    console.error('Error obteniendo odómetro/combustible:', err);
-    return { odometer: 0, combustible: 0 };
-  }
-}
-
-                        const { odometer: odoAnt, combustible: combAnt } = await obtenerOdometroYCombustible(existe[0].id_itinerarios);
- 
-                                var restarodometer = Number(ubi.odometer) - Number(odoAnt);
-
-                                console.log(Number(combAnt), '                                  ',  Number(ubi.fuelpercent));
+                                console.log(odoAntc, '          ', ubi.odometer);
+                                
                                 var restarcombustible = Number(combAnt) - Number(ubi.fuelpercent);
+
                                 await itineDet.create({
                                     id_itinerarios: existe[0].id_itinerarios,
                                     economico: existe[0].economico,
@@ -524,10 +588,9 @@ module.exports = app => {
                                     velocidad: ubi.km,
                                     estado: restarcombustible < -2 ? 'En Movimiento' : restarcombustible > -1 ? 'Detenido' : 'Sin Cambios',
                                     odometer: ubi.odometer,
-                                    odometrototal: restarodometer,
+                                    odometrototal: Number(odoAntc) + Number(ubi.odometer.toFixed()),
                                     fecha: moment(existe[0].fechahoragps).format('YYYY-MM-DD HH:mm:ss'),
-                                }, 
-                                {
+                                }, {
                                     fields: [
                                         'id_itinerarios',
                                         'economico',
