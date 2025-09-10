@@ -203,9 +203,6 @@ module.exports = app => {
                                     const distanciaKm = (route.distance / 1000).toFixed(2);
                                     const tiempoMin = Math.round(route.duration / 60);
 
-                                    console.log(`Distancia: ${distanciaKm} km`);
-                                    console.log(`Tiempo estimado: ${tiempoMin} minutos`);
-
                                     return {
                                         provider: 'MapBox',
                                         mode: 'driving',
@@ -335,9 +332,7 @@ module.exports = app => {
                                     apiKey: process.env.MAPBOX_TOKEN,
                                 });
 
-                                var kmrestantes = travel.distance_km;   
-                                console.log(`1Distancia: ${kmrestantes} km`);
-                                console.log(`1Tiempo estimado: ${Math.round(travel.duration_sec / 60)} minutos`);
+                                var kmrestantes = travel.distance_km;
 
                                           if(kmrestantes <= 10) {
                                     let data = new itine({
@@ -367,8 +362,8 @@ module.exports = app => {
                                 try {
                                     const row = await itineDet.findAll({
                                     where: { id_itinerarios: id },
-                                    order: [['fecha', 'DESC']],
-                                    attributes: [Sequelize.fn('SUM', Sequelize.col('odometer')), 'odometer'],
+                                    order: [['fecha', 'As']],
+                                    attributes: ['odometer'],
                                     raw: true,
                                     });
 
@@ -542,21 +537,18 @@ module.exports = app => {
                                     try {
                                         const row = await itineDet.findAll({
                                             where: { id_itinerarios: id },
-                                            attributes: [[Sequelize.fn('SUM', Sequelize.col('odometer')), 'total']],
+                                            order: [['fecha', 'ASC']],
+                                            limit: 1,
                                             raw: true
                                         });
-                                        console.log(id);
-                                        
-                                        console.log(row);
-                                        
-
+            
                                         const parseNum = (v) => {
                                         if (v === null || v === undefined) return 0;
                                             const n = Number(String(v).replace(/,/g, '').trim());
                                             return Number.isFinite(n) ? n : 0;
                                         };
 
-                                        const odometer = parseNum(row[0]?.total);
+                                        const odometer = parseNum(row[0]?.odometer);
 
                                         return { odometer: odometer.toFixed() };
                                     } 
@@ -570,7 +562,6 @@ module.exports = app => {
                                 const { odometer: odoAntc } = await obtenerOdometroTotal(existe[0].id_itinerarios);
 
                                 
-                                console.log(odoAntc, '          ', ubi.odometer);
                                 
                                 var restarcombustible = Number(combAnt) - Number(ubi.fuelpercent);
 
@@ -588,7 +579,7 @@ module.exports = app => {
                                     velocidad: ubi.km,
                                     estado: restarcombustible < -2 ? 'En Movimiento' : restarcombustible > -1 ? 'Detenido' : 'Sin Cambios',
                                     odometer: ubi.odometer,
-                                    odometrototal: Number(odoAntc) + Number(ubi.odometer.toFixed()),
+                                    odometrototal: Number(odoAntc) === 0 ? 0 : Number(ubi.odometer.toFixed()) - Number(odoAntc),
                                     fecha: moment(existe[0].fechahoragps).format('YYYY-MM-DD HH:mm:ss'),
                                 }, {
                                     fields: [
