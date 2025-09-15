@@ -29,6 +29,10 @@ module.exports = app => {
         client.on('SHOW_GASTOS_PORDEPOSITAR', (data, callback)=> {            
             client.broadcast.emit('SHOW_GASTOS_PORDEPOSITAR', data);
         });
+        
+        client.on('SHOW_GASTOS_PARAADVAN', (data, callback)=> {            
+            client.broadcast.emit('SHOW_GASTOS_PARAADVAN', data);
+        });
 
         client.on('SHOW_CATALOGOS', (data, callback)=> {            
             client.broadcast.emit('SHOW_CATALOGOS', data);

@@ -2,6 +2,7 @@ const dotenv = require('dotenv').config();
 const moment = require('moment');
 const sql = require('mssql');
 const _ = require('lodash');
+const { log, logger } = require('handlebars');
 
 module.exports = app => {
     const Samsara = require("@api/samsara-dev-rel");
@@ -481,18 +482,6 @@ module.exports = app => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-    
-
     app.repopueba = async (req, res) => {
         try {
 
@@ -525,7 +514,8 @@ module.exports = app => {
 
             const today = new Date();
 
-            let result = await pool.request().query("SELECT TOP(10)* FROM vordenser where fecha_reporte_entrega is not null order by fecha_orden desc");
+            let result = await pool.request().query(`SELECT Top(500)* FROM bitacoras;`);
+            // let result = await pool.request().query("SELECT concepto_clave, concepto_descrip from ordenconcepto_cto group by concepto_clave, concepto_descrip ;");
             // let result = await pool.request()/.query("SELECT TOP(10)* vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos ");
 
             sql.close();
@@ -635,12 +625,34 @@ module.exports = app => {
         }
     }
 
+    app.itinerariosVOPruebas = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+            
+            const today = new Date();
+            const fifteenDaysAgo = new Date();
+            fifteenDaysAgo.setDate(today.getDate() - 5);
+            
+            let result = await pool.request().query("SELECT vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.fecha_carga, vos.unidad, vos.origen_desc, vos.destino_desc, vos.ruta_destino_os, vos.ruta_origen_os, vos.fecha_reporte_entrega FROM vordenser AS vos \
+                INNER JOIN bitacoras AS bt on bt.clave_bitacora = vos.clave_bitacora \
+                WHERE vos.fecha_orden BETWEEN '" + moment(fifteenDaysAgo).format('YYYY-MM-DD') + "T10:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
+                AND vos.clave_bitacora IS NOT NULL AND vos.fch_can IS NULL");
 
-
-
-
-
-
+            sql.close();
+            
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                fechai: moment(fifteenDaysAgo).format('YYYY-MM-DD') + "T10:00:00.000Z'",
+                fechaf: moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z",
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
 
     app.listadoOperadores = async (req, res) => {
         try {
@@ -665,9 +677,6 @@ module.exports = app => {
             sql.close();
         }
     }
-
-
-
     
     app.folios = async (req, res) => {
         try {
@@ -694,10 +703,6 @@ module.exports = app => {
         }
     }
 
-
-
-
-
     app.foliosReparto = async (req, res) => {
         try {
             var fecha = moment(new Date()).format('YYYY-MM-DD');
@@ -723,26 +728,6 @@ module.exports = app => {
             sql.close();
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     app.operadoresCriticosUL  = async (req, res) => {
         try {
@@ -775,21 +760,6 @@ module.exports = app => {
             sql.close();
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// SELECT TOP(10) terminal_clave, unidad, operador_nombre, origen_desc, destino_desc, cliente_nombre FROM vordenser
 
     app.bitacorasParaComidaAut = async (req, res) => {
         try {
@@ -862,34 +832,6 @@ module.exports = app => {
             sql.close();
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
 
     app.obtenerBitacorasQuinceDias = async (req, res) => {
         try {
@@ -1086,18 +1028,285 @@ module.exports = app => {
 
     app.pruebainsert = async (req, res) => {
         try {
-            let pool = await sql.connect(config);
-            // let result = await pool.request().query("INSERT INTO ORDEN_CONCEPTO (CLAVE_BITACORA,CONSECUTIVO,CONCEPTO_CLAVE,VALE_RANGO,IMPORTE,REFERENCIA,VALE_TERMINAL,VALE_FOLIO,VALE_FECHA,POLIZA_CB,POLIZA_CXP,PERIODO_CB,PERIODO_CXP,STATUS_VALE,PREFIJO,CUENTA_BAN,BENEFICIARIO,USR_AUTORIZA,IMPRESO,USR_FIRMO,OPERADOR_CLAVE,LIQUIDACION_CLAVE,PAGADO,USR_CREA,FCH_CREA,USR_MOD,FCH_MOD,USR_PAG,FCH_PAG,USR_CAN,FCH_CAN,vale_saldo,tmp_pago_tes,importe_pagado,OBSERV_VALE,TRACTO_NUM_ECO_PROV,GASTO_CLAVE,deduccion_clave,VALE_FOLIO_SUST,ban_ayudante,NO_GEN_POL,TIPO_ANTICIPO_CLAVE,CONSEC_OS_MNIOB,maniobra_clave,es_maniobra,PERMISIONARIO_LIQ_CLAVE,PRELIQUIDACION_CLAVE,BAN_PRELIQUIDA,tipoValeSalida,banAutorizaLayoutLiq,ID_LAYOUT,egresoLayout,periodoLayout,fechaLayout,idProcAut,flagNotifCan) \
-            //     VALUES (205478, 9, 12, 26, 1.000000, 'GASTO DE VIAJE', 'MTY3', 400000, '2025-09-05 00:00:00', 1569, NULL, '2025-09-30 00:00:00', NULL, 0, 'CMTY', '', 'FERRUZCA MONDRAGON ROBERTO CARLOS', '', 0, '', 2576, NULL, 1, '002358', '2025-09-05 08:04:58.000', NULL, NULL, '002358', '2025-09-05 08:05:03.000', NULL, NULL, 0.000000, 0.000000, 1.000000, 'GASTO DE VIAJE', 'TLEA-273', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, 2, NULL, NULL, NULL, NULL, NULL, 0, 0);");
+            var body = req.body;
+
+            const today = new Date();
+            var year = today.getFullYear();
+            var mes = today.getMonth() + 1;
+            var lastDay = new Date(year, mes, 0);
+            var conceptos = [
+                {
+
+                "concepto_clave": 12,
+                "concepto_descrip": "ANTICIPO DE GASTOS"
+
+                },
+                {
+
+                    "concepto_clave": 13,
+                    "concepto_descrip": "CASETA"
+
+                },
+                {
+
+                    "concepto_clave": 28,
+                    "concepto_descrip": "COMIDA"
+
+                },
+                {
+
+                    "concepto_clave": 29,
+                    "concepto_descrip": "GUIA"
+
+                },
+                {
+
+                    "concepto_clave": 30,
+                    "concepto_descrip": "DESCARGAS"
+
+                },
+                {
+
+                    "concepto_clave": 41,
+                    "concepto_descrip": "PERMISO"
+
+                },
+                {
+
+                    "concepto_clave": 44,
+                    "concepto_descrip": "TALACHA"
+
+                },
+                {
+
+                    "concepto_clave": 46,
+                    "concepto_descrip": "HOTEL"
+
+                },
+                {
+
+                    "concepto_clave": 48,
+                    "concepto_descrip": "BASCULAS"
+
+                },
+                {
+
+                    "concepto_clave": 49,
+                    "concepto_descrip": "TAXI"
+
+                },
+                {
+
+                    "concepto_clave": 51,
+                    "concepto_descrip": "REFACCIONES"
+
+                },
+                {
+
+                    "concepto_clave": 53,
+                    "concepto_descrip": "COMPLEMENTO DE VIAJE"
+
+                },
+                {
+
+                    "concepto_clave": 55,
+                    "concepto_descrip": "PENSION"
+
+                },
+                {
+
+                    "concepto_clave": 76,
+                    "concepto_descrip": "Seguro de USA"
+
+                },
+                {
+
+                    "concepto_clave": 92,
+                    "concepto_descrip": "Gasolina"
+
+                },
+                {
+
+                    "concepto_clave": 93,
+                    "concepto_descrip": "Gratificacion"
+
+                },
+                {
+
+                    "concepto_clave": 105,
+                    "concepto_descrip": "PRESTAMO"
+
+                },
+                {
+
+                    "concepto_clave": 163,
+                    "concepto_descrip": "GASTOS NO COMPROBABLES"
+
+                },
+                {
+
+                    "concepto_clave": 179,
+                    "concepto_descrip": "REEMBOLSO"
+
+                },
+                {
+
+                    "concepto_clave": 287,
+                    "concepto_descrip": "CASA"
+                }
+            ];
+
+            let conceptoEncontrado = conceptos.find(c => c.concepto_descrip.toUpperCase() === body.REFERENCIA.toUpperCase()) || { concepto_clave: 12 };
+
+            const pool = await sql.connect(config);
+            let result = await pool.request().query(
+                `SELECT * FROM bitacoras WHERE folio_bitacora = ${body.CLAVE_BITACORA} AND STATUS_BITACORA = 0`
+            );
             
             
+            if(result.recordset.length > 0) {
+                let resultConseVT = await pool.request().query(
+                    `SELECT TOP(1) * FROM orden_concepto WHERE VALE_TERMINAL = '${body.VALE_TERMINAL}' ORDER BY fch_crea DESC`
+                );
+
+                let resultConse = await pool.request().query(
+                    `SELECT TOP(1) * FROM orden_concepto WHERE CLAVE_BITACORA = ${body.CLAVE_BITACORA} AND VALE_TERMINAL = '${body.VALE_TERMINAL}' ORDER BY fch_crea DESC`
+                );
+
+                let nuevoAdj = ({
+                    CLAVE_BITACORA: Number(body.CLAVE_BITACORA),
+                    CONSECUTIVO: Number(resultConse.recordset[0].CONSECUTIVO) + 1,
+                    CONCEPTO_CLAVE: conceptoEncontrado.concepto_clave, 
+                    VALE_RANGO: body.VALE_RANGO,
+                    IMPORTE: body.IMPORTE,
+                    REFERENCIA: body.REFERENCIA,
+                    VALE_TERMINAL: body.VALE_TERMINAL,
+                    VALE_FOLIO: Number(resultConseVT.recordset[0].VALE_FOLIO) + 1,
+                    VALE_FECHA: moment(today).format('YYYY-MM-DD') + "T00:00:00.000Z",
+                    POLIZA_CB: body.POLIZA_CB,
+                    POLIZA_CXP: body.POLIZA_CXP,
+                    PERIODO_CB: moment(lastDay).format('YYYY-MM-DD') + " 00:00:00",
+                    PERIODO_CXP: body.PERIODO_CXP,
+                    STATUS_VALE: body.STATUS_VALE,
+                    PREFIJO: body.PREFIJO,
+                    CUENTA_BAN: body.CUENTA_BAN,
+                    BENEFICIARIO: body.BENEFICIARIO,
+                    USR_AUTORIZA: body.USR_AUTORIZA,
+                    IMPRESO: body.IMPRESO,
+                    USR_FIRMO: body.USR_FIRMO,
+                    OPERADOR_CLAVE: result.recordset[0].OPERADOR_CLAVE,
+                    LIQUIDACION_CLAVE: body.LIQUIDACION_CLAVE,
+                    PAGADO: body.PAGADO,
+                    USR_CREA: '002358',
+                    FCH_CREA: moment(today).format('YYYY-MM-DDTHH:mm:ss') + ".000Z",
+                    USR_MOD: body.USR_MOD,
+                    FCH_MOD: body.FCH_MOD,
+                    USR_PAG: body.USR_PAG,
+                    FCH_PAG: body.FCH_PAG,
+                    USR_CAN: body.USR_CAN,
+                    FCH_CAN: body.FCH_CAN,
+                    vale_saldo: body.vale_saldo,
+                    tmp_pago_tes: body.tmp_pago_tes,
+                    importe_pagado: body.importe_pagado,
+                    OBSERV_VALE: body.OBSERV_VALE,
+                    TRACTO_NUM_ECO_PROV: body.TRACTO_NUM_ECO_PROV,
+                    GASTO_CLAVE: body.GASTO_CLAVE,
+                    deduccion_clave: body.deduccion_clave,
+                    VALE_FOLIO_SUST: body.VALE_FOLIO_SUST,
+                    ban_ayudante: body.ban_ayudante,
+                    NO_GEN_POL: body.NO_GEN_POL,
+                    TIPO_ANTICIPO_CLAVE: body.TIPO_ANTICIPO_CLAVE,
+                    CONSEC_OS_MNIOB: body.CONSEC_OS_MNIOB,
+                    maniobra_clave: body.maniobra_clave,
+                    es_maniobra: body.es_maniobra,
+                    PERMISIONARIO_LIQ_CLAVE: body.PERMISIONARIO_LIQ_CLAVE,
+                    PRELIQUIDACION_CLAVE: body.PRELIQUIDACION_CLAVE,
+                    BAN_PRELIQUIDA: body.BAN_PRELIQUIDA,
+                    tipoValeSalida: body.tipoValeSalida,
+                    banAutorizaLayoutLiq: body.banAutorizaLayoutLiq,
+                    ID_LAYOUT: body.ID_LAYOUT,
+                    egresoLayout: body.egresoLayout,
+                    periodoLayout: body.periodoLayout,
+                    fechaLayout: body.fechaLayout,
+                    idProcAut: body.idProcAut,
+                    flagNotifCan: body.flagNotifCan
+                });
+                console.log(nuevoAdj);
+                
+
+                     // let result = await pool.request().query("INSERT INTO ORDEN_CONCEPTO (CLAVE_BITACORA,CONSECUTIVO,CONCEPTO_CLAVE,VALE_RANGO,IMPORTE,REFERENCIA,VALE_TERMINAL,VALE_FOLIO,VALE_FECHA,POLIZA_CB,POLIZA_CXP,PERIODO_CB,PERIODO_CXP,STATUS_VALE,PREFIJO,CUENTA_BAN,BENEFICIARIO,USR_AUTORIZA,IMPRESO,USR_FIRMO,OPERADOR_CLAVE,LIQUIDACION_CLAVE,PAGADO,USR_CREA,FCH_CREA,USR_MOD,FCH_MOD,USR_PAG,FCH_PAG,USR_CAN,FCH_CAN,vale_saldo,tmp_pago_tes,importe_pagado,OBSERV_VALE,TRACTO_NUM_ECO_PROV,GASTO_CLAVE,deduccion_clave,VALE_FOLIO_SUST,ban_ayudante,NO_GEN_POL,TIPO_ANTICIPO_CLAVE,CONSEC_OS_MNIOB,maniobra_clave,es_maniobra,PERMISIONARIO_LIQ_CLAVE,PRELIQUIDACION_CLAVE,BAN_PRELIQUIDA,tipoValeSalida,banAutorizaLayoutLiq,ID_LAYOUT,egresoLayout,periodoLayout,fechaLayout,idProcAut,flagNotifCan) \
+            // VALUES (205478, 
+            // 9, 
+            // 12, 
+            // 26, 
+            // 1.000000, 
+            // 'GASTO DE VIAJE', 
+            // 'MTY3', 
+            // 400000, 
+            // '2025-09-05 00:00:00', 
+            // 1569, 
+            // NULL, 
+            // '2025-09-30 00:00:00', 
+            // NULL, 
+            // 0, 
+            // 'CMTY', 
+            // '', 
+            // 'FERRUZCA MONDRAGON ROBERTO CARLOS', 
+            // '', 
+            // 0, 
+            // '', 
+            // 2576, 
+            // NULL, 
+            // 1, 
+            // '002358', 
+            // '2025-09-05 08:04:58.000', 
+            // NULL, 
+            // NULL, 
+            // '002358', 
+            // '2025-09-05 08:05:03.000', 
+            // NULL, 
+            // NULL, 
+            // 0.000000, 
+            // 0.000000, 
+            // 1.000000, 
+            // 'GASTO DE VIAJE', 
+            // 'TLEA-273', 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // 0, 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // 2, 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // NULL, 
+            // 0, 
+            // 0);");
             
-            let result = await pool.request().query("update ORDEN_CONCEPTO set VALE_FOLIO = 204534 where VALE_FOLIO = 400006;");
-            sql.close();
-            res.json({
-                OK: true,
-                result: result
-            });
+            // let result = await pool.request().query("update ORDEN_CONCEPTO set VALE_FOLIO = 204534 where VALE_FOLIO = 400006;");
+            // await sql.close();
+            
+                res.json({
+                    OK: true,
+                    datos: nuevoAdj,
+                    result: `Bitácora: ${body.CLAVE_BITACORA} Abierta`
+                });
+            }
+            else {
+                res.json({
+                    OK: false,
+                    result: `Bitácora: ${body.CLAVE_BITACORA} Cerrada o no Encontrada`
+                });
+            }
         }
         catch (err) {
             console.error('Error al conectar o hacer la consulta:', err);

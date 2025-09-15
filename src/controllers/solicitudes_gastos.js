@@ -526,6 +526,27 @@ module.exports = app => {
         });
     }
 
+    app.obtenerSolicitudesDeGastosParaAdvan = (req, res) => {  
+        gasto.findAll({
+            where: {
+                estatus: 'Por Capturar Advan',
+            },
+            order: [
+                ['fecha_solicitud', 'DESC']
+            ]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
 
     app.obtenerSolicitudesDeGastosEnlace = (req, res) => {
         var mes = req.params.mes;

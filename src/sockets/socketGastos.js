@@ -37,6 +37,21 @@ module.exports = app => {
         });
     };
 
+    app.getSolicitudesGastosPorDepositar = () => {
+        gasto.findAll({
+            where: {
+                estatus: 'Por Capturar Advan'
+            },
+            order: [
+                ['fecha_solicitud', 'DESC']
+            ]
+        }).then(result => {
+            app.io.emit('SHOW_GASTOS_PARAADVAN', { Gastos: result });
+        }).catch(error => {
+            console.log(error);
+        });
+    };
+
 
     
     app.obtenerOrigenesDestinoGastosNow = () => {  

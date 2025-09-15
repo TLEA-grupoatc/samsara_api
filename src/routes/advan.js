@@ -118,10 +118,11 @@ module.exports = app => {
 
 
 
+    app.get('/itinerariosVOPruebas', ca.itinerariosVOPruebas);
 
 
 
 
-    app.get('/pruebainsert', ca.pruebainsert);
+    app.post('/pruebainsert', ca.pruebainsert);
 
 }

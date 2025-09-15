@@ -99,6 +99,7 @@ module.exports = app => {
     
     app.get('/obtenerSolicitudesDeGastosPorDepositar', verificarToken, cu.obtenerSolicitudesDeGastosPorDepositar);
     
+    app.get('/obtenerSolicitudesDeGastosParaAdvan', verificarToken, cu.obtenerSolicitudesDeGastosParaAdvan);
     
     app.put('/actualizarSolicitudGastos/:id_gastos', verificarToken, cu.actualizarSolicitudGastos);
     
