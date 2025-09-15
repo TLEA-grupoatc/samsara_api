@@ -2338,16 +2338,18 @@ module.exports = app => {
 
         operador.update(nuevoRegistro.dataValues, {
             where: {
-                numero_empleado: req.params.numero_empleado
+                numero_empleado: Number(req.params.numero_empleado)
             },
             fields: [
                 'licencia'
             ]
         })
         .then(async result => {
+            console.log(result);
+            
             res.json({
                 OK: true,
-                Tracto: result
+                Resumen: result
             })
         })
         .catch(error => {
