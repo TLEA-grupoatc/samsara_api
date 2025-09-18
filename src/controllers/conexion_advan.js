@@ -635,7 +635,7 @@ module.exports = app => {
             
             let result = await pool.request().query("SELECT vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.fecha_carga, vos.unidad, vos.origen_desc, vos.destino_desc, vos.ruta_destino_os, vos.ruta_origen_os, vos.fecha_reporte_entrega FROM vordenser AS vos \
                 INNER JOIN bitacoras AS bt on bt.clave_bitacora = vos.clave_bitacora \
-                WHERE vos.fecha_orden BETWEEN '" + moment(fifteenDaysAgo).format('YYYY-MM-DD') + "T10:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
+                WHERE vos.fecha_orden BETWEEN '" + moment(today).format('YYYY-MM-DD') + "T10:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
                 AND vos.clave_bitacora IS NOT NULL AND vos.fch_can IS NULL");
 
             sql.close();
@@ -866,6 +866,41 @@ module.exports = app => {
 
 
 
+
+        app.pruebasparaborrar = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            const today = new Date();
+
+            // let result = await pool.request().query(`DELETE FROM orden_concepto WHERE VALE_FOLIO = 33523`);
+            // let result = await pool.request().query(`SELECT Top(20) * FROM bitacoras; `);
+            let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
+            // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
+            // let result = await pool.request().query(`select Top(100)*  FROM orden_concepto WHERE BENEFICIARIO = 'GUZMAN CASANOVA MANUEL JESUS' order by FCH_CREA desc`);
+            // let result = await pool.request().query(`SELECT TOP(1000) * FROM orden_concepto order by vale_fecha desc`);
+            // let result = await pool.request().query("SELECT concepto_clave, concepto_descrip from ordenconcepto_cto group by concepto_clave, concepto_descrip ;");
+            // let result = await pool.request()/.query("SELECT TOP(10)* vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos ");
+
+
+
+            // let result = await pool.request().query(
+            //     `SELECT * FROM bitacoras WHERE folio_bitacora = 14583 AND TERMINAL_BITACORA = 'MTY4' AND STATUS_BITACORA = 0`
+            // );
+            sql.close();
+
+
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
 
 
 
@@ -1197,7 +1232,7 @@ module.exports = app => {
                     OPERADOR_CLAVE: result.recordset[0].OPERADOR_CLAVE,
                     LIQUIDACION_CLAVE: body.LIQUIDACION_CLAVE,
                     PAGADO: body.PAGADO,
-                    USR_CREA: '002358',
+                    USR_CREA: 'JLIZARDO',
                     FCH_CREA: moment(today).format('YYYY-MM-DDTHH:mm:ss') + ".000Z",
                     USR_MOD: body.USR_MOD,
                     FCH_MOD: body.FCH_MOD,
@@ -1231,70 +1266,13 @@ module.exports = app => {
                     idProcAut: body.idProcAut,
                     flagNotifCan: body.flagNotifCan
                 });
+
                 console.log(nuevoAdj);
                 
-
-                     // let result = await pool.request().query("INSERT INTO ORDEN_CONCEPTO (CLAVE_BITACORA,CONSECUTIVO,CONCEPTO_CLAVE,VALE_RANGO,IMPORTE,REFERENCIA,VALE_TERMINAL,VALE_FOLIO,VALE_FECHA,POLIZA_CB,POLIZA_CXP,PERIODO_CB,PERIODO_CXP,STATUS_VALE,PREFIJO,CUENTA_BAN,BENEFICIARIO,USR_AUTORIZA,IMPRESO,USR_FIRMO,OPERADOR_CLAVE,LIQUIDACION_CLAVE,PAGADO,USR_CREA,FCH_CREA,USR_MOD,FCH_MOD,USR_PAG,FCH_PAG,USR_CAN,FCH_CAN,vale_saldo,tmp_pago_tes,importe_pagado,OBSERV_VALE,TRACTO_NUM_ECO_PROV,GASTO_CLAVE,deduccion_clave,VALE_FOLIO_SUST,ban_ayudante,NO_GEN_POL,TIPO_ANTICIPO_CLAVE,CONSEC_OS_MNIOB,maniobra_clave,es_maniobra,PERMISIONARIO_LIQ_CLAVE,PRELIQUIDACION_CLAVE,BAN_PRELIQUIDA,tipoValeSalida,banAutorizaLayoutLiq,ID_LAYOUT,egresoLayout,periodoLayout,fechaLayout,idProcAut,flagNotifCan) \
-            // VALUES (205478, 
-            // 9, 
-            // 12, 
-            // 26, 
-            // 1.000000, 
-            // 'GASTO DE VIAJE', 
-            // 'MTY3', 
-            // 400000, 
-            // '2025-09-05 00:00:00', 
-            // 1569, 
-            // NULL, 
-            // '2025-09-30 00:00:00', 
-            // NULL, 
-            // 0, 
-            // 'CMTY', 
-            // '', 
-            // 'FERRUZCA MONDRAGON ROBERTO CARLOS', 
-            // '', 
-            // 0, 
-            // '', 
-            // 2576, 
-            // NULL, 
-            // 1, 
-            // '002358', 
-            // '2025-09-05 08:04:58.000', 
-            // NULL, 
-            // NULL, 
-            // '002358', 
-            // '2025-09-05 08:05:03.000', 
-            // NULL, 
-            // NULL, 
-            // 0.000000, 
-            // 0.000000, 
-            // 1.000000, 
-            // 'GASTO DE VIAJE', 
-            // 'TLEA-273', 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // 0, 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // 2, 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // NULL, 
-            // 0, 
-            // 0);");
-            
-            // let result = await pool.request().query("update ORDEN_CONCEPTO set VALE_FOLIO = 204534 where VALE_FOLIO = 400006;");
-            // await sql.close();
-            
+                let result = await pool.request().query("INSERT INTO ORDEN_CONCEPTO (CLAVE_BITACORA,CONSECUTIVO,CONCEPTO_CLAVE,VALE_RANGO,IMPORTE,REFERENCIA,VALE_TERMINAL,VALE_FOLIO,VALE_FECHA,POLIZA_CB,POLIZA_CXP,PERIODO_CB,PERIODO_CXP,STATUS_VALE,PREFIJO,CUENTA_BAN,BENEFICIARIO,USR_AUTORIZA,IMPRESO,USR_FIRMO,OPERADOR_CLAVE,LIQUIDACION_CLAVE,PAGADO,USR_CREA,FCH_CREA,USR_MOD,FCH_MOD,USR_PAG,FCH_PAG,USR_CAN,FCH_CAN,vale_saldo,tmp_pago_tes,importe_pagado,OBSERV_VALE,TRACTO_NUM_ECO_PROV,GASTO_CLAVE,deduccion_clave,VALE_FOLIO_SUST,ban_ayudante,NO_GEN_POL,TIPO_ANTICIPO_CLAVE,CONSEC_OS_MNIOB,maniobra_clave,es_maniobra,PERMISIONARIO_LIQ_CLAVE,PRELIQUIDACION_CLAVE,BAN_PRELIQUIDA,tipoValeSalida,banAutorizaLayoutLiq,ID_LAYOUT,egresoLayout,periodoLayout,fechaLayout,idProcAut,flagNotifCan) \
+                VALUES (Number(body.CLAVE_BITACORA),Number(resultConse.recordset[0].CONSECUTIVO) + 1,conceptoEncontrado.concepto_clave, body.VALE_RANGO,body.IMPORTE,body.REFERENCIA,body.VALE_TERMINAL,Number(resultConseVT.recordset[0].VALE_FOLIO) + 1,moment(today).format('YYYY-MM-DD') + 'T00:00:00.000Z',body.POLIZA_CB,body.POLIZA_CXP,moment(lastDay).format('YYYY-MM-DD') + ' 00:00:00',body.PERIODO_CXP,body.STATUS_VALE,body.PREFIJO,body.CUENTA_BAN,body.BENEFICIARIO,body.USR_AUTORIZA,body.IMPRESO,body.USR_FIRMO,result.recordset[0].OPERADOR_CLAVE,body.LIQUIDACION_CLAVE,body.PAGADO,'JLIZARDO',moment(today).format('YYYY-MM-DDTHH:mm:ss') + '.000Z',body.USR_MOD,body.FCH_MOD,body.USR_PAG,body.FCH_PAG,body.USR_CAN,body.FCH_CAN,body.vale_saldo,body.tmp_pago_tes,body.importe_pagado,body.OBSERV_VALE,body.TRACTO_NUM_ECO_PROV,body.GASTO_CLAVE,body.deduccion_clave,body.VALE_FOLIO_SUST,body.ban_ayudante,body.NO_GEN_POL,body.TIPO_ANTICIPO_CLAVE,body.CONSEC_OS_MNIOB,body.maniobra_clave,body.es_maniobra,body.PERMISIONARIO_LIQ_CLAVE,body.PRELIQUIDACION_CLAVE,body.BAN_PRELIQUIDA,body.tipoValeSalida,body.banAutorizaLayoutLiq,body.ID_LAYOUT,body.egresoLayout,body.periodoLayout,body.fechaLayout,body.idProcAut,body.flagNotifCan);"
+                );
+                
                 res.json({
                     OK: true,
                     datos: nuevoAdj,

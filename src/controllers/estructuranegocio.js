@@ -577,7 +577,7 @@ module.exports = app => {
 
         try {
 
-            console.log(unidad)
+            // console.log(unidad)
             t = await Sequelize.transaction();
 
             await Unidad.update(

@@ -17,7 +17,7 @@ module.exports = (sequelize, DataType) => {
         },
         alcoholimetro: {
             type: DataType.BOOLEAN,
-            allowNull: false
+            allowNull: true
         },
         foto_alcoholimetro: {
             type: DataType.STRING(100)

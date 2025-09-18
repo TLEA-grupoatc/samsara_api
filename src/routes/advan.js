@@ -125,4 +125,7 @@ module.exports = app => {
 
     app.post('/pruebainsert', ca.pruebainsert);
 
+
+    app.get('/pruebasparaborrar', ca.pruebasparaborrar);
+
 }

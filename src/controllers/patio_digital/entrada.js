@@ -23,34 +23,37 @@ module.exports = app => {
             primerTurno: [],
             segundoTurno: [],
             tercerTurno: [],
-            programacionesAnteriores: []
-        }
+            agendaDiasPasados: [],
+            agendaDiasProximos: [],
+        };
 
         const diaActual = moment().format('YYYY-MM-DD');
 
         try {
-
             const agenda = await agendaDiaActual(sequelize, base);
 
-            // console.log(agenda, diaActual);
-
             agenda.forEach(programacion => {
+            const fechaProgramada = moment(programacion.fecha_programada);
 
-                if (programacion.horario_arribo === 1 && programacion.fecha_programada === diaActual) {
-                    horariosYUnidades.primerTurno.push(programacion);
-                } else if (programacion.horario_arribo === 2 && programacion.fecha_programada === diaActual) {
-                    horariosYUnidades.segundoTurno.push(programacion);
-                } else if (programacion.horario_arribo === 3 && programacion.fecha_programada === diaActual) {
-                    horariosYUnidades.tercerTurno.push(programacion);
-                } else {
-                    horariosYUnidades.programacionesAnteriores.push(programacion);
+            if (fechaProgramada.isSame(diaActual, 'day')) {
+                if (programacion.horario_arribo === 1) {
+                horariosYUnidades.primerTurno.push(programacion);
+                } else if (programacion.horario_arribo === 2) {
+                horariosYUnidades.segundoTurno.push(programacion);
+                } else if (programacion.horario_arribo === 3) {
+                horariosYUnidades.tercerTurno.push(programacion);
                 }
-                
+            } else if (fechaProgramada.isBefore(diaActual, 'day')) {
+                horariosYUnidades.agendaDiasPasados.push(programacion);
+            } else if (fechaProgramada.isAfter(diaActual, 'day')) {
+                horariosYUnidades.agendaDiasProximos.push(programacion);
+            }
             });
 
-            return response.status(200).json({ 
-                OK: true, 
+            return response.status(200).json({
+                OK: true,
                 result: horariosYUnidades,
+                agenda: agenda,
             });
             
         } catch (err) {
@@ -155,7 +158,7 @@ module.exports = app => {
                     PAU.base = :base
                 ORDER BY
                     id_entrada DESC
-                LIMIT 100
+                LIMIT 50
             `;
 
             const result = await sequelize.query(query, {
@@ -228,13 +231,13 @@ module.exports = app => {
             // await t.commit();
             return res.status(200).json({
                 OK: true,
-                msg: '',
+                msg: 'Unidad en caseta obtenido correctamente',
                 result: unidadEnCaseta
             });
 
         } catch (error) {
             // if (t) await t.rollback();
-            console.error('Error al :', error);
+            console.error('Error al obtener unidad en caseta:', error);
             return res.status(500).json({ 
                 OK: false,
                 msg: error,
@@ -253,42 +256,10 @@ module.exports = app => {
                 }))
                 : [];
 
-            // await sql.connect(sqlConfig)
-
-            // const unidades = await sql.query`
-            //     SELECT
-            //         TRACTO_CLAVE AS value,
-            //         REPLACE(TRACTO_NUM_ECO, ' ', '') AS label,
-            //         CASE
-            //             WHEN NEGOCIO_CLAVE = 'NOD' THEN 1
-            //             WHEN NEGOCIO_CLAVE = 'NOD2' THEN 2
-            //             WHEN NEGOCIO_CLAVE = 'NOD3' THEN 3
-            //             WHEN NEGOCIO_CLAVE = 'NOD4' THEN 4
-            //             WHEN NEGOCIO_CLAVE = 'NOD5' THEN 5
-            //             ELSE 0
-            //         END AS unidad_neg,
-            //         CASE
-            //             WHEN NEGOCIO_CLAVE = 'NOD' THEN 1
-            //             WHEN NEGOCIO_CLAVE = 'NOD2' THEN 1
-            //             WHEN NEGOCIO_CLAVE = 'NOD3' THEN 2
-            //             WHEN NEGOCIO_CLAVE = 'NOD4' THEN 2
-            //             WHEN NEGOCIO_CLAVE = 'NOD5' THEN 3
-            //             ELSE 0
-            //         END AS division
-            //     FROM
-            //         TRACTO
-            //     WHERE
-            //         TRACTO_NUM_ECO LIKE 'TLEA%' OR TRACTO_NUM_ECO LIKE 'C%';
-            // `;
-
-            const unidades = await listadoTracto();
-
-
             return res.json({ 
                 OK: true, 
                 result: {
-                    operadores,
-                    unidades: unidades
+                    operadores
                 }
             });
         } catch (err) {
@@ -854,15 +825,15 @@ const listadoOperadors = async () => {
     }
 }
 
-const listadoTracto = async () => {
-    try {
-        const response = await axios.get('https://servidorlocal.ngrok.app/catalogoTracto');
-        return response.data.result;
-    } catch (error) {
-        console.error('Error consultando la API de operadores:', error.message);
-        return null;
-    }
-}
+// const listadoTracto = async () => {
+//     try {
+//         const response = await axios.get('https://servidorlocal.ngrok.app/catalogoTracto');
+//         return response.data.result;
+//     } catch (error) {
+//         console.error('Error consultando catalogo tractos:', error.message);
+//         return null;
+//     }
+// }
 
 //#region Consultas SQL
 
@@ -889,7 +860,7 @@ const agendaDiaActual = async (sequelize, base) => {
                         LEFT JOIN pd_agenda CA ON RA.fk_agenda = CA.id_agenda
                     WHERE
                         CA.base = :base
-                        AND RA.fecha_arribo_reprogramado <= current_date()
+                        -- AND RA.fecha_arribo_reprogramado <= current_date()
                         AND RA.rn = 1
                 ),
                 programadas_hoy AS (
@@ -903,7 +874,7 @@ const agendaDiaActual = async (sequelize, base) => {
                         pd_agenda CA
                     WHERE
                         CA.base = :base
-                        AND DATE(CA.fecha_arribo_programado) <= current_date()
+                        -- AND DATE(CA.fecha_arribo_programado) <= current_date()
                         AND cumplimiento_arribo IS NULL
                 ),
                    
@@ -920,7 +891,6 @@ const agendaDiaActual = async (sequelize, base) => {
                     PAU.operador,
                     PAU.division,
                     PAU.unidad_negocio,
-                    PAU.cargado,
                     DATE(UA.fecha_programada) AS fecha_programada,
                     UA.horario_arribo
                 FROM

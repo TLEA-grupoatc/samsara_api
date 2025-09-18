@@ -161,7 +161,7 @@ module.exports = app => {
                     S.estatus ASC,
                     S.fecha_salida DESC,
                     S.id_salida ASC
-                LIMIT 80
+                LIMIT 50
             `;
 
             const result = await sequelize.query(query, {

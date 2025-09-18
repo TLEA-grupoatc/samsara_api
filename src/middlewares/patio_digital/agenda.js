@@ -12,22 +12,30 @@ module.exports = app => {
         try {
 
             let arriboProgramado = await Pickandup.findOne({ 
-                attributes: ['idpickandup', 'unidad', 'estatus'],
+                attributes: ['idpickandup', 'unidad', 'estatus', 'fk_agenda', 'fk_entrada', 'fk_salida'],
                 where: {
                     unidad: req.body.unidad,
                     estatus: {
-                        [Sequelize.Op.ne]: 'cancelado'
-                    }
+                        [Sequelize.Op.notIn]: ['cancelado', 'anulado']
+                    }, 
                 },
                 order: [['idpickandup', 'DESC']],
-                limit: 1,
             });
 
+            const pickandup = arriboProgramado?.dataValues;
+            console.log(pickandup)
 
-            if(arriboProgramado && arriboProgramado.dataValues.estatus !== 'salida_salida') {
+            if(pickandup?.fk_agenda && !pickandup?.fk_entrada && !pickandup?.fk_salida && pickandup?.estatus !== 'salida_salida'){
                 return res.status(200).json({
                     OK: false,
-                    msg: "Unidad ya programada o en base"
+                    msg: "Unidad ya agendada, favor de cancelar o reprogramar la agenda existente"
+                });
+            }
+            
+            if(pickandup?.fk_entrada && !pickandup?.fk_salida && pickandup?.estatus !== 'salida_salida'){
+                return res.status(200).json({
+                    OK: false,
+                    msg: "Unidad en base, cuenta con entrada pero no con salida"
                 });
             }
             
