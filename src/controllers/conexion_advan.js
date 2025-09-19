@@ -631,11 +631,11 @@ module.exports = app => {
             
             const today = new Date();
             const fifteenDaysAgo = new Date();
-            fifteenDaysAgo.setDate(today.getDate() - 5);
+            fifteenDaysAgo.setDate(today.getDate() - 8);
             
             let result = await pool.request().query("SELECT vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.fecha_carga, vos.unidad, vos.origen_desc, vos.destino_desc, vos.ruta_destino_os, vos.ruta_origen_os, vos.fecha_reporte_entrega FROM vordenser AS vos \
                 INNER JOIN bitacoras AS bt on bt.clave_bitacora = vos.clave_bitacora \
-                WHERE vos.fecha_orden BETWEEN '" + moment(today).format('YYYY-MM-DD') + "T10:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
+                WHERE vos.fecha_orden BETWEEN '" + moment(fifteenDaysAgo).format('YYYY-MM-DD') + "T10:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
                 AND vos.clave_bitacora IS NOT NULL AND vos.fch_can IS NULL");
 
             sql.close();
@@ -873,9 +873,10 @@ module.exports = app => {
 
             const today = new Date();
 
+            let result = await pool.request().query(`SELECT * FROM operador where status = 1 and circuito_clave = 'GRAL'; `);
             // let result = await pool.request().query(`DELETE FROM orden_concepto WHERE VALE_FOLIO = 33523`);
             // let result = await pool.request().query(`SELECT Top(20) * FROM bitacoras; `);
-            let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
+            // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
             // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
             // let result = await pool.request().query(`select Top(100)*  FROM orden_concepto WHERE BENEFICIARIO = 'GUZMAN CASANOVA MANUEL JESUS' order by FCH_CREA desc`);
             // let result = await pool.request().query(`SELECT TOP(1000) * FROM orden_concepto order by vale_fecha desc`);

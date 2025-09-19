@@ -5034,236 +5034,26 @@ module.exports = app => {
                 {"direccion": "RIO PAPALOAPAN Núm. 24 Int. A Col. Chautenco C.P. 72730, Puebla, MEX", "longitud": -98.25121720000001, "latitud": 19.1117811}
             ]
 
+            var direccionesnul = []
+
             for(const rr of resultado) {
                 if(rr.unidad.startsWith('C')) {
                     rr.unidad = rr.unidad.replace('C', 'C-');
                 }
-
+                
                 const existe = await itine.findAll({
                     where: {
-                        operador: rr.operador_nombre,
-                        economico: rr.unidad,
-                        origen: rr.origen_nom,
-                        destino: rr.destinatario_nom,
-                        fecha_reporte_entrega: null,
-                        fecha_cierre_itinerario: null
+                        clave_bitacora: rr.clave_bitacora,
+                        operador: rr.operador_nombre.trim(),
+                        economico: rr.unidad.trim(),
+                        origen: rr.origen_nom.trim(),
+                        destino: rr.destinatario_nom.trim()
                     }
                 });
                 
-                if(existe.length === 0) {
-                    try {
-                        let coordenadasOrigen = direccionesCoor.find(c => c.direccion.toUpperCase() === rr.origen_dom.toUpperCase().trim()) || { direccion: 'direcciones' };
-                        let coordenadasDestino = direccionesCoor.find(c => c.direccion.toUpperCase() === rr.destinatario_dom.toUpperCase().trim()) || { direccion: 'direcciones' };
-                      
-                        // const responseUno = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-                        //     rr.origen_dom
-                        // )}.json?access_token=${process.env.MAPBOX_TOKEN}&limit=1`);
-
-                        // const responseDos = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-                        //     rr.destinatario_dom
-                        // )}.json?access_token=${process.env.MAPBOX_TOKEN}&limit=1`);
-
-                        // if(responseUno.data.features.length <= 0 || responseDos.data.features.length <= 0) {
-                        //     console.warn(`No se pudo geocodificar alguna dirección para folio ${rr.ordenser_folio}`);
-                        //     continue;
-                        // }
-
-                        // const lugarUno = responseUno.data.features[0];
-                        // const [longitudUno, latitudUno] = lugarUno.center;
-
-                        // const lugarDos = responseDos.data.features[0];
-                        // const [longitudDos, latitudDos] = lugarDos.center;
-
-                        async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
-                            const pointA = [lon1, lat1];
-                            const pointB = [lon2, lat2];
-
-                            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
-
-                            try {
-                                const response = await axios.get(url);
-                                const data = response.data;
-
-                                if (data.routes.length > 0) {
-                                    const route = data.routes[0];
-                                    const distanciaKm = (route.distance / 1000).toFixed(2);
-                                    const tiempoMin = Math.round(route.duration / 60);
-
-                                    return {
-                                        provider: 'MapBox',
-                                        mode: 'driving',
-                                        distance_km: distanciaKm || 0,
-                                        duration_sec: tiempoMin || 0
-                                    };
-                                } 
-                                else {
-                                    console.log("No se encontró ruta. para orden", rr.clave_bitacora);
-                                }
-                            } catch (error) {
-                                console.error("Error:", error.message);
-                            }
-                        }
-
-                        console.log(coordenadasOrigen.latitud  );
-                        console.log(coordenadasOrigen.longitud );
-                        console.log(coordenadasDestino.latitud );
-                        console.log(coordenadasDestino.longitud);
-
-                        if(coordenadasOrigen.latitud != undefined && coordenadasOrigen.longitud != undefined && coordenadasDestino.latitud != undefined && coordenadasDestino.longitud != undefined) {
-                            const travel = await getRoute({
-                                lat1: coordenadasOrigen.latitud,
-                                lon1: coordenadasOrigen.longitud,
-                                lat2: coordenadasDestino.latitud,
-                                lon2: coordenadasDestino.longitud,
-                                apiKey: process.env.MAPBOX_TOKEN
-                            });
-
-                            let nuevoRegistro = new itine({
-                                folio_orden: rr.ordenser_folio,
-                                unidad: rr.terminal_clave,
-                                numero_empleado: rr.numero_empleado,
-                                operador: rr.operador_nombre,
-                                economico: rr.unidad,
-                                cliente: rr.cliente_nombre,
-                                clave_bitacora: rr.clave_bitacora,
-                                origen: rr.origen_nom.trim(),
-                                destino: rr.destinatario_nom.trim(),
-                                origen_direccion: rr.origen_dom,
-                                destino_direccion: rr.destinatario_dom,
-                                origen_longitud: coordenadasOrigen.longitud,
-                                origen_latitud: coordenadasOrigen.latitud,
-                                destino_longitud: coordenadasDestino.longitud,
-                                destino_latitud: coordenadasDestino.latitud,
-                                origen_desc: rr.origen_desc.trim(),
-                                destino_desc: rr.destino_desc.trim(),
-                                ruta_destino_os: rr.ruta_destino_os.trim(),
-                                ruta_origen_os: rr.ruta_origen_os.trim(),
-                                fecha_carga: moment(rr.fecha_carga).format('YYYY-MM-DD HH:mm:ss'),
-                                tiempo: Math.round(travel.duration_sec / 60),
-                                km: travel.distance_km,
-                                fecha: moment(rr.fecha_orden).format('YYYY-MM-DD HH:mm:ss'),
-                                fecha_creacion: moment(today).format('YYYY-MM-DD'),
-                                fecha_reporte_entrega: null,
-                                fecha_cierre_itinerario: null
-                            });
-
-                            const resultado = await itine.create(nuevoRegistro.dataValues, {
-                                fields: [
-                                    'folio_orden',
-                                    'unidad',
-                                    'numero_empleado',
-                                    'operador',
-                                    'economico',
-                                    'cliente',
-                                    'clave_bitacora',
-                                    'origen',
-                                    'destino',
-                                    'origen_direccion',
-                                    'destino_direccion',
-                                    'origen_longitud',
-                                    'origen_latitud',
-                                    'destino_longitud',
-                                    'destino_latitud',
-                                    'origen_desc',
-                                    'destino_desc',
-                                    'ruta_destino_os',
-                                    'ruta_origen_os',
-                                    'fecha_carga',
-                                    'tiempo',
-                                    'km',
-                                    'fecha',
-                                    'fecha_creacion',
-                                    'fecha_reporte_entrega',
-                                    'fecha_cierre_itinerario'
-                                ]
-                            });
-
-                            for(const ubi of ubicaciones) {
-                                if(rr.unidad === ubi.unidad) {
-                                    
-                                    async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
-                                        const pointA = [lon1, lat1];
-                                        const pointB = [lon2, lat2];
-
-                                        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
-
-                                        try {
-                                            const response = await axios.get(url);
-                                            const data = response.data;
-
-                                            if (data.routes.length > 0) {
-                                                const route = data.routes[0];
-                                                const distanciaKm = (route.distance / 1000).toFixed(2);
-                                                const tiempoMin = Math.round(route.duration / 60);
-
-                                                return {
-                                                    provider: 'MapBox',
-                                                    mode: 'driving',
-                                                    distance_km: distanciaKm || 0,
-                                                    duration_sec: tiempoMin || 0
-                                                };
-                                            } 
-                                            else {
-                                                console.log("No se encontró ruta.                                       1111");
-                                            }
-                                        } catch (error) {
-                                            console.error("Error:", error.message);
-                                        }
-                                    }
-
-                                    const travel = await getRoute({
-                                        lat1: ubi.latitud,
-                                        lon1: ubi.longitud,
-                                        lat2: coordenadasDestino.latitud,
-                                        lon2: coordenadasDestino.longitud,
-                                        apiKey: process.env.MAPBOX_TOKEN,
-                                    });
-
-                                    var kmrestantes = travel.distance_km;
-
-                                    await itineDet.create({
-                                        id_itinerarios: resultado.id_itinerarios,
-                                        economico: rr.unidad,
-                                        operador: rr.operador_nombre,
-                                        latitud: ubi.latitud,
-                                        longitud: ubi.longitud,
-                                        direccion: ubi.location,
-                                        geocerca: ubi.geocerca,
-                                        combustible: ubi.fuelpercent,
-                                        km: kmrestantes,
-                                        tiempo: Math.round(travel.duration_sec / 60),
-                                        velocidad: ubi.km,
-                                        estado: ubi.estadounidad,
-                                        odometer: ubi.odometer,
-                                        odometrototal: ubi.odometer,
-                                        fecha: moment(rr.fechahoragps).format('YYYY-MM-DD HH:mm:ss'),
-                                    }, 
-                                    {
-                                        fields: [
-                                            'id_itinerarios',
-                                            'economico',
-                                            'operador',
-                                            'latitud',
-                                            'longitud',
-                                            'direccion',
-                                            'geocerca',
-                                            'combustible',
-                                            'km',
-                                            'tiempo',
-                                            'velocidad',
-                                            'estado',
-                                            'fecha'
-                                        ]
-                                    });
-                                }
-                            }
-                        }
-                    } 
-                    catch (error) {
-                        console.error('EError en registro', rr.ordenser_folio, error.message);
-                    }
-                } 
-                else {
+                console.log(existe.length);
+                
+                if(existe.length > 0) {
                     if(rr.fecha_reporte_entrega != null) {
                         let data = new itine({
                             fecha_reporte_entrega: moment(rr.fecha_reporte_entrega).format('YYYY-MM-DD HH:mm:ss'),
@@ -5308,18 +5098,12 @@ module.exports = app => {
                                             };
                                         } 
                                         else {
-                                            console.log("No se encontró ruta.                                       22222");
+                                            console.log("2No se encontró ruta.                                       22222");
                                         }
                                     } catch (error) {
                                         console.error("Error:", error.message);
                                     }
                                 }
-
-                                console.log('else');
-                                console.log(ubi.latitud );
-                                console.log(ubi.longitud);
-                                console.log(Number(existe[0].destino_latitud) );
-                                console.log(Number(existe[0].destino_longitud));
 
                                 const travel = await getRoute({
                                     lat1: ubi.latitud ,
@@ -5444,8 +5228,202 @@ module.exports = app => {
                         }
                     }
                 }
+                else {
+                    try {
+                        let coordenadasOrigen = direccionesCoor.find(c => c.direccion.toUpperCase().trim() === rr.origen_dom.toUpperCase().trim()) || { direccion: rr.origen_dom };
+                        let coordenadasDestino = direccionesCoor.find(c => c.direccion.toUpperCase().trim() === rr.destinatario_dom.toUpperCase().trim()) || { direccion: rr.destinatario_dom };
 
-                await sleep(1000);
+                        async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
+                            const pointA = [lon1, lat1];
+                            const pointB = [lon2, lat2];
+
+                            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+
+                            try {
+                                const response = await axios.get(url);
+                                const data = response.data;
+
+                                if (data.routes.length > 0) {
+                                    const route = data.routes[0];
+                                    const distanciaKm = (route.distance / 1000).toFixed(2);
+                                    const tiempoMin = Math.round(route.duration / 60);
+
+                                    return {
+                                        provider: 'MapBox',
+                                        mode: 'driving',
+                                        distance_km: distanciaKm || 0,
+                                        duration_sec: tiempoMin || 0
+                                    };
+                                } 
+                                else {
+                                    console.log("1No se encontró ruta. para orden", rr.clave_bitacora);
+                                }
+                            } catch (error) {
+                                console.error("Error:", error.message);
+                            }
+                        }
+
+                        if(coordenadasOrigen.latitud == undefined || coordenadasDestino.latitud == undefined) {
+                            direccionesnul.push({direccion_origen: coordenadasOrigen.direccion, direccion_destino: coordenadasDestino.direccion})
+                            console.log(direccionesnul);
+                        }
+                        
+                        if(coordenadasOrigen.latitud != undefined && coordenadasOrigen.longitud != undefined && coordenadasDestino.latitud != undefined && coordenadasDestino.longitud != undefined) {
+                            const travel = await getRoute({
+                                lat1: coordenadasOrigen.latitud,
+                                lon1: coordenadasOrigen.longitud,
+                                lat2: coordenadasDestino.latitud,
+                                lon2: coordenadasDestino.longitud,
+                                apiKey: process.env.MAPBOX_TOKEN
+                            });
+
+                            let nuevoRegistro = new itine({
+                                folio_orden: rr.ordenser_folio,
+                                unidad: rr.terminal_clave,
+                                numero_empleado: rr.numero_empleado,
+                                operador: rr.operador_nombre.trim(),
+                                economico: rr.unidad.trim(),
+                                cliente: rr.cliente_nombre.trim(),
+                                clave_bitacora: rr.clave_bitacora,
+                                origen: rr.origen_nom.trim(),
+                                destino: rr.destinatario_nom.trim(),
+                                origen_direccion: rr.origen_dom.trim(),
+                                destino_direccion: rr.destinatario_dom.trim(),
+                                origen_longitud: coordenadasOrigen.longitud,
+                                origen_latitud: coordenadasOrigen.latitud,
+                                destino_longitud: coordenadasDestino.longitud,
+                                destino_latitud: coordenadasDestino.latitud,
+                                origen_desc: rr.origen_desc.trim(),
+                                destino_desc: rr.destino_desc.trim(),
+                                ruta_destino_os: rr.ruta_destino_os.trim(),
+                                ruta_origen_os: rr.ruta_origen_os.trim(),
+                                fecha_carga: rr.fecha_carga,
+                                tiempo: Math.round(travel.duration_sec / 60),
+                                km: travel.distance_km,
+                                fecha: rr.fecha_orden,
+                                fecha_creacion: moment(today).format('YYYY-MM-DD'),
+                                fecha_reporte_entrega: rr.fecha_reporte_entrega,
+                                fecha_cierre_itinerario: null
+                            });
+
+                            const resultado = await itine.create(nuevoRegistro.dataValues, {
+                                fields: [
+                                    'folio_orden',
+                                    'unidad',
+                                    'numero_empleado',
+                                    'operador',
+                                    'economico',
+                                    'cliente',
+                                    'clave_bitacora',
+                                    'origen',
+                                    'destino',
+                                    'origen_direccion',
+                                    'destino_direccion',
+                                    'origen_longitud',
+                                    'origen_latitud',
+                                    'destino_longitud',
+                                    'destino_latitud',
+                                    'origen_desc',
+                                    'destino_desc',
+                                    'ruta_destino_os',
+                                    'ruta_origen_os',
+                                    'fecha_carga',
+                                    'tiempo',
+                                    'km',
+                                    'fecha',
+                                    'fecha_creacion',
+                                    'fecha_reporte_entrega',
+                                    'fecha_cierre_itinerario'
+                                ]
+                            });
+
+                            for(const ubi of ubicaciones) {
+                                if(rr.unidad === ubi.unidad) {
+                                    
+                                    async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
+                                        const pointA = [lon1, lat1];
+                                        const pointB = [lon2, lat2];
+
+                                        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+
+                                        try {
+                                            const response = await axios.get(url);
+                                            const data = response.data;
+
+                                            if (data.routes.length > 0) {
+                                                const route = data.routes[0];
+                                                const distanciaKm = (route.distance / 1000).toFixed(2);
+                                                const tiempoMin = Math.round(route.duration / 60);
+
+                                                return {
+                                                    provider: 'MapBox',
+                                                    mode: 'driving',
+                                                    distance_km: distanciaKm || 0,
+                                                    duration_sec: tiempoMin || 0
+                                                };
+                                            } 
+                                            else {
+                                                console.log("No se encontró ruta.                                       1111");
+                                            }
+                                        } catch (error) {
+                                            console.error("Error:", error.message);
+                                        }
+                                    }
+
+                                    const travel = await getRoute({
+                                        lat1: ubi.latitud,
+                                        lon1: ubi.longitud,
+                                        lat2: coordenadasDestino.latitud,
+                                        lon2: coordenadasDestino.longitud,
+                                        apiKey: process.env.MAPBOX_TOKEN,
+                                    });
+
+                                    var kmrestantes = travel.distance_km;
+
+                                    await itineDet.create({
+                                        id_itinerarios: resultado.id_itinerarios,
+                                        economico: rr.unidad,
+                                        operador: rr.operador_nombre,
+                                        latitud: ubi.latitud,
+                                        longitud: ubi.longitud,
+                                        direccion: ubi.location,
+                                        geocerca: ubi.geocerca,
+                                        combustible: ubi.fuelpercent,
+                                        km: kmrestantes,
+                                        tiempo: Math.round(travel.duration_sec / 60),
+                                        velocidad: ubi.km,
+                                        estado: ubi.estadounidad,
+                                        odometer: ubi.odometer,
+                                        odometrototal: ubi.odometer,
+                                        fecha: moment(rr.fechahoragps).format('YYYY-MM-DD HH:mm:ss'),
+                                    }, 
+                                    {
+                                        fields: [
+                                            'id_itinerarios',
+                                            'economico',
+                                            'operador',
+                                            'latitud',
+                                            'longitud',
+                                            'direccion',
+                                            'geocerca',
+                                            'combustible',
+                                            'km',
+                                            'tiempo',
+                                            'velocidad',
+                                            'estado',
+                                            'fecha'
+                                        ]
+                                    });
+                                }
+                            }
+                        }
+                    } 
+                    catch (error) {
+                        console.error('EError en registro', rr.ordenser_folio, error.message);
+                    }
+                } 
+
+                await sleep(3000);
             }
 
             res.json({ 

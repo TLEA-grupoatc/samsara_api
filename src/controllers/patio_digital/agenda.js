@@ -334,7 +334,14 @@ module.exports = app => {
                 let horarioKey = horarios[programacion.horario_arribo];
                 let fechaObj;
                 // console.log('programacion', programacion)
-                const fechaFinal = programacion.fecha_entrada ? programacion.fecha_entrada : programacion.fecha_programada;
+
+                let fechaFinal;
+                if(programacion.cumplimiento === 'cumplio_arribo' || programacion.cumplimiento === 'incumplio_arribo' ){
+                    fechaFinal = programacion.fecha_entrada ? programacion.fecha_entrada : programacion.fecha_programada;
+                } else {
+                    fechaFinal = programacion.fecha_programada;
+                }
+
                 if (horarioKey && dataset[horarioKey]) {
                     fechaObj = dataset[horarioKey].find(obj => obj.fecha_programada === fechaFinal);
                     if (fechaObj) {
@@ -1128,10 +1135,12 @@ const programacionesYEstatusDeLaSemana = async (sequelize, base, fechaInicio, fe
                 RA.fk_agenda AS id_agenda,
                 RA.fecha_arribo_reprogramado AS fecha_programada,
                 RA.cumplimiento_arribo_reprogramacion AS cumplimiento,
-                RA.horario_arribo_reprogramado AS horario_arribo
+                RA.horario_arribo_reprogramado AS horario_arribo,
+                MA.motivo AS motivo
             FROM
                 pd_reprogramaciones_arribos RA
                 LEFT JOIN pd_agenda CA ON RA.fk_agenda = CA.id_agenda
+                LEFT JOIN pd_motivo_programacion_arribo MA ON CA.fk_motivo_programacion_arribo = MA.id_motivo_programacion_arribo
             WHERE
                 CA.base = :base
                 AND RA.fecha_arribo_reprogramado BETWEEN :fechaInicio AND :fechaFin
@@ -1141,9 +1150,11 @@ const programacionesYEstatusDeLaSemana = async (sequelize, base, fechaInicio, fe
                 CA.id_agenda,
                 CA.fecha_arribo_programado AS fecha_programada,
                 CA.cumplimiento_arribo AS cumplimiento,
-                CA.horario_arribo_programado AS horario_arribo
+                CA.horario_arribo_programado AS horario_arribo,
+                MA.motivo
             FROM
                 pd_agenda CA
+                LEFT JOIN pd_motivo_programacion_arribo MA ON CA.fk_motivo_programacion_arribo = MA.id_motivo_programacion_arribo
             WHERE
                 CA.base = :base
                 AND DATE(CA.fecha_arribo_programado) BETWEEN :fechaInicio AND :fechaFin
@@ -1160,7 +1171,8 @@ const programacionesYEstatusDeLaSemana = async (sequelize, base, fechaInicio, fe
                 DATE(UA.fecha_programada) AS fecha_programada,
                 UA.horario_arribo,
                 UA.cumplimiento,
-                DATE(EN.fecha_entrada) AS fecha_entrada
+                DATE(EN.fecha_entrada) AS fecha_entrada,
+                UA.motivo
             FROM
                 union_arribos UA
                 LEFT JOIN pd_pickandup PAU ON UA.id_agenda = PAU.fk_agenda
