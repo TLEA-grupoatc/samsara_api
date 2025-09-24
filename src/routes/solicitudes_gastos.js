@@ -136,7 +136,7 @@ module.exports = app => {
 
 
 
-
+    app.delete('/pasarAPorDepositar/:id_gastos/:estatus', verificarToken, cu.pasarAPorDepositar);
 
 
 

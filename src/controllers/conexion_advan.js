@@ -872,11 +872,11 @@ module.exports = app => {
             let pool = await sql.connect(config);
 
             const today = new Date();
-
-            let result = await pool.request().query(`SELECT * FROM operador where status = 1 and circuito_clave = 'GRAL'; `);
+// 
+            // let result = await pool.request().query(`SELECT * FROM operador where status = 1 and circuito_clave = 'GRAL'; `);
             // let result = await pool.request().query(`DELETE FROM orden_concepto WHERE VALE_FOLIO = 33523`);
             // let result = await pool.request().query(`SELECT Top(20) * FROM bitacoras; `);
-            // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
+            let result = await pool.request().query(`select TOP(10)*  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' order by FCH_CREA desc`);
             // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
             // let result = await pool.request().query(`select Top(100)*  FROM orden_concepto WHERE BENEFICIARIO = 'GUZMAN CASANOVA MANUEL JESUS' order by FCH_CREA desc`);
             // let result = await pool.request().query(`SELECT TOP(1000) * FROM orden_concepto order by vale_fecha desc`);
