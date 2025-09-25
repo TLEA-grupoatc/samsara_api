@@ -10,6 +10,7 @@ module.exports = app => {
     app.get('/calendario-arribos/resumenmotivos/:base', Agenda.obtenerResumenAgendasPorMotivo);
 
     app.get('/calendario-arribos/vista-general/:base/:fechaInicio/:fechaFin', Agenda.dataVistaGeneral);
+    app.get('/calendario-arribos/ingresospormotivo/:base/:fechainicio/:fechafin', Agenda.obtenerIngresosPorMotivo);
 
     app.get('/calendario-arribos/obtenerunidades', Agenda.pd_ag_obtenerUnidades);
     app.get('/calendario-arribos/obtenerclientes', Agenda.pd_ag_obtenerClientes);

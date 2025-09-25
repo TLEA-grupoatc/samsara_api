@@ -138,6 +138,9 @@ module.exports = app => {
 
     app.delete('/pasarAPorDepositar/:id_gastos/:estatus', verificarToken, cu.pasarAPorDepositar);
 
+    
+    app.delete('/bitacoracerrada/:id_gastos/:comentarios_nomina', verificarToken, cu.bitacoracerrada);
+
 
 
 

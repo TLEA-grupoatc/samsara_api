@@ -4,4 +4,5 @@ module.exports = app => {
    
     app.get('/patiodigital/unidadesenbase', PatioDigital.unidadesEnBase);
     app.get('/patiodigital/agendaingresos', PatioDigital.agendaIngresos);
+    app.get('/patiodigital/ingresosmotivos', PatioDigital.ingresosPorMotivo);
 }

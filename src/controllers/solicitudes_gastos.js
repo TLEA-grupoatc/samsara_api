@@ -1505,6 +1505,29 @@ module.exports = app => {
     }
 
 
+    app.bitacoracerrada = (req, res) => {
+        let data = new gasto({
+            comentarios_nomina: req.params.comentarios_nomina
+        });
+
+        gasto.update(data.dataValues, {
+            where: {
+                id_gastos: req.params.id_gastos
+            },
+            individualHooks: true, 
+            fields: ['comentarios_nomina']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
 
 
 

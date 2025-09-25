@@ -37,7 +37,7 @@ module.exports = app => {
         });
     };
 
-    app.getSolicitudesGastosPorDepositar = () => {
+    app.getSolicitudesGastosAdvan = () => {
         gasto.findAll({
             where: {
                 estatus: 'Por Capturar Advan'
@@ -73,6 +73,9 @@ module.exports = app => {
 
     gasto.addHook('afterCreate', app.getSolicitudesGastosPorDepositar);
     gasto.addHook('afterUpdate', app.getSolicitudesGastosPorDepositar);   
+
+    gasto.addHook('afterCreate', app.getSolicitudesGastosAdvan);
+    gasto.addHook('afterUpdate', app.getSolicitudesGastosAdvan);   
 
     origendestino.addHook('afterCreate', app.obtenerOrigenesDestinoGastosNow);
     origendestino.addHook('afterUpdate', app.obtenerOrigenesDestinoGastosNow);    

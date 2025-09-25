@@ -87,6 +87,49 @@ module.exports = app => {
         }
     }
 
+    app.ingresosPorMotivo = async (req, res) => {
+
+        try {
+            const ingresos = await Sequelize.query(
+            `
+                SELECT
+                    CASE
+                        WHEN PAU.base = 1 THEN 'SALINAS'
+                        WHEN PAU.base = 2 THEN 'SALAMANCA'
+                        ELSE PAU.base
+                    END AS base,
+                    PAU.unidad,
+                    -- PAU.estatus,
+                    PAU.division,
+                    PAU.unidad_negocio,
+                    CLI.cliente,
+                    DATE(ENT.fecha_entrada) AS fecha_entrada,
+                    MOT.motivo AS motivo_agenda,
+                    ENT.motivo_ingreso AS motivo_entrada
+                FROM 
+                    pd_pickandup PAU
+                    LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
+                    LEFT JOIN cliente CLI ON PAU.fk_cliente = CLI.id_cliente
+                    LEFT JOIN pd_agenda AGE ON PAU.fk_agenda = AGE.id_agenda
+                    LEFT JOIN pd_motivo_programacion_arribo MOT ON AGE.fk_motivo_programacion_arribo = MOT.id_motivo_programacion_arribo
+                WHERE
+                    ENT.fecha_entrada IS NOT NULL
+                    AND DATE(ENT.fecha_entrada) BETWEEN DATE_SUB(CURDATE(), INTERVAL 14 DAY) AND CURDATE();
+            `,
+            { type: Sequelize.QueryTypes.SELECT }
+            );
+
+            return res.status(200).json(ingresos);
+
+        } catch (error) {
+            console.error('Error al obtener Agenda - ingresos:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+    
     //  app.plantilla = async (req, res) => {
 
     //     // let t;

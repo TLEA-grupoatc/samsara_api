@@ -3,7 +3,6 @@ const { Op } = require('sequelize');
 
 const axios = require('axios');
 
-
 module.exports = app => {
 
     const io = app.io;
@@ -246,6 +245,95 @@ module.exports = app => {
         }
     }
 
+    app.obtenerIngresosPorMotivo = async (req, res) => {
+
+        // let t;
+
+        try {
+            const { base, fechainicio, fechafin } = req.params;
+
+            const start = moment(fechainicio).locale('es-MX');
+            const end = moment(fechafin).locale('es-MX');
+            const dataset = [];
+            let current = start.clone();
+            
+            while (current.isSameOrBefore(end)) {
+                dataset.push(
+                    {
+                        fecha: current.format('YYYY-MM-DD'),
+                        ingresosMantenimiento: [],
+                        ingresosRelleno: [],
+                        ingresosOtros: [],
+                    }
+                );
+                current.add(1, 'days');
+            }
+
+            const ingresos = await sequelize.query(
+                `
+                    SELECT
+                        CASE
+                            WHEN PAU.base = 1 THEN 'SALINAS'
+                            WHEN PAU.base = 2 THEN 'SALAMANCA'
+                            ELSE PAU.base
+                        END AS base,
+                        PAU.unidad,
+                        -- PAU.estatus,
+                        PAU.division,
+                        PAU.unidad_negocio,
+                        CLI.cliente,
+                        DATE(ENT.fecha_entrada) AS fecha_entrada,
+                        MOT.motivo AS motivo_agenda,
+                        ENT.motivo_ingreso AS motivo_entrada
+                    FROM 
+                        pd_pickandup PAU
+                        LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
+                        LEFT JOIN cliente CLI ON PAU.fk_cliente = CLI.id_cliente
+                        LEFT JOIN pd_agenda AGE ON PAU.fk_agenda = AGE.id_agenda
+                        LEFT JOIN pd_motivo_programacion_arribo MOT ON AGE.fk_motivo_programacion_arribo = MOT.id_motivo_programacion_arribo
+                    WHERE
+                        ENT.fecha_entrada IS NOT NULL
+                        AND DATE(ENT.fecha_entrada) BETWEEN :fecha_inicio AND :fecha_fin
+                        AND PAU.base = :base;
+                `,
+                {
+                    replacements: {
+                        base: base,
+                        fecha_inicio: fechainicio,
+                        fecha_fin: fechafin,
+                    },
+                    type: sequelize.QueryTypes.SELECT,
+                }
+            );
+
+            ingresos.forEach((ingreso) => {
+                const fecha = dataset.find(f => f.fecha === ingreso.fecha_entrada);
+                if (fecha) {
+                    if (ingreso.motivo_agenda && ingreso.motivo_agenda.includes('Mantenimiento')) {
+                        fecha.ingresosMantenimiento.push(ingreso);
+                    } else if (ingreso.motivo_agenda && ingreso.motivo_agenda.includes('Relleno')) {
+                        fecha.ingresosRelleno.push(ingreso);
+                    } else {
+                        fecha.ingresosOtros.push(ingreso);
+                    }
+                }
+            });
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'ingresos por motivo obtenidos correctamente',
+                result: dataset
+            });
+
+        } catch (error) {
+            console.error('Error al obtener ingresos por motivo:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     app.obtenerBusqueda = async (request, response) => {
         try {
             const { busqueda } = request.body;
@@ -341,7 +429,7 @@ module.exports = app => {
                 } else {
                     fechaFinal = programacion.fecha_programada;
                 }
-
+                
                 if (horarioKey && dataset[horarioKey]) {
                     fechaObj = dataset[horarioKey].find(obj => obj.fecha_programada === fechaFinal);
                     if (fechaObj) {
@@ -960,7 +1048,7 @@ module.exports = app => {
     }
 
     const INTERVALO = 20 * 60 * 60 * 1000; // 20 Horas
-    // const INTERVALO = 20 * 1000;
+    // const INTERVALO = 20 * 1000; //20 Segundos
     setInterval(() => {
         anularAgendaAutomatico().catch(console.error);
     }, INTERVALO);

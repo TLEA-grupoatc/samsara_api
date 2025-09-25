@@ -876,7 +876,7 @@ module.exports = app => {
             // let result = await pool.request().query(`SELECT * FROM operador where status = 1 and circuito_clave = 'GRAL'; `);
             // let result = await pool.request().query(`DELETE FROM orden_concepto WHERE VALE_FOLIO = 33523`);
             // let result = await pool.request().query(`SELECT Top(20) * FROM bitacoras; `);
-            let result = await pool.request().query(`select TOP(10)*  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' order by FCH_CREA desc`);
+            let result = await pool.request().query(`select TOP(100)*  FROM orden_concepto order by FCH_CREA desc`);
             // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
             // let result = await pool.request().query(`select Top(100)*  FROM orden_concepto WHERE BENEFICIARIO = 'GUZMAN CASANOVA MANUEL JESUS' order by FCH_CREA desc`);
             // let result = await pool.request().query(`SELECT TOP(1000) * FROM orden_concepto order by vale_fecha desc`);
@@ -1062,10 +1062,10 @@ module.exports = app => {
 
     // datos       205478	9	12	26	860.000000	GASTO DE VIAJE	MTY3	48425	2025-09-05 00:00:00	1569	NULL	2025-09-30 00:00:00	NULL	0	CMTY		FERRUZCA MONDRAGON ROBERTO CARLOS		0		2576	NULL	1	002358	2025-09-05 08:04:58.000	NULL	NULL	002358	2025-09-05 08:05:03.000	NULL	NULL	0.000000	0.000000	860.000000	GASTO DE VIAJE	TLEA-273	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	2	NULL	NULL	NULL	NULL	NULL	0	0
 
+
     app.pruebainsert = async (req, res) => {
         try {
             var body = req.body;
-
             const today = new Date();
             var year = today.getFullYear();
             var mes = today.getMonth() + 1;
@@ -1192,95 +1192,31 @@ module.exports = app => {
                 }
             ];
 
-            let conceptoEncontrado = conceptos.find(c => c.concepto_descrip.toUpperCase() === body.REFERENCIA.toUpperCase()) || { concepto_clave: 12 };
-
-            const pool = await sql.connect(config);
-            let result = await pool.request().query(
-                `SELECT * FROM bitacoras WHERE folio_bitacora = ${body.CLAVE_BITACORA} AND STATUS_BITACORA = 0`
-            );
             
+            const pool = await sql.connect(config);
+            let result = await pool.request().query(`SELECT * FROM bitacoras WHERE folio_bitacora = ${body.CLAVE_BITACORA} AND TERMINAL_BITACORA = '${body.VALE_TERMINAL}' AND STATUS_BITACORA = 0`);
             
             if(result.recordset.length > 0) {
-                let resultConseVT = await pool.request().query(
-                    `SELECT TOP(1) * FROM orden_concepto WHERE VALE_TERMINAL = '${body.VALE_TERMINAL}' ORDER BY fch_crea DESC`
-                );
-
-                let resultConse = await pool.request().query(
-                    `SELECT TOP(1) * FROM orden_concepto WHERE CLAVE_BITACORA = ${body.CLAVE_BITACORA} AND VALE_TERMINAL = '${body.VALE_TERMINAL}' ORDER BY fch_crea DESC`
-                );
-
-                let nuevoAdj = ({
-                    CLAVE_BITACORA: Number(body.CLAVE_BITACORA),
-                    CONSECUTIVO: Number(resultConse.recordset[0].CONSECUTIVO) + 1,
-                    CONCEPTO_CLAVE: conceptoEncontrado.concepto_clave, 
-                    VALE_RANGO: body.VALE_RANGO,
-                    IMPORTE: body.IMPORTE,
-                    REFERENCIA: body.REFERENCIA,
-                    VALE_TERMINAL: body.VALE_TERMINAL,
-                    VALE_FOLIO: Number(resultConseVT.recordset[0].VALE_FOLIO) + 1,
-                    VALE_FECHA: moment(today).format('YYYY-MM-DD') + "T00:00:00.000Z",
-                    POLIZA_CB: body.POLIZA_CB,
-                    POLIZA_CXP: body.POLIZA_CXP,
-                    PERIODO_CB: moment(lastDay).format('YYYY-MM-DD') + " 00:00:00",
-                    PERIODO_CXP: body.PERIODO_CXP,
-                    STATUS_VALE: body.STATUS_VALE,
-                    PREFIJO: body.PREFIJO,
-                    CUENTA_BAN: body.CUENTA_BAN,
-                    BENEFICIARIO: body.BENEFICIARIO,
-                    USR_AUTORIZA: body.USR_AUTORIZA,
-                    IMPRESO: body.IMPRESO,
-                    USR_FIRMO: body.USR_FIRMO,
-                    OPERADOR_CLAVE: result.recordset[0].OPERADOR_CLAVE,
-                    LIQUIDACION_CLAVE: body.LIQUIDACION_CLAVE,
-                    PAGADO: body.PAGADO,
-                    USR_CREA: 'JLIZARDO',
-                    FCH_CREA: moment(today).format('YYYY-MM-DDTHH:mm:ss') + ".000Z",
-                    USR_MOD: body.USR_MOD,
-                    FCH_MOD: body.FCH_MOD,
-                    USR_PAG: body.USR_PAG,
-                    FCH_PAG: body.FCH_PAG,
-                    USR_CAN: body.USR_CAN,
-                    FCH_CAN: body.FCH_CAN,
-                    vale_saldo: body.vale_saldo,
-                    tmp_pago_tes: body.tmp_pago_tes,
-                    importe_pagado: body.importe_pagado,
-                    OBSERV_VALE: body.OBSERV_VALE,
-                    TRACTO_NUM_ECO_PROV: body.TRACTO_NUM_ECO_PROV,
-                    GASTO_CLAVE: body.GASTO_CLAVE,
-                    deduccion_clave: body.deduccion_clave,
-                    VALE_FOLIO_SUST: body.VALE_FOLIO_SUST,
-                    ban_ayudante: body.ban_ayudante,
-                    NO_GEN_POL: body.NO_GEN_POL,
-                    TIPO_ANTICIPO_CLAVE: body.TIPO_ANTICIPO_CLAVE,
-                    CONSEC_OS_MNIOB: body.CONSEC_OS_MNIOB,
-                    maniobra_clave: body.maniobra_clave,
-                    es_maniobra: body.es_maniobra,
-                    PERMISIONARIO_LIQ_CLAVE: body.PERMISIONARIO_LIQ_CLAVE,
-                    PRELIQUIDACION_CLAVE: body.PRELIQUIDACION_CLAVE,
-                    BAN_PRELIQUIDA: body.BAN_PRELIQUIDA,
-                    tipoValeSalida: body.tipoValeSalida,
-                    banAutorizaLayoutLiq: body.banAutorizaLayoutLiq,
-                    ID_LAYOUT: body.ID_LAYOUT,
-                    egresoLayout: body.egresoLayout,
-                    periodoLayout: body.periodoLayout,
-                    fechaLayout: body.fechaLayout,
-                    idProcAut: body.idProcAut,
-                    flagNotifCan: body.flagNotifCan
-                });
-
-                console.log(nuevoAdj);
+                let conceptoEncontrado = conceptos.find(c => c.concepto_descrip.toUpperCase() === body.REFERENCIA.toUpperCase()) || { concepto_clave: 12 };
+                let resultConseVT = await pool.request().query(`SELECT TOP(1) * FROM orden_concepto WHERE VALE_TERMINAL = '${body.VALE_TERMINAL}' ORDER BY fch_crea DESC`);
+                let resultConse = await pool.request().query(`SELECT TOP(1) * FROM orden_concepto WHERE CLAVE_BITACORA = ${result.recordset[0].CLAVE_BITACORA} AND VALE_TERMINAL = '${body.VALE_TERMINAL}' ORDER BY fch_crea DESC`);
                 
-                let result = await pool.request().query("INSERT INTO ORDEN_CONCEPTO (CLAVE_BITACORA,CONSECUTIVO,CONCEPTO_CLAVE,VALE_RANGO,IMPORTE,REFERENCIA,VALE_TERMINAL,VALE_FOLIO,VALE_FECHA,POLIZA_CB,POLIZA_CXP,PERIODO_CB,PERIODO_CXP,STATUS_VALE,PREFIJO,CUENTA_BAN,BENEFICIARIO,USR_AUTORIZA,IMPRESO,USR_FIRMO,OPERADOR_CLAVE,LIQUIDACION_CLAVE,PAGADO,USR_CREA,FCH_CREA,USR_MOD,FCH_MOD,USR_PAG,FCH_PAG,USR_CAN,FCH_CAN,vale_saldo,tmp_pago_tes,importe_pagado,OBSERV_VALE,TRACTO_NUM_ECO_PROV,GASTO_CLAVE,deduccion_clave,VALE_FOLIO_SUST,ban_ayudante,NO_GEN_POL,TIPO_ANTICIPO_CLAVE,CONSEC_OS_MNIOB,maniobra_clave,es_maniobra,PERMISIONARIO_LIQ_CLAVE,PRELIQUIDACION_CLAVE,BAN_PRELIQUIDA,tipoValeSalida,banAutorizaLayoutLiq,ID_LAYOUT,egresoLayout,periodoLayout,fechaLayout,idProcAut,flagNotifCan) \
-                VALUES (Number(body.CLAVE_BITACORA),Number(resultConse.recordset[0].CONSECUTIVO) + 1,conceptoEncontrado.concepto_clave, body.VALE_RANGO,body.IMPORTE,body.REFERENCIA,body.VALE_TERMINAL,Number(resultConseVT.recordset[0].VALE_FOLIO) + 1,moment(today).format('YYYY-MM-DD') + 'T00:00:00.000Z',body.POLIZA_CB,body.POLIZA_CXP,moment(lastDay).format('YYYY-MM-DD') + ' 00:00:00',body.PERIODO_CXP,body.STATUS_VALE,body.PREFIJO,body.CUENTA_BAN,body.BENEFICIARIO,body.USR_AUTORIZA,body.IMPRESO,body.USR_FIRMO,result.recordset[0].OPERADOR_CLAVE,body.LIQUIDACION_CLAVE,body.PAGADO,'JLIZARDO',moment(today).format('YYYY-MM-DDTHH:mm:ss') + '.000Z',body.USR_MOD,body.FCH_MOD,body.USR_PAG,body.FCH_PAG,body.USR_CAN,body.FCH_CAN,body.vale_saldo,body.tmp_pago_tes,body.importe_pagado,body.OBSERV_VALE,body.TRACTO_NUM_ECO_PROV,body.GASTO_CLAVE,body.deduccion_clave,body.VALE_FOLIO_SUST,body.ban_ayudante,body.NO_GEN_POL,body.TIPO_ANTICIPO_CLAVE,body.CONSEC_OS_MNIOB,body.maniobra_clave,body.es_maniobra,body.PERMISIONARIO_LIQ_CLAVE,body.PRELIQUIDACION_CLAVE,body.BAN_PRELIQUIDA,body.tipoValeSalida,body.banAutorizaLayoutLiq,body.ID_LAYOUT,body.egresoLayout,body.periodoLayout,body.fechaLayout,body.idProcAut,body.flagNotifCan);"
-                );
+                console.log(`(${Number(result.recordset[0].CLAVE_BITACORA)},${resultConse.recordset.length > 0 ? resultConse.recordset[0].CONSECUTIVO : 1},${conceptoEncontrado.concepto_clave},${body.VALE_RANGO},${body.IMPORTE},'${body.REFERENCIA}','${body.VALE_TERMINAL}',${Number(resultConseVT.recordset[0].VALE_FOLIO) + 1},'${moment(today).format('YYYY-MM-DD') + 'T00:00:00.000Z'}',${body.POLIZA_CB},${body.POLIZA_CXP},'${moment(lastDay).format('YYYY-MM-DD') + ' 00:00:00'}',${body.PERIODO_CXP},${body.STATUS_VALE},'${body.PREFIJO}','${body.CUENTA_BAN}','${body.BENEFICIARIO}','${body.USR_AUTORIZA}',${body.IMPRESO},'${body.USR_FIRMO}',${result.recordset[0].OPERADOR_CLAVE},${body.LIQUIDACION_CLAVE},1,'002320','${moment(today).format('YYYY-MM-DDTHH:mm:ss') + '.000Z'}',${body.USR_MOD},${body.FCH_MOD},'002320','${moment(today).format('YYYY-MM-DDTHH:mm:ss') + '.000Z'}',${body.USR_CAN},${body.FCH_CAN},0,${body.tmp_pago_tes},${body.IMPORTE},'${body.OBSERV_VALE}','${body.TRACTO_NUM_ECO_PROV}',${body.GASTO_CLAVE},${body.deduccion_clave},${body.VALE_FOLIO_SUST},${body.ban_ayudante},${body.NO_GEN_POL},${body.TIPO_ANTICIPO_CLAVE},${body.CONSEC_OS_MNIOB},${body.maniobra_clave},${body.es_maniobra},${body.PERMISIONARIO_LIQ_CLAVE},${body.PRELIQUIDACION_CLAVE},${body.BAN_PRELIQUIDA},${body.tipoValeSalida},${body.banAutorizaLayoutLiq},${body.ID_LAYOUT},${body.egresoLayout},${body.periodoLayout},${body.fechaLayout},${body.idProcAut},${body.flagNotifCan});`);
+                
+                // let resultF = await pool.request().query(`INSERT INTO ORDEN_CONCEPTO (CLAVE_BITACORA,CONSECUTIVO,CONCEPTO_CLAVE,VALE_RANGO,IMPORTE,REFERENCIA,VALE_TERMINAL,VALE_FOLIO,VALE_FECHA,POLIZA_CB,POLIZA_CXP,PERIODO_CB,PERIODO_CXP,STATUS_VALE,PREFIJO,CUENTA_BAN,BENEFICIARIO,USR_AUTORIZA,IMPRESO,USR_FIRMO,OPERADOR_CLAVE,LIQUIDACION_CLAVE,PAGADO,USR_CREA,FCH_CREA,USR_MOD,FCH_MOD,USR_PAG,FCH_PAG,USR_CAN,FCH_CAN,vale_saldo,tmp_pago_tes,importe_pagado,OBSERV_VALE,TRACTO_NUM_ECO_PROV,GASTO_CLAVE,deduccion_clave,VALE_FOLIO_SUST,ban_ayudante,NO_GEN_POL,TIPO_ANTICIPO_CLAVE,CONSEC_OS_MNIOB,maniobra_clave,es_maniobra,PERMISIONARIO_LIQ_CLAVE,PRELIQUIDACION_CLAVE,BAN_PRELIQUIDA,tipoValeSalida,banAutorizaLayoutLiq,ID_LAYOUT,egresoLayout,periodoLayout,fechaLayout,idProcAut,flagNotifCan) \
+                // VALUES (${Number(result.recordset[0].CLAVE_BITACORA)},${resultConse.recordset.length > 0 ? resultConse.recordset[0].CONSECUTIVO : 1},${conceptoEncontrado.concepto_clave},${body.VALE_RANGO},${body.IMPORTE},'${body.REFERENCIA}','${body.VALE_TERMINAL}',${Number(resultConseVT.recordset[0].VALE_FOLIO) + 1},'${moment(today).format('YYYY-MM-DD') + 'T00:00:00.000Z'}',${body.POLIZA_CB},${body.POLIZA_CXP},null,${body.PERIODO_CXP},${body.STATUS_VALE},'${body.PREFIJO}','${body.CUENTA_BAN}','${body.BENEFICIARIO}','${body.USR_AUTORIZA}',${body.IMPRESO},'${body.USR_FIRMO}',${result.recordset[0].OPERADOR_CLAVE},${body.LIQUIDACION_CLAVE},1,'002320','${moment(today).format('YYYY-MM-DDTHH:mm:ss') + '.000Z'}',${body.USR_MOD},${body.FCH_MOD},'002320','${moment(today).format('YYYY-MM-DDTHH:mm:ss') + '.000Z'}',${body.USR_CAN},${body.FCH_CAN},0,${body.IMPORTE},${body.IMPORTE},'${body.OBSERV_VALE}','${body.TRACTO_NUM_ECO_PROV}',${body.GASTO_CLAVE},${body.deduccion_clave},${body.VALE_FOLIO_SUST},${body.ban_ayudante},${body.NO_GEN_POL},${body.TIPO_ANTICIPO_CLAVE},${body.CONSEC_OS_MNIOB},${body.maniobra_clave},${body.es_maniobra},${body.PERMISIONARIO_LIQ_CLAVE},${body.PRELIQUIDACION_CLAVE},${body.BAN_PRELIQUIDA},${body.tipoValeSalida},${body.banAutorizaLayoutLiq},${body.ID_LAYOUT},${body.egresoLayout},${body.periodoLayout},${body.fechaLayout},${body.idProcAut},${body.flagNotifCan});`);
+                
+                sql.close();
                 
                 res.json({
                     OK: true,
-                    datos: nuevoAdj,
+                    // re: resultF,
                     result: `Bitácora: ${body.CLAVE_BITACORA} Abierta`
                 });
             }
             else {
+                sql.close();
+
                 res.json({
                     OK: false,
                     result: `Bitácora: ${body.CLAVE_BITACORA} Cerrada o no Encontrada`
