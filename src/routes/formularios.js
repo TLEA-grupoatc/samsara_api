@@ -64,9 +64,9 @@ module.exports = app => {
     
     app.get('/obtenerAtenciones', verificarToken, Fo.obtenerAtenciones);
     
-    app.get('/obtenerQuejas', verificarToken, Fo.obtenerQuejas);
+    app.get('/obtenerQuejas', Fo.obtenerQuejas);
     
-    app.get('/obtenerActividadesDO', verificarToken, Fo.obtenerActividadesDO);
+    app.get('/obtenerActividadesDO', Fo.obtenerActividadesDO);
     
     app.get('/obtenerDanosOperador', verificarToken, Fo.obtenerDanosOperador);
     
