@@ -793,9 +793,9 @@ module.exports = app => {
         })
     }
 
-    cron.schedule('02 09 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('02 10 * * *', () => { enlazarUnidadAOperadorSamsara(); });
-    cron.schedule('02 11 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    // cron.schedule('02 09 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    // cron.schedule('02 10 * * *', () => { enlazarUnidadAOperadorSamsara(); });
+    // cron.schedule('02 11 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 12 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 13 * * *', () => { enlazarUnidadAOperadorSamsara(); });
     cron.schedule('02 14 * * *', () => { enlazarUnidadAOperadorSamsara(); });
