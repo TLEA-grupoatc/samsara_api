@@ -24,6 +24,8 @@ module.exports = app => {
 
     const danosunidadoperador = app.database.models.DanosUnidadOperador;
 
+    const curso = app.database.models.Cursos;
+
     const Samsara = require("@api/samsara-dev-rel");
     Samsara.auth(process.env.KEYSAM);
 
@@ -2404,6 +2406,138 @@ module.exports = app => {
             });
         }
 
+    }
+
+
+
+
+
+
+    app.obtenerCursos = (req, res) => {
+        curso.findAll({
+            order: [['fecha_creacion', 'DESC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Cursos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearCursos = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new curso({
+            operador: body.operador, 
+            base: body.base, 
+            curso: body.curso,
+            descripcion: body.descripcion,
+            instructor: body.instructor,
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion, 
+            estatus: body.estatus
+        });
+
+        curso.create(nuevoRegistro.dataValues, {
+            fields: [
+                'operador', 
+                'base', 
+                'curso',
+                'descripcion',
+                'instructor',
+                'fecha_creacion', 
+                'usuario_creacion', 
+                'estatus'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                curso: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerCronogramaCursos = (req, res) => {
+        const year = req.params.year ? parseInt(req.params.year) : moment().year();
+        const month = req.params.month ? parseInt(req.params.month) : moment().month() + 1; // 1-based
+        const monthPadded = month.toString().padStart(2, '0');
+        const startOfMonth = moment(`${year}-${monthPadded}-01`).startOf('day');
+        const endOfMonth = moment(startOfMonth).endOf('month').endOf('day');
+
+        curso.findAll({
+            attributes: [
+            'operador',
+            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'dia'],
+            [Sequelize.fn('COUNT', Sequelize.col('curso')), 'total']
+            ],
+            where: {
+            fecha_creacion: {
+                [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')]
+            }
+            },
+            group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_creacion'))],
+            order: [
+            ['operador', 'ASC']
+            ]
+        }).then(result => {
+            // Determina los días del mes
+            const diasEnMes = [];
+            let diaActual = moment(startOfMonth);
+            while (diaActual.isSameOrBefore(endOfMonth, 'day')) {
+            diasEnMes.push(diaActual.format('YYYY-MM-DD'));
+            diaActual.add(1, 'day');
+            }
+
+            // Agrupa resultados por operador y día
+            const agrupado = {};
+            result.forEach(r => {
+            const op = r.operador;
+            const dia = r.dataValues.dia;
+            const total = Number(r.dataValues.total);
+            if (!agrupado[op]) agrupado[op] = {};
+            agrupado[op][dia] = total;
+            });
+
+            // Construye la salida mostrando el total de cada día por operador
+            const salida = Object.entries(agrupado).map(([operador, dias]) => {
+            const detalleDias = diasEnMes.map(dia => ({
+                dia,
+                total: dias[dia] || 0
+            }));
+            return { operador, dias: detalleDias };
+            });
+
+            res.json({
+            OK: true,
+            Cronograma: salida
+            });
+        }).catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
     }
 
     app.obtenerCronogramaActividadDo = (req, res) => {

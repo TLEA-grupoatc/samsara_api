@@ -108,10 +108,12 @@ module.exports = app => {
     app.get('/resumenCantidadActividadeOperador/:year/:month', Fo.resumenCantidadActividadeOperador);
     
     app.get('/resumenActividadesOperador', Fo.resumenActividadesOperador);
-
-
-
-
+    
+    
+    
+    app.get('/obtenerCursos', Fo.obtenerCursos);
+    
+    app.post('/crearCursos', Fo.crearCursos);
 
 
 
@@ -129,4 +131,5 @@ module.exports = app => {
     
     app.get('/obtenerCronogramaDopingsOperador/:year/:month', verificarToken, Fo.obtenerCronogramaDopingsOperador);
     
+    app.get('/obtenerCronogramaCursos/:year/:month', verificarToken, Fo.obtenerCronogramaCursos);
 }
