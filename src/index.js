@@ -50,6 +50,7 @@ const geogaso = app.database.models.GeoGaso;
 const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
 const itine = app.database.models.Itinerarios;
 const itineDet = app.database.models.ItinerarioDetalle;
+const entradaSalidaGeocerca = app.database.models.EntradaSalidaGeocerca;
 
 const axios = require('axios');
 const Samsara = require("@api/samsara-dev-rel");
@@ -74,9 +75,6 @@ cron.schedule('0 * * * *', () => {
     })
   }); 
 });
-
-
-
 
 app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
@@ -215,15 +213,6 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
 
   res.status(200).send('Ok');
 });
-
-
-
-
-
-
-
-
-
 
 // app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
 //   const payload = req.body;
@@ -560,6 +549,114 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
     console.log('Evento no reconocido:', payload.data?.conditions[0].description);
   }
 });
+
+
+
+
+
+
+
+app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
+  const payload = req.body;
+  const tipo = payload.data.conditions[0]['description'];
+  var today = new Date();
+  const hoy = moment(today).format('YYYY-MM-DD');
+  const hoyh = moment(today).format('YYYY-MM-DD HH:mm:ss');
+
+  if(tipo === 'Geofence Exit') {
+      var encontro = await entradaSalidaGeocerca.findAll({
+        where: {
+          tracto: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['name'],
+          geocerca: payload.data.conditions[0]['details']['geofenceExit']['address']['name'],
+          fecha_creacion: hoy
+        }
+      });
+      
+      if(encontro.length > 0) {
+        const formato = moment(payload.eventTime).format('YYYY-MM-DD HH:mm:ss');
+        
+        let actualizarAlerta = new entradaSalidaGeocerca({
+          salida: formato
+        });
+
+        await entradaSalidaGeocerca.update(actualizarAlerta.dataValues, {
+          where: {
+            entsalgeo: encontro[0].dataValues.entsalgeo
+          },
+          fields: [
+            'salida'
+          ]
+        }).then(result => {}).catch(error => { console.log(error.message); });
+      }
+      else {
+        console.log('no encontrado');
+      }
+  }
+  else {
+    const formato = moment(payload.eventTime).format('YYYY-MM-DD HH:mm:ss');
+
+    var encontro = await entradaSalidaGeocerca.findAll({
+      where: {
+        tracto: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['name'],
+        entrada: formato,
+        fecha_creacion: hoy
+      }
+    });
+    
+    if(encontro.length > 0) {
+
+    }
+    else {
+      var operador = '';
+
+      try {
+        const { data } = await Samsara.getDriverVehicleAssignments({ filterBy: 'vehicles', vehicleIds: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id'] });
+        if(data && data.data && data.data.length > 0 && data.data[0].driver && data.data[0].driver.name) {
+          operador = data.data[0].driver.name;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      let nuevaAlerta = new entradaSalidaGeocerca({
+        operador: operador,
+        tracto: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['name'],
+        direccion: payload.data.conditions[0]['details']['geofenceEntry']['address']['formattedAddress'],
+        geocerca: payload.data.conditions[0]['details']['geofenceEntry']['address']['name'],
+        enlace: payload.data.incidentUrl,
+        entrada: formato,
+        salida: null,
+        fecha: hoyh,
+        fecha_creacion: hoy
+      });
+
+      await entradaSalidaGeocerca.create(nuevaAlerta.dataValues, {
+        fields: [
+          'operador', 
+          'tracto', 
+          'direccion', 
+          'geocerca', 
+          'enlace', 
+          'tanque',
+          'entrada', 
+          'salida',
+          'fecha',
+          'fecha_creacion'
+        ]
+      }).then(result => {}).catch(error => { console.log(error.message); });
+    }
+  }
+});
+
+
+
+
+
+
+
+
+
+
 
 async function ubicacion(idsam) {
   try {

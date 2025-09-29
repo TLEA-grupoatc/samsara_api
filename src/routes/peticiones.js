@@ -68,6 +68,7 @@ module.exports = app => {
     app.get('/obtenerReporteULYI', Peticion.obtenerReporteULYI);
 
 
+    app.get('/obtenerSalidasEntradasGeocercas/:fecha_creacion', Peticion.obtenerSalidasEntradasGeocercas);
 
 
 

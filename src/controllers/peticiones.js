@@ -17,6 +17,8 @@ module.exports = app => {
     const ope = app.database.models.Operadores;
     const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
 
+    const entradaSalidaGeocerca = app.database.models.EntradaSalidaGeocerca;
+
     const Sequelize = require('sequelize');
     const Op = Sequelize.Op;
     const axios = require('axios');
@@ -2160,6 +2162,51 @@ module.exports = app => {
             });
         });
     }
+
+
+
+
+
+
+
+    app.obtenerSalidasEntradasGeocercas = (req, res) => {
+        entradaSalidaGeocerca.findAll({
+            where: {
+                fecha_creacion: {
+                    [Op.gte]: req.params.fecha_creacion
+                }
+            },
+            order: [['fecha_creacion', 'DESC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Registros: result,
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     async function enlazarUnidadAOperadorSamsara() {
         var fechaHoy = moment(new Date()).format('YYYY-MM-DDTHH:mm:ssZ');
