@@ -47,12 +47,12 @@ module.exports = (sequelize, DataType) => {
         timestamps: false
     });
 
-    EntradaSalidaGeocerca.associate = (models) => {
-        EntradaSalidaGeocerca.belongsToMany(models.Reportes, {
-            foreignKey: 'unidad',
-            sourceKey: 'tracto'
-        });
-    }
+    // EntradaSalidaGeocerca.associate = (models) => {
+    //     EntradaSalidaGeocerca.belongsToMany(models.Reportes, {
+    //         foreignKey: 'unidad',
+    //         sourceKey: 'tracto'
+    //     });
+    // }
 
     return EntradaSalidaGeocerca;
 }
