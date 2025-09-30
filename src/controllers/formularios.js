@@ -2471,7 +2471,7 @@ module.exports = app => {
 
 
     app.obtenerDocumentosCursos = (req, res) => {
-        curso.findAll({
+        docoperador.findAll({
             where: {
                 operador: req.params.operador,
                 descripcion: 'Evidencia Curso'
@@ -2479,7 +2479,7 @@ module.exports = app => {
         }).then(result => {
             res.json({
                 OK: true,
-            Cartas: result
+                Cartas: result
             })
         })
         .catch(error => {
