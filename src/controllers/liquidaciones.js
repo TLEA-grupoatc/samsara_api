@@ -1218,6 +1218,7 @@ module.exports = app => {
             verificado_por: body.verificado_por,
             fecha_enviado_rev: body.fecha_enviado_rev,
             diferencia_diesel: body.diferencia_diesel,
+            diferenciakilometros: body.diferenciakilometros,
             comentarios: body.comentarios,
             estado: body.estado
         });
@@ -1241,6 +1242,7 @@ module.exports = app => {
                 'verificado_por',
                 'fecha_enviado_rev',
                 'diferencia_diesel',
+                'diferenciakilometros',
                 'comentarios',
                 'estado'
             ]
