@@ -2470,7 +2470,24 @@ module.exports = app => {
     }
 
 
-
+    app.obtenerDocumentosCursos = (req, res) => {
+        curso.findAll({
+            where: {
+                operador: req.params.operador,
+                descripcion: 'Evidencia Curso'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+            Cartas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
 
 
 

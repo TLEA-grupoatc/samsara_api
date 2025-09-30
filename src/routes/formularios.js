@@ -111,9 +111,11 @@ module.exports = app => {
     
     
     
-    app.get('/obtenerCursos', Fo.obtenerCursos);
+    app.get('/obtenerCursos', verificarToken, Fo.obtenerCursos);
+
+    app.get('/obtenerDocumentosCursos/:operador', verificarToken, Fo.obtenerDocumentosCursos);
     
-    app.post('/crearCursos', Fo.crearCursos);
+    app.post('/crearCursos', verificarToken, Fo.crearCursos);
 
 
 

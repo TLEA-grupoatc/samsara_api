@@ -46,6 +46,13 @@ module.exports = (sequelize, DataType) => {
         tableName: 'entradasalidageo',        
         timestamps: false
     });
-    
+
+    EntradaSalidaGeocerca.associate = (models) => {
+        EntradaSalidaGeocerca.belongsToMany(models.Reportes, {
+            foreignKey: 'unidad',
+            sourceKey: 'tracto'
+        });
+    }
+
     return EntradaSalidaGeocerca;
 }
