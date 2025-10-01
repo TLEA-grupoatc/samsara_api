@@ -121,6 +121,8 @@ module.exports = app => {
     
     app.post('/crearCatalogoCurso', verificarToken, Fo.crearCatalogoCurso);
 
+    app.post('/obtenerCatalogoCursos', verificarToken, Fo.obtenerCatalogoCursos);
+
     app.delete('/eliminarCatalogoCurso/:id_catalogo_curso', verificarToken, Fo.eliminarCatalogoCurso);
     
     app.get('/obtenerCatalogoInstructores', verificarToken, Fo.obtenerCatalogoInstructores);
