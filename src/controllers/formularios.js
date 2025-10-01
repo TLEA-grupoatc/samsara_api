@@ -26,6 +26,7 @@ module.exports = app => {
     const docoperador = app.database.models.DocOperadores;
     const alerta = app.database.models.Alertas;
     const danosunidadoperador = app.database.models.DanosUnidadOperador;
+    const curso = app.database.models.Cursos;
     const catacursos = app.database.models.CatalogoCursos;
     const catainstructores = app.database.models.CatalogoInstructores;
 
