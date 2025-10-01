@@ -2460,7 +2460,7 @@ module.exports = app => {
     app.obtenerCatalogoCursos = (req, res) => {
         catacursos.findAll({
             where: {
-                estatus: 'A'
+                estatus: 'Activo'
             }
         }).then(result => {
             res.json({
@@ -2511,7 +2511,7 @@ module.exports = app => {
     
     app.eliminarCatalogoCurso = (req, res) => {
         let data = new catacursos({
-            estatus: 'I',
+            estatus: 'Inactivo',
         });
 
         catacursos.update(data.dataValues, {
@@ -2584,7 +2584,7 @@ module.exports = app => {
 
     app.eliminarCatalogoInstructor = (req, res) => {
         let data = new catainstructores({
-            estatus: 'I',
+            estatus: 'Inactivo',
         });
 
         catainstructores.update(data.dataValues, {
