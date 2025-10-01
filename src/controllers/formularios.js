@@ -2536,7 +2536,7 @@ module.exports = app => {
     app.obtenerCatalogoInstructores = (req, res) => {
         catainstructores.findAll({
             where: {
-                estatus: 'A'
+                estatus: 'Activo'
             }
         }).then(result => {
             res.json({
