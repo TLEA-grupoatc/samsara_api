@@ -8,6 +8,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: false
         },
+        puesto:{
+            type: DataType.STRING,
+            allowNull: false
+        },
         fecha_creacion: {
             type: DataType.STRING,
             allowNull: true

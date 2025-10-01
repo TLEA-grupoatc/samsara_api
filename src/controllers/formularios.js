@@ -2556,6 +2556,7 @@ module.exports = app => {
 
         let nuevoRegistro = new catainstructores({
             nombre_instructor: body.nombre_instructor,
+            puesto: body.puesto,
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion, 
             estatus: body.estatus
@@ -2564,6 +2565,7 @@ module.exports = app => {
         catainstructores.create(nuevoRegistro.dataValues, {
             fields: [
                 'nombre_instructor', 
+                'puesto', 
                 'fecha_creacion', 
                 'usuario_creacion', 
                 'estatus'
