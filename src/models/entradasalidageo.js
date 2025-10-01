@@ -47,12 +47,24 @@ module.exports = (sequelize, DataType) => {
         timestamps: false
     });
 
-    // EntradaSalidaGeocerca.associate = (models) => {
-    //     EntradaSalidaGeocerca.belongsToMany(models.Reportes, {
-    //         foreignKey: 'unidad',
-    //         sourceKey: 'tracto'
-    //     });
-    // }
+    EntradaSalidaGeocerca.associate = (models) => {
+        
+        // EntradaSalidaGeocerca.belongsToMany(models.Roles, {       
+        //     as: 'EntradaSalidaGeocercaPermisos',
+        //     through: {
+        //         model: models.Modulo_Permisos_Role
+        //     }, 
+        //     foreignKey: 'id_modulo',
+        //     sourceKey: 'id_modulo'
+        // });
+
+
+        EntradaSalidaGeocerca.hasMany(models.Reportes, {
+            foreignKey: 'unidad',
+            sourceKey: 'tracto'
+        });
+    }
+
 
     return EntradaSalidaGeocerca;
 }

@@ -2170,22 +2170,61 @@ module.exports = app => {
 
 
     app.obtenerSalidasEntradasGeocercas = (req, res) => {
+        // Buscar todas las entradas/salidas de geocercas desde la fecha indicada
         entradaSalidaGeocerca.findAll({
             where: {
-                fecha_creacion: {
-                    [Op.gte]: req.params.fecha_creacion
-                }
+            fecha_creacion: {
+                [Op.gte]: req.params.fecha_creacion
+            }
             },
             order: [['fecha_creacion', 'DESC']]
-        }).then(result => {
+        })
+        .then(async (result) => {
+            // Solo buscar en reporte si entrada y salida no son null
+            const registros = await Promise.all(result.map(async (geo) => {
+            let entradaReporte = null;
+            let salidaReporte = null;
+
+            if (geo.entrada && geo.salida) {
+                // Buscar reporte para la entrada
+                entradaReporte = await reporte.findOne({
+                where: {
+                    unidad: geo.tracto,
+                    fechahoragps: {
+                    [Op.gte]: geo.entrada,
+                    [Op.lte]: geo.salida
+                    }
+                },
+                order: [['fechahoragps', 'ASC']]
+                });
+
+                // Buscar reporte para la salida
+                salidaReporte = await reporte.findOne({
+                where: {
+                    unidad: geo.tracto,
+                    fechahoragps: {
+                    [Op.gte]: geo.salida
+                    }
+                },
+                order: [['fechahoragps', 'ASC']]
+                });
+            }
+
+            return {
+                ...geo.dataValues,
+                entradaReporte,
+                salidaReporte
+            };
+            }));
+
             res.json({
-                OK: true,
-                Registros: result,
-            })
+            OK: true,
+            Registros: registros,
+            });
         })
         .catch(error => {
             res.status(412).json({
-                msg: error.message
+            msg: error.message
             });
         });
     }

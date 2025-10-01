@@ -3,29 +3,6 @@ const _ = require('lodash');
 const fs = require("fs");
 
 module.exports = app => {
-    const evento = app.database.models.Eventos;
-    const parosdemotor = app.database.models.ParosDeMotor;
-    const cobro = app.database.models.Cobros;
-
-    const operador = app.database.models.Operadores;
-    const historico = app.database.models.HistoricoOperadores;
-    const actviidaddo = app.database.models.ActividadesDo;
-    const queope = app.database.models.QuejaOperador;
-    const ateope = app.database.models.AtencionOperador;
-    const opedan = app.database.models.OperadoresDanos;
-    const dopope = app.database.models.DopingsOperadores;
-
-    const prenomina = app.database.models.Prenominas;
-    const liquidacion = app.database.models.Liquidaciones;
-
-    const docoperador = app.database.models.DocOperadores;
-    
-    const alerta = app.database.models.Alertas;
-
-    const danosunidadoperador = app.database.models.DanosUnidadOperador;
-
-    const curso = app.database.models.Cursos;
-
     const Samsara = require("@api/samsara-dev-rel");
     Samsara.auth(process.env.KEYSAM);
 
@@ -34,107 +11,23 @@ module.exports = app => {
     const axios = require('axios');
     const Op = Sequelize.Op;
 
-    app.obtenerOperadores = (req, res) => {
-        operador.findAll({
-            where: {
-                estado: 'A'
-            }
-        }).then(result => {
-            res.json({
-                OK: true,
-                Operadores: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-    app.obtenerOperadoresLista = (req, res) => {
-        operador.findAll({
-            where: {
-                estado: 'LABORANDO'
-            },
-            order: [
-                ['nombre', 'ASC'],
-                ['estado', 'DESC']
-            ],
-        }).then(result => {
-            res.json({
-                OK: true,
-                Operadores: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-    app.obtenerTodosLosOperadores = (req, res) => {
-        operador.findAll({
-            order: [
-                ['nombre', 'ASC'],
-                ['estado', 'DESC']
-            ],
-        }).then(result => {
-            res.json({
-                OK: true,
-                Operadores: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
-
-    app.obtenerListaParaSeguimeinto = async (req, res)  => {
-        var lista = [];
-        var opes = await operador.findAll({
-            order: [
-                ['estado', 'DESC']
-            ],
-        });
-
-        for(let i = 0; i < opes.length; i++) {
-            let da = ({
-                unidad: opes[i].unidad,
-                numero_empleado: opes[i].numero_empleado,
-                nombre: opes[i].nombre,
-                estado: opes[i].estado,
-                estado_actividad: opes[i].estado_actividad,
-                registrado_por: opes[i].registrado_por
-            });
-
-            lista.push(da);
-        }
-
-        res.json({
-            OK: true,
-            Total: lista.length,
-            Datos: lista
-        });
-    }
-
-    app.obtenerHistoricoActividadOpe = (req, res) => {
-        historico.findAll({
-        }).then(result => {
-            res.json({
-                OK: true,
-                Historico: result
-            })
-        })
-        .catch(error => {
-            res.status(412).json({
-                msg: error.message
-            });
-        });
-    }
+    const evento = app.database.models.Eventos;
+    const parosdemotor = app.database.models.ParosDeMotor;
+    const cobro = app.database.models.Cobros;
+    const operador = app.database.models.Operadores;
+    const historico = app.database.models.HistoricoOperadores;
+    const actviidaddo = app.database.models.ActividadesDo;
+    const queope = app.database.models.QuejaOperador;
+    const ateope = app.database.models.AtencionOperador;
+    const opedan = app.database.models.OperadoresDanos;
+    const dopope = app.database.models.DopingsOperadores;
+    const prenomina = app.database.models.Prenominas;
+    const liquidacion = app.database.models.Liquidaciones;
+    const docoperador = app.database.models.DocOperadores;
+    const alerta = app.database.models.Alertas;
+    const danosunidadoperador = app.database.models.DanosUnidadOperador;
+    const catacursos = app.database.models.CatalogoCursos;
+    const catainstructores = app.database.models.CatalogoInstructores;
 
     app.obtenerOperadoresConHistorico = async (req, res) => {
         const year = parseInt(req.query.year) || moment().year();
@@ -151,6 +44,7 @@ module.exports = app => {
                 axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
                 axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
                 operador.findAll({ order: [['nombre', 'ASC']] }),
+
                 liquidacion.findAll({
                     attributes: [
                         'operador',
@@ -159,7 +53,9 @@ module.exports = app => {
                     where: { estado: 'COMPLETO' },
                     group: ['operador']
                 }),
+
                 axios.get('https://servidorlocal.ngrok.app/listadoOperadores'),
+
                 historico.findAll({
                     where: {
                         fecha: { [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')] }
@@ -761,6 +657,109 @@ module.exports = app => {
         }
     }
 
+
+    app.obtenerOperadores = (req, res) => {
+        operador.findAll({
+            where: {
+                estado: 'A'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Operadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerOperadoresLista = (req, res) => {
+        operador.findAll({
+            where: {
+                estado: 'LABORANDO'
+            },
+            order: [
+                ['nombre', 'ASC'],
+                ['estado', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Operadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerTodosLosOperadores = (req, res) => {
+        operador.findAll({
+            order: [
+                ['nombre', 'ASC'],
+                ['estado', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Operadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerListaParaSeguimeinto = async (req, res)  => {
+        var lista = [];
+        var opes = await operador.findAll({
+            order: [
+                ['estado', 'DESC']
+            ],
+        });
+
+        for(let i = 0; i < opes.length; i++) {
+            let da = ({
+                unidad: opes[i].unidad,
+                numero_empleado: opes[i].numero_empleado,
+                nombre: opes[i].nombre,
+                estado: opes[i].estado,
+                estado_actividad: opes[i].estado_actividad,
+                registrado_por: opes[i].registrado_por
+            });
+
+            lista.push(da);
+        }
+
+        res.json({
+            OK: true,
+            Total: lista.length,
+            Datos: lista
+        });
+    }
+
+    app.obtenerHistoricoActividadOpe = (req, res) => {
+        historico.findAll({
+        }).then(result => {
+            res.json({
+                OK: true,
+                Historico: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
     app.actualizarOperador = (req, res) => {
         let body = req.body;
 
@@ -1245,17 +1244,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
     app.resumenCantidadActividadeOperador = async (req, res) => {
         const year = parseInt(req.params.year);
         const month = parseInt(req.params.month);
@@ -1379,7 +1367,6 @@ module.exports = app => {
         }
     }
 
-
     app.resumenActividadesOperador = (req, res) => {
         const hoy = moment().format('YYYY-MM-DD');
         const noventadias = moment().subtract(90, 'days').format('YYYY-MM-DD');
@@ -1434,24 +1421,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     app.obtenerDopings = (req, res) => {
         dopope.findAll({
@@ -2469,7 +2438,6 @@ module.exports = app => {
         });
     }
 
-
     app.obtenerDocumentosCursos = (req, res) => {
         docoperador.findAll({
             where: {
@@ -2488,6 +2456,155 @@ module.exports = app => {
             });
         });
     }
+
+    app.obtenerCatalogoCursos = (req, res) => {
+        catacursos.findAll({
+            where: {
+                estatus: 'A'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Catalogos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearCatalogoCurso = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new catacursos({
+            nombre_curso: body.nombre_curso, 
+            descripcion: body.descripcion,
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion, 
+            estatus: body.estatus
+        });
+
+        catacursos.create(nuevoRegistro.dataValues, {
+            fields: [
+                'nombre_curso', 
+                'descripcion',
+                'fecha_creacion', 
+                'usuario_creacion', 
+                'estatus'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Catalogo: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+    
+    app.eliminarCatalogoCurso = (req, res) => {
+        let data = new catacursos({
+            estatus: 'I',
+        });
+
+        catacursos.update(data.dataValues, {
+            where: {
+                id_catalogo_curso: req.params.id_catalogo_curso
+            },
+            fields: ['estatus']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.obtenerCatalogoInstructores = (req, res) => {
+        catainstructores.findAll({
+            where: {
+                estatus: 'A'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Catalogos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.crearCatalogoInstructor = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new catainstructores({
+            nombre_instructor: body.nombre_instructor,
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion, 
+            estatus: body.estatus
+        });
+
+        catainstructores.create(nuevoRegistro.dataValues, {
+            fields: [
+                'nombre_instructor', 
+                'fecha_creacion', 
+                'usuario_creacion', 
+                'estatus'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Catalogo: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.eliminarCatalogoInstructor = (req, res) => {
+        let data = new catainstructores({
+            estatus: 'I',
+        });
+
+        catainstructores.update(data.dataValues, {
+            where: {
+                id_catalogo_instructor: req.params.id_catalogo_instructor
+            },
+            fields: ['estatus']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
 
 
 

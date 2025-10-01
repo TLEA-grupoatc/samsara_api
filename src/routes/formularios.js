@@ -112,14 +112,22 @@ module.exports = app => {
     
     
     app.get('/obtenerCursos', verificarToken, Fo.obtenerCursos);
-
+    
     app.get('/obtenerDocumentosCursos/:operador', verificarToken, Fo.obtenerDocumentosCursos);
     
     app.post('/crearCursos', verificarToken, Fo.crearCursos);
+    
+    app.get('/obtenerDocumentosCursos', verificarToken, Fo.obtenerDocumentosCursos);
+    
+    app.post('/crearCatalogoCurso', verificarToken, Fo.crearCatalogoCurso);
 
+    app.delete('/eliminarCatalogoCurso/:id_catalogo_curso', verificarToken, Fo.eliminarCatalogoCurso);
+    
+    app.get('/obtenerCatalogoInstructores', verificarToken, Fo.obtenerCatalogoInstructores);
+    
+    app.post('/crearCatalogoInstructor', verificarToken, Fo.crearCatalogoInstructor);
 
-
-
+    app.delete('/eliminarCatalogoInstructor/:id_catalogo_instructor', verificarToken, Fo.eliminarCatalogoInstructor);
 
     app.get('/obtenerCronogramaActividadDo/:year/:month', verificarToken, Fo.obtenerCronogramaActividadDo);
 
