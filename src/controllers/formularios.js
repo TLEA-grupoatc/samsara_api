@@ -2496,6 +2496,7 @@ module.exports = app => {
         catacursos.create(nuevoRegistro.dataValues, {
             fields: [
                 'nombre_curso', 
+                'descripcion', 
                 'tipo_plan',
                 'tipo_capacitacion',
                 'subtema',
