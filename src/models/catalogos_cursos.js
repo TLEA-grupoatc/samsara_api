@@ -12,6 +12,22 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: false
         },
+        tipo_plan:{
+            type: DataType.STRING,
+            allowNull: false
+        },
+        tipo_capacitacion:{
+            type: DataType.STRING,
+            allowNull: false
+        },
+        subtema:{
+            type: DataType.STRING,
+            allowNull: false
+        },
+        area:{
+            type: DataType.STRING,
+            allowNull: false
+        },
         fecha_creacion: {
             type: DataType.STRING,
             allowNull: true

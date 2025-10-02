@@ -2408,6 +2408,7 @@ module.exports = app => {
             curso: body.curso,
             descripcion: body.descripcion,
             instructor: body.instructor,
+            modalidad: body.modalidad,
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion, 
             estatus: body.estatus
@@ -2420,6 +2421,7 @@ module.exports = app => {
                 'curso',
                 'descripcion',
                 'instructor',
+                'modalidad',
                 'fecha_creacion', 
                 'usuario_creacion', 
                 'estatus'
@@ -2482,6 +2484,10 @@ module.exports = app => {
         let nuevoRegistro = new catacursos({
             nombre_curso: body.nombre_curso, 
             descripcion: body.descripcion,
+            tipo_plan: body.tipo_plan,
+            tipo_capacitacion: body.tipo_capacitacion,
+            subtema: body.subtema,
+            area: body.area,
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion, 
             estatus: body.estatus
@@ -2490,7 +2496,10 @@ module.exports = app => {
         catacursos.create(nuevoRegistro.dataValues, {
             fields: [
                 'nombre_curso', 
-                'descripcion',
+                'tipo_plan',
+                'tipo_capacitacion',
+                'subtema',
+                'area',
                 'fecha_creacion', 
                 'usuario_creacion', 
                 'estatus'
