@@ -2638,15 +2638,15 @@ module.exports = app => {
         curso.findAll({
             attributes: [
             'operador',
-            [Sequelize.fn('DATE', Sequelize.col('fecha_creacion')), 'dia'],
+            [Sequelize.fn('DATE', Sequelize.col('fecha')), 'dia'],
             [Sequelize.fn('COUNT', Sequelize.col('curso')), 'total']
             ],
             where: {
-            fecha_creacion: {
+            fecha: {
                 [Op.between]: [startOfMonth.format('YYYY-MM-DD'), endOfMonth.format('YYYY-MM-DD')]
             }
             },
-            group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha_creacion'))],
+            group: ['operador', Sequelize.fn('DATE', Sequelize.col('fecha'))],
             order: [
             ['operador', 'ASC']
             ]
