@@ -2409,6 +2409,7 @@ module.exports = app => {
             descripcion: body.descripcion,
             instructor: body.instructor,
             modalidad: body.modalidad,
+            fecha: body.fecha, 
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion, 
             estatus: body.estatus
@@ -2422,6 +2423,7 @@ module.exports = app => {
                 'descripcion',
                 'instructor',
                 'modalidad',
+                'fecha', 
                 'fecha_creacion', 
                 'usuario_creacion', 
                 'estatus'
