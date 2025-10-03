@@ -2562,6 +2562,45 @@ module.exports = app => {
             });
         });
     }
+
+    app.actualizarCatalogoCurso = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new catacursos({
+            nombre_curso: body.nombre_curso,
+            descripcion: body.descripcion,
+            tipo_plan: body.tipo_plan,
+            tipo_capacitacion: body.tipo_capacitacion,
+            subtema: body.subtema,
+            area: body.area,
+        });
+
+        catacursos.update(nuevoRegistro.dataValues, {
+            where: {
+                id_catalogo_curso: req.params.id_catalogo_curso
+            },
+            fields: [
+                'nombre_curso', 
+                'descripcion', 
+                'tipo_plan',
+                'tipo_capacitacion',
+                'subtema',
+                'area',
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Curso: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
     
     app.eliminarCatalogoCurso = (req, res) => {
         let data = new catacursos({

@@ -122,7 +122,9 @@ module.exports = app => {
     app.get('/obtenerDocumentosCursos', verificarToken, Fo.obtenerDocumentosCursos);
     
     app.post('/crearCatalogoCurso', verificarToken, Fo.crearCatalogoCurso);
-
+    
+    app.put('/actualizarCatalogoCurso/:id_catalogo_curso', verificarToken, Fo.actualizarCatalogoCurso);
+    
     app.get('/obtenerCatalogoCursos', verificarToken, Fo.obtenerCatalogoCursos);
 
     app.delete('/eliminarCatalogoCurso/:id_catalogo_curso', verificarToken, Fo.eliminarCatalogoCurso);
