@@ -2443,6 +2443,47 @@ module.exports = app => {
         });
     }
 
+    app.actualizarCurso = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new curso({
+            operador: body.operador, 
+            base: body.base, 
+            curso: body.curso,
+            descripcion: body.descripcion,
+            instructor: body.instructor,
+            modalidad: body.modalidad,
+            fecha: body.fecha,
+        });
+
+        curso.update(nuevoRegistro.dataValues, {
+            where: {
+                id_curso: req.params.id_curso
+            },
+            fields: [
+                'operador', 
+                'base', 
+                'curso',
+                'descripcion',
+                'instructor',
+                'modalidad',
+                'fecha', 
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Curso: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
     app.obtenerDocumentosCursos = (req, res) => {
         docoperador.findAll({
             where: {
