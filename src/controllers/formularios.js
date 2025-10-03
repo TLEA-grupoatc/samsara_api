@@ -2453,7 +2453,7 @@ module.exports = app => {
             descripcion: body.descripcion,
             instructor: body.instructor,
             modalidad: body.modalidad,
-            fecha: body.fecha,
+            fecha: body.fecha
         });
 
         curso.update(nuevoRegistro.dataValues, {
@@ -2467,7 +2467,7 @@ module.exports = app => {
                 'descripcion',
                 'instructor',
                 'modalidad',
-                'fecha', 
+                'fecha'
             ]
         })
         .then(async result => {
@@ -2573,7 +2573,7 @@ module.exports = app => {
             tipo_plan: body.tipo_plan,
             tipo_capacitacion: body.tipo_capacitacion,
             subtema: body.subtema,
-            area: body.area,
+            area: body.area
         });
 
         catacursos.update(nuevoRegistro.dataValues, {
@@ -2586,7 +2586,7 @@ module.exports = app => {
                 'tipo_plan',
                 'tipo_capacitacion',
                 'subtema',
-                'area',
+                'area'
             ]
         })
         .then(async result => {
