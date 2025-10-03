@@ -2507,7 +2507,8 @@ module.exports = app => {
         catacursos.findAll({
             where: {
                 estatus: 'Activo'
-            }
+            },
+            order: [['nombre_curso', 'ASC']]
         }).then(result => {
             res.json({
                 OK: true,
@@ -2629,7 +2630,8 @@ module.exports = app => {
         catainstructores.findAll({
             where: {
                 estatus: 'Activo'
-            }
+            },
+            order: [['nombre_instructor', 'ASC']]
         }).then(result => {
             res.json({
                 OK: true,
