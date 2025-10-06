@@ -390,7 +390,8 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   }
   else if(payload.event?.alertConditionId === 'DeviceLocationStoppedInGeofence') {
     var ubi = await ubicacion(payload.event['device']['id']);
-    let fechahora = moment(payload.event.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
+      var today = new Date();
+    let fechahora = moment(today).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
       id_samsara: payload.event['device']['id'],
       economico: payload.event['device']['name'],
