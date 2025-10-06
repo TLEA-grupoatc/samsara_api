@@ -557,7 +557,7 @@ app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
   var today = new Date();
   const hoy = moment(today).format('YYYY-MM-DD');
   const hoyh = moment(today).format('YYYY-MM-DD HH:mm:ss');
-  
+
   // const filePath = './webhookAPITLEA_payload.txt';
 
   // fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
@@ -700,29 +700,29 @@ async function ultimaubi(iduni) {
   }
 }
 
-// http.listen(app.get('port'), () => {
-//   console.log(`Server on port ${app.get('port')}`.random);
-// });
-
-
-
-
-
-
-
-
-http.listen(app.get('port'), async () => {
-  try {
-    await ngrok.authtoken(process.env.TOKENNGROK);
-    const url = await ngrok.forward(app.get('port'));
-
-    console.log(`Server on port ${app.get('port')}`.random);
-    console.log(url.url());
-  }
-  catch (error) {
-    console.error('Error al iniciar el túnel Ngrok:', error);
-  }
+http.listen(app.get('port'), () => {
+  console.log(`Server on port ${app.get('port')}`.random);
 });
+
+
+
+
+
+
+
+
+// http.listen(app.get('port'), async () => {
+//   try {
+//     await ngrok.authtoken(process.env.TOKENNGROK);
+//     const url = await ngrok.forward(app.get('port'));
+
+//     console.log(`Server on port ${app.get('port')}`.random);
+//     console.log(url.url());
+//   }
+//   catch (error) {
+//     console.error('Error al iniciar el túnel Ngrok:', error);
+//   }
+// });
 
 
 
