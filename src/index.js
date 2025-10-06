@@ -388,20 +388,20 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-  else if(payload.data?.conditions[0].description === 'Asset stops moving') {
-    var ubi = await ubicacion(payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['id']);
-    let fechahora = moment(payload.data.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
+  else if(payload.event?.alertConditionId === 'DeviceLocationStoppedInGeofence') {
+    var ubi = await ubicacion(payload.event['device']['id']);
+    let fechahora = moment(payload.event.happenedAtTime).format('YYYY-MM-DD HH:mm:ss');
     let nuevaAlerta = new ubiporeco({
-      id_samsara: payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['id'],
-      economico: payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['name'],
-      motor: 1,
-      geocerca: null,
+      id_samsara: payload.event['device']['id'],
+      economico: payload.event['device']['name'],
+      motor: 0,
+      geocerca: payload.event.details,
       ubicacion: null,
       ubicacion_snapshot: ubi,
       hora_entrada: fechahora,
       movimiento: 'Deteniene movimiento',
       hora_salida: null,
-      evento: payload.data.conditions[0].description
+      evento: payload.event.alertConditionDescription
     });
 
     await ubiporeco.create(nuevaAlerta.dataValues, {
