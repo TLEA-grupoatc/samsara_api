@@ -79,17 +79,13 @@ cron.schedule('0 * * * *', () => {
 app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
-  const filePath = './webhookAPITLEA_payload.txt';
+  // const filePath = './webhookAPITLEA_payload.txt';
 
-  fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
-    if(err) {
-      console.error('Error writing payload to file:', err);
-      // res.status(500).send('Error saving payload');
-    } 
-    else {
-      // res.status(200).send('Payload saved');
-    }
-  });
+  // fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
+  //   if(err) {
+  //     console.error('Error writing payload to file:', err);
+  //   }
+  // });
 
   const timestamp = payload.eventMs;
   const date = new Date(timestamp);
@@ -388,7 +384,7 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
-  else if(payload.event?.alertConditionId === 'DeviceLocationStoppedInGeofence') {
+  else if(payload.event?.alertConditionId === 'DeviceMovementStop') {
     var ubi = await ubicacion(payload.event['device']['id']);
       var today = new Date();
     let fechahora = moment(today).format('YYYY-MM-DD HH:mm:ss');
@@ -556,97 +552,50 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
 
 
 
-
 app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
   const payload = req.body;
-  const tipo = payload.data.conditions[0]['description'];
   var today = new Date();
   const hoy = moment(today).format('YYYY-MM-DD');
   const hoyh = moment(today).format('YYYY-MM-DD HH:mm:ss');
+  
+  // const filePath = './webhookAPITLEA_payload.txt';
 
-  if(tipo === 'Geofence Exit') {
-      var encontro = await entradaSalidaGeocerca.findAll({
-        where: {
-          tracto: payload.data.conditions[0]['details']['geofenceExit']['vehicle']['name'],
-          geocerca: payload.data.conditions[0]['details']['geofenceExit']['address']['name'],
-          fecha_creacion: hoy
-        }
-      });
-      
-      if(encontro.length > 0) {
-        const formato = moment(payload.eventTime).format('YYYY-MM-DD HH:mm:ss');
-        
-        let actualizarAlerta = new entradaSalidaGeocerca({
-          salida: formato
-        });
+  // fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
+  //   if(err) {
+  //     console.error('Error writing payload to file:', err);
+  //   }
+  // });
 
-        await entradaSalidaGeocerca.update(actualizarAlerta.dataValues, {
-          where: {
-            entsalgeo: encontro[0].dataValues.entsalgeo
-          },
-          fields: [
-            'salida'
-          ]
-        }).then(result => {}).catch(error => { console.log(error.message); });
-      }
-      else {
-        console.log('no encontrado');
-      }
-  }
-  else {
-    const formato = moment(payload.eventTime).format('YYYY-MM-DD HH:mm:ss');
+  var ubi = await ultimaubi(payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['id']);
 
-    var encontro = await entradaSalidaGeocerca.findAll({
-      where: {
-        tracto: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['name'],
-        entrada: formato,
-        fecha_creacion: hoy
-      }
-    });
-    
-    if(encontro.length > 0) {
+  const formato = moment(payload.eventTime).format('YYYY-MM-DD HH:mm:ss');
 
-    }
-    else {
-      var operador = '';
+  let nuevaAlerta = new entradaSalidaGeocerca({
+    operador: payload.data.conditions[0]['details']['deviceMovementStopped']['driver']['name'],
+    tracto: payload.data.conditions[0]['details']['deviceMovementStopped']['vehicle']['name'],
+    direccion: ubi.location,
+    geocerca: ubi.geocerca,
+    enlace: payload.data.incidentUrl,
+    entrada: formato,
+    salida: null,
+    fecha: hoyh,
+    fecha_creacion: hoy
+  });
 
-      try {
-        const { data } = await Samsara.getDriverVehicleAssignments({ filterBy: 'vehicles', vehicleIds: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['id'] });
-        if(data && data.data && data.data.length > 0 && data.data[0].driver && data.data[0].driver.name) {
-          operador = data.data[0].driver.name;
-        }
-      } catch (err) {
-        console.error(err);
-      }
-
-      let nuevaAlerta = new entradaSalidaGeocerca({
-        operador: operador,
-        tracto: payload.data.conditions[0]['details']['geofenceEntry']['vehicle']['name'],
-        direccion: payload.data.conditions[0]['details']['geofenceEntry']['address']['formattedAddress'],
-        geocerca: payload.data.conditions[0]['details']['geofenceEntry']['address']['name'],
-        enlace: payload.data.incidentUrl,
-        entrada: formato,
-        salida: null,
-        fecha: hoyh,
-        fecha_creacion: hoy
-      });
-
-      await entradaSalidaGeocerca.create(nuevaAlerta.dataValues, {
-        fields: [
-          'operador', 
-          'tracto', 
-          'direccion', 
-          'geocerca', 
-          'enlace', 
-          'tanque',
-          'entrada', 
-          'salida',
-          'fecha',
-          'fecha_creacion'
-        ]
-      }).then(result => {}).catch(error => { console.log(error.message); });
-    }
-  }
+  await entradaSalidaGeocerca.create(nuevaAlerta.dataValues, {
+    fields: [
+      'operador', 
+      'tracto', 
+      'direccion', 
+      'geocerca', 
+      'enlace', 
+      'tanque',
+      'entrada', 
+      'salida',
+      'fecha',
+      'fecha_creacion'
+    ]
+  }).then(result => {}).catch(error => { console.log(error.message); });
 });
 
 
@@ -751,22 +700,29 @@ async function ultimaubi(iduni) {
   }
 }
 
-http.listen(app.get('port'), () => {
-  console.log(`Server on port ${app.get('port')}`.random);
-});
-
-// http.listen(app.get('port'), async () => {
-//   try {
-//     await ngrok.authtoken(process.env.TOKENNGROK);
-//     const url = await ngrok.forward(app.get('port'));
-
-//     console.log(`Server on port ${app.get('port')}`.random);
-//     console.log(url.url());
-//   }
-//   catch (error) {
-//     console.error('Error al iniciar el túnel Ngrok:', error);
-//   }
+// http.listen(app.get('port'), () => {
+//   console.log(`Server on port ${app.get('port')}`.random);
 // });
+
+
+
+
+
+
+
+
+http.listen(app.get('port'), async () => {
+  try {
+    await ngrok.authtoken(process.env.TOKENNGROK);
+    const url = await ngrok.forward(app.get('port'));
+
+    console.log(`Server on port ${app.get('port')}`.random);
+    console.log(url.url());
+  }
+  catch (error) {
+    console.error('Error al iniciar el túnel Ngrok:', error);
+  }
+});
 
 
 
