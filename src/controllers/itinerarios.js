@@ -114,6 +114,70 @@ module.exports = app => {
         }
     };
 
+
+    app.getInnerItinerariosXF = async (req, res) => {
+        const hoy = moment().format('YYYY-MM-DD');
+        const cincodias = moment().subtract(6, 'days').format('YYYY-MM-DD');
+
+        try {
+            const resultados = await itine.findAll({
+                where: {
+                    fecha_creacion: {
+                        [Op.between]: [cincodias, hoy]
+                    }
+                },
+                include: [{
+                    model: itineDet,
+                    as: 'ItinerarioDetalles',
+                    required: true
+                }]
+            });
+
+            const datosFiltrados = resultados.map(itinerario => {
+                const agrupadosPorHora = new Map();
+
+                itinerario.ItinerarioDetalles.forEach(det => {
+                    const horaClave = moment(det.fecha).format('YYYY-MM-DD HH:00');
+
+                    if(!agrupadosPorHora.has(horaClave)) {
+                            casilla = 1;
+                        agrupadosPorHora.set(horaClave, det);
+                    } 
+                    else {
+                        const existente = agrupadosPorHora.get(horaClave);
+                        if (moment(det.fecha).isAfter(moment(existente.fecha))) {
+                            agrupadosPorHora.set(horaClave, det);
+                        }
+                    }
+                });
+
+                const detallesPorHora = Array.from(agrupadosPorHora.values(), (det, index) => {
+                    return { ...det.toJSON(), casilla: index + 1 };
+                });
+
+                const itinerarioFinal = {
+                    ...itinerario.toJSON(),
+                    ItinerarioDetalles: detallesPorHora
+                };
+
+                return itinerarioFinal;
+            });
+
+            res.json({
+                OK: true,
+                Total: datosFiltrados.length,
+                Resumen: datosFiltrados
+            });
+
+        } catch (error) {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        }
+    };
+
+
     app.itinerarioP = async (req, res) => {
         try {
             const listaordenes = await axios.get('https://servidorlocal.ngrok.app/itinerariosVO');
