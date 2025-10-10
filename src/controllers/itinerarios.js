@@ -6,6 +6,9 @@ module.exports = app => {
     const itine = app.database.models.Itinerarios;
     const itineDet = app.database.models.ItinerarioDetalle;
 
+    const Samsara = require("@api/samsara-dev-rel");
+    Samsara.auth(process.env.KEYSAM);
+
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
@@ -5564,6 +5567,29 @@ module.exports = app => {
 
 
 
+
+
+
+    app.obtenerRecorrido = async (req, res) => {
+        var start = new Date(req.params.start).getTime();
+        var end = new Date(req.params.end).getTime();
+
+        try {
+            const { data } = await Samsara.v1getFleetTrips({vehicleId: req.params.idunidad, startMs: start, endMs: end});
+    
+            res.json({
+                OK: true,
+                Total: data.length,
+                Resumen: data
+            });
+        } 
+        catch (error) {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        }
+    }
 
 
 
