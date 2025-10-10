@@ -117,7 +117,7 @@ module.exports = app => {
 
     app.getInnerItinerariosXF = async (req, res) => {
         const hoy = moment().format('YYYY-MM-DD');
-        const cincodias = moment().subtract(6, 'days').format('YYYY-MM-DD');
+        const cincodias = moment().subtract(4, 'days').format('YYYY-MM-DD');
 
         try {
             const resultados = await itine.findAll({
@@ -130,7 +130,8 @@ module.exports = app => {
                     model: itineDet,
                     as: 'ItinerarioDetalles',
                     required: true
-                }]
+                }],
+                order: [['fecha_creacion', 'DESC']],
             });
 
             const datosFiltrados = resultados.map(itinerario => {
