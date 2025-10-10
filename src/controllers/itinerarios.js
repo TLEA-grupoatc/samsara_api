@@ -5580,7 +5580,7 @@ module.exports = app => {
             res.json({
                 OK: true,
                 Total: data.length,
-                Resumen: data
+                Resumen: data.trips
             });
         } 
         catch (error) {
