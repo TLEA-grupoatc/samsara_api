@@ -5222,13 +5222,13 @@ module.exports = app => {
                                 }
 
 
-                                const travel = await getRoute({
-                                    lat1: ubi.latitud ,
-                                    lon1: ubi.longitud,
-                                    lat2: Number(existe[0].destino_latitud) ,
-                                    lon2: Number(existe[0].destino_longitud),
-                                    apiKey: process.env.MAPBOX_TOKEN
-                                });
+                                // const travel = await getRoute({
+                                //     lat1: ubi.latitud ,
+                                //     lon1: ubi.longitud,
+                                //     lat2: Number(existe[0].destino_latitud) ,
+                                //     lon2: Number(existe[0].destino_longitud),
+                                //     apiKey: process.env.MAPBOX_TOKEN
+                                // });
 
                                 var kmrestantes = travel.distance_km;
 
@@ -5316,7 +5316,7 @@ module.exports = app => {
                                     geocerca: ubi.geocerca,
                                     combustible: ubi.fuelpercent,
                                     km: kmrestantes,
-                                    tiempo: travel.duration_hr,
+                                    tiempo: Math.round(travel.duration_sec / 60),
                                     velocidad: ubi.km,
                                     estado: restarcombustible < -2 ? 'En Movimiento' : restarcombustible > -1 ? 'Detenido' : 'Sin Cambios',
                                     odometer: ubi.odometer,
