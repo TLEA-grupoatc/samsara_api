@@ -127,6 +127,9 @@ module.exports = app => {
                 where: {
                     fecha_creacion: {
                         [Op.between]: [cincodias, hoy]
+                    },
+                    fecha_reporte_entrega: {
+                        [Op.is]: null
                     }
                 },
                 include: [{
