@@ -127,9 +127,6 @@ module.exports = app => {
                 where: {
                     fecha_creacion: {
                         [Op.between]: [cincodias, hoy]
-                    },
-                    fecha_reporte_entrega: {
-                        [Op.is]: null
                     }
                 },
                 include: [{
@@ -5176,59 +5173,13 @@ module.exports = app => {
                                     }
                                 }
 
-                                async function getRoute({ lat1, lon1, lat2, lon2, apiKey }) {
-                                const pointA = [lon1, lat1];
-                                const pointB = [lon2, lat2];
-
-                                // Perfil con tráfico habilitado
-                                const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
-
-                                try {
-                                    const response = await axios.get(url);
-                                    const data = response.data;
-
-                                    if (data.routes.length > 0) {
-                                    const route = data.routes[0];
-
-                                    // Conversión de unidades
-                                    const distanciaKm = (route.distance / 1000).toFixed(2);  // metros → km
-                                    const duracionSeg = route.duration;                      // segundos
-                                    const duracionMin = Math.round(duracionSeg / 60);        // minutos
-                                    const duracionHoras = (duracionSeg / 3600).toFixed(2);   // horas (2 decimales)
-
-                                    // Formato legible
-                                    const horas = Math.floor(duracionSeg / 3600);
-                                    const minutos = Math.round((duracionSeg % 3600) / 60);
-                                    const duracionTexto = `${horas}h ${minutos}m`;
-
-                                    return {
-                                        provider: 'Mapbox',
-                                        mode: 'driving-traffic',     // ✅ con tráfico
-                                        distance_km: parseFloat(distanciaKm),
-                                        duration_sec: duracionSeg,
-                                        duration_min: duracionMin,
-                                        duration_hr: parseFloat(duracionHoras),
-                                        duration_text: duracionTexto,
-                                        geometry: route.geometry     // por si luego quieres trazar el polyline
-                                    };
-                                    } else {
-                                    console.warn("No se encontró ruta.");
-                                    return null;
-                                    }
-                                } catch (error) {
-                                    console.error("Error obteniendo ruta:", error.message);
-                                    return null;
-                                }
-                                }
-
-
-                                // const travel = await getRoute({
-                                //     lat1: ubi.latitud ,
-                                //     lon1: ubi.longitud,
-                                //     lat2: Number(existe[0].destino_latitud) ,
-                                //     lon2: Number(existe[0].destino_longitud),
-                                //     apiKey: process.env.MAPBOX_TOKEN
-                                // });
+                                const travel = await getRoute({
+                                    lat1: ubi.latitud ,
+                                    lon1: ubi.longitud,
+                                    lat2: Number(existe[0].destino_latitud) ,
+                                    lon2: Number(existe[0].destino_longitud),
+                                    apiKey: process.env.MAPBOX_TOKEN
+                                });
 
                                 var kmrestantes = travel.distance_km;
 
