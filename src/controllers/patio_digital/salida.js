@@ -15,6 +15,8 @@ module.exports = app => {
 
     const sequelize = app.database.sequelize;
 
+    const io = app.io;
+
     app.pruebaAdvan = async (req, res) => {
         
         try {
@@ -61,11 +63,11 @@ module.exports = app => {
             })
 
             return res.json({ 
-                OK: true, 
+                OK: true,
                 result: unidades
             });
         } catch (err) {
-            console.error('Error en :', err);
+            console.error('Error en obtener unidades en abse:', err);
             return res.status(500).json({ 
                 OK: false,
                 msg: err,
@@ -221,8 +223,8 @@ module.exports = app => {
         const base = req.params.base;
 
         try {
-            const unidadEnCaseta = await Pickandup.findOne({
-                attributes: ['unidad', 'operador', 'estatus', 'fk_salida', 'fk_intercambios_salida'],
+            const unidadEnCaseta = await Pickandup.findAll({
+                attributes: ['idpickandup', 'unidad', 'operador', 'estatus', 'fk_salida', 'fk_intercambios_salida', 'fk_omision_intercambios_salida'],
                 where: {
                     base: base,
                     estatus: 'en_caseta_salida'
@@ -231,12 +233,12 @@ module.exports = app => {
 
             return res.status(200).json({
                 OK: true,
-                msg: '',
+                msg: null,
                 result: unidadEnCaseta
             });
 
         } catch (error) {
-            console.error('Error al :', error);
+            console.error('Error al obtener unidad en caseta salida:', error);
             return res.status(500).json({ 
                 OK: false,
                 msg: error,
@@ -269,6 +271,7 @@ module.exports = app => {
                 { where: {idpickandup: idpickandup} }
             );
 
+            io.emit('SALIDA_CON_OMISION_AUTORIZADA');
             return res.json({
                 OK: true,
                 msg: 'Autorizada correctamente',
@@ -338,7 +341,6 @@ module.exports = app => {
             observacion_libre_de_plagas,
             observacion_libre_de_semillas_hojas,
 
-            
             foto_unidad_1,
             foto_unidad_2,
             foto_unidad_3,
@@ -373,7 +375,7 @@ module.exports = app => {
         } = req.body;
 
         // console.log(req.body);
-        // console.log(req.files);
+        // console.log(fecha_salida);
 
         let DatosSalida;
 
@@ -472,7 +474,6 @@ module.exports = app => {
             }
 
             // Si tiene un reporte o hallazgo no llega a las firmas
-            // console.log(firma_guardia, firma_operador)
             const checkHallazgos = (firma_guardia !== undefined || firma_operador !== undefined);
 
             const estatus = checkHallazgos ? 'salida_salida' : 'salida_hallazgo';
@@ -481,18 +482,44 @@ module.exports = app => {
 
             const salidaCreada = await Salida.create(DatosSalida, { transaction: t });
 
-            await Pickandup.update(
-                {
-                    fk_salida: salidaCreada.id_salida,
-                    estatus: salidaCreada.estatus
+            //comprobar intercambios si ya acabo, si aun no entonces que solo guarde el fk_salida
+            console.log(idpickandup)
+
+            const unidadEnCaseta = await Pickandup.findOne({
+                attributes: ['estatus', 'fk_entrada', 'fk_intercambios_salida', 'fk_omision_intercambios_salida'],
+                include: [
+                    {
+                        model: Salida,
+                        attributes: ['estatus'],
+                    }
+                ],
+                where: {
+                    idpickandup: idpickandup
                 },
-                { where: {idpickandup: idpickandup}, transaction: t }
-            )
+                transaction: t
+            });
+            
+            if(unidadEnCaseta?.fk_intercambios_salida || unidadEnCaseta?.fk_omision_intercambios_salida){
+                await Pickandup.update(
+                    {
+                        fk_salida: salidaCreada?.id_salida,
+                        estatus: salidaCreada?.estatus
+                    },
+                    { where: {idpickandup: idpickandup}, transaction: t }
+                );
+            } else {
+                await Pickandup.update(
+                    {
+                        fk_salida: salidaCreada?.id_salida,
+                    },
+                    { where: {idpickandup: idpickandup}, transaction: t }
+                );
+            }
 
             // console.log(test)
 
             await t.commit();
-
+            io.emit('CASETA_SALIDA_ACTUALIZADA');
             return res.status(200).json({ 
                 OK: true,
                 msg: 'Salida creada correctamente',
@@ -508,7 +535,7 @@ module.exports = app => {
         }
     }
 
-    app.confirmarUnidadEnCaseta = async (req, res) => {
+    app.confirmarUnidadEnCasetaSalida = async (req, res) => {
         
         const idpickandup = req.body.idpickandup;
 
@@ -520,7 +547,8 @@ module.exports = app => {
                     where: {idpickandup: idpickandup }
                 }
             );
-            
+
+            io.emit('CASETA_SALIDA_ACTUALIZADA');
             return res.json({ 
                 OK: true,
                 msg: 'Unidad en caseta confirmada',
@@ -549,6 +577,7 @@ module.exports = app => {
                 }
             );
 
+            io.emit('CASETA_SALIDA_ACTUALIZADA');
             return res.json({ 
                 OK: true, 
                 result: unidadEnCaseta
@@ -595,6 +624,7 @@ module.exports = app => {
             );
             
             await t.commit();
+            io.emit('SALIDA_CON_HALLAZGOS_AUTORIZADA');
 
             return res.json({ 
                 OK: true,
@@ -677,7 +707,7 @@ module.exports = app => {
                 DatosSalida['firma_operador'] = saveBase64File(firma_operador, 'firma_operador');
             }
 
-            const estatus = 'salida_salida'
+            const estatus = 'salida_salida';
 
             DatosSalida['estatus'] = estatus;
             DatosSalida['fecha_salida'] = moment().format('YYYY-MM-DD hh:mm');
@@ -699,8 +729,8 @@ module.exports = app => {
             )
             
             await t.commit();
-            // if (t) await t.rollback();
-
+            io.emit('CASETA_SALIDA_ACTUALIZADA');
+            io.emit('SALIDA_CONFIRMADA_ACTUALIZADA');
             return res.json({ 
                 OK: true,
                 msg: 'Actualizado correctamente',

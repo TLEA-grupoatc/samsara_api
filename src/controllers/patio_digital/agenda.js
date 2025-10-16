@@ -1053,6 +1053,8 @@ module.exports = app => {
         anularAgendaAutomatico().catch(console.error);
     }, INTERVALO);
 
+    anularAgendaAutomatico().catch(console.error);
+
     return app;
 }
 

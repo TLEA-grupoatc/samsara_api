@@ -68,6 +68,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: true
         },
+        fk_inspeccion_salida: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
         fk_salida: {
             type: DataTypes.INTEGER,
             allowNull: true
@@ -84,7 +88,23 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: true,
         },
-        fk_intercambios_salida: {
+        fk_omision_intercambios_entrada: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        fk_omision_inspeccion_entrada: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        fk_omision_mantenimiento: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        fk_omision_inspeccion_salida: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        fk_omision_intercambios_salida: {
             type: DataTypes.INTEGER,
             allowNull: true,
         }
@@ -99,15 +119,16 @@ module.exports = (sequelize, DataTypes) => {
 
     PdPickAndUp.associate = function(models) {
         PdPickAndUp.belongsTo(models.Clientes, { foreignKey: 'fk_cliente' });
-        PdPickAndUp.belongsTo(models.Evidencias, { foreignKey: 'fk_evidencias' });
-        PdPickAndUp.belongsTo(models.Agenda, { foreignKey: 'fk_agenda' });
-        PdPickAndUp.belongsTo(models.Entrada, { foreignKey: 'fk_entrada' });
-        PdPickAndUp.belongsTo(models.InspeccionEntrada, { foreignKey: 'fk_inspeccion_entrada' });
-        PdPickAndUp.belongsTo(models.Salida, { foreignKey: 'fk_salida' });
         PdPickAndUp.belongsTo(models.Usuarios, { foreignKey: 'fk_usuario' });
         PdPickAndUp.belongsTo(models.Usuarios, { foreignKey: 'fk_usuario_auto_salida_omision', as: 'UsuarioAutoSalidaOmision' });
+        PdPickAndUp.belongsTo(models.Agenda, { foreignKey: 'fk_agenda' });
+        PdPickAndUp.belongsTo(models.Entrada, { foreignKey: 'fk_entrada' });
         PdPickAndUp.belongsTo(models.IntercambiosEntrada, { foreignKey: 'fk_intercambios_entrada' });
+        PdPickAndUp.belongsTo(models.InspeccionEntrada, { foreignKey: 'fk_inspeccion_entrada', sourceKey: 'id_inspeccion_entrada' });
+        PdPickAndUp.belongsTo(models.InspeccionSalida, { foreignKey: 'fk_inspeccion_salida', sourceKey: 'id_inspeccion_salida' });
+        PdPickAndUp.belongsTo(models.Evidencias, { foreignKey: 'fk_evidencias' });
         PdPickAndUp.belongsTo(models.IntercambiosSalida, { foreignKey: 'fk_intercambios_salida' });
+        PdPickAndUp.belongsTo(models.Salida, { foreignKey: 'fk_salida' });
     };
 
     return PdPickAndUp;

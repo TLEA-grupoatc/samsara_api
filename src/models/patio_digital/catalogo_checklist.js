@@ -14,6 +14,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING(300),
             allowNull: true,
         },
+        estandar: {
+            type: DataType.STRING(300),
+            allowNull: true,
+        },
         tipo_checklist: {
             type: DataType.INTEGER,
         },

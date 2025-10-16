@@ -1,8 +1,48 @@
+const path = require('path');
+const fs = require('fs');
+const moment = require("moment");
 
 module.exports = app => {
+    
+    const Pickandup = app.database.models.PickAndUp;
+    const OmisionProceso = app.database.models.OmisionProcesos;
+
+    const Salida = app.database.models.Salida;
 
     const Sequelize = app.database.sequelize;
+    const io = app.io;
 
+    const saveBase64File = (base64Data, type) => {
+        
+        const evidenciaEntregadasPath = path.join(__dirname, '../../../uploads/autorizaciones_omisiones');
+    
+        if (!fs.existsSync(evidenciaEntregadasPath)) {
+            fs.mkdirSync(evidenciaEntregadasPath, { recursive: true });
+        }
+    
+        const matches = base64Data.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            throw new Error('Formato base64 inválido');
+        }
+    
+        const DateFormated = moment().format('DD.MM.YYYY_hh.mm');
+    
+        const mimeType = matches[1];
+        const extension = mimeType.split('/')[1];
+    
+        const buffer = Buffer.from(matches[2], 'base64');
+
+        let filename;
+
+        filename = `${type}_${DateFormated}.${extension}`
+        
+            
+        const filePath = path.join(evidenciaEntregadasPath, filename);
+        fs.writeFileSync(filePath, buffer);
+        return filename;
+    }
+
+    //#region Reportes
     app.unidadesEnBase = async (req, res) => {
 
         try {
@@ -129,7 +169,190 @@ module.exports = app => {
             });
         }
     }
-    
+
+    app.PDIngresosDiaActual = async (req, res) => {
+
+        try {
+
+            const { base } = req.params;
+
+            const ingresos = await Sequelize.query(
+            `
+                SELECT
+                    PAU.unidad,
+                    PAU.division,
+                    PAU.unidad_negocio,
+                    CLI.cliente,
+                    MPA.motivo AS motivo_agenda,
+                    DATE(ENT.fecha_entrada) AS fecha_entrada
+                FROM 
+                    pd_pickandup PAU
+                    LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
+                    LEFT JOIN cliente CLI ON PAU.fk_cliente = CLI.id_cliente
+                    LEFT JOIN pd_agenda AGE ON PAU.fk_agenda = AGE.id_agenda
+                    LEFT JOIN pd_motivo_programacion_arribo MPA ON AGE.fk_motivo_programacion_arribo = MPA.id_motivo_programacion_arribo
+                WHERE
+                    ENT.fecha_entrada IS NOT NULL
+                    AND DATE(ENT.fecha_entrada) = CURRENT_DATE()
+                    AND PAU.base = :base;
+            `,
+            {
+                type: Sequelize.QueryTypes.SELECT,
+                replacements: { base: base }
+            }
+            );
+
+            return res.status(200).json({
+                OK: true,
+                result: ingresos
+            });
+
+        } catch (error) {
+            console.error('Error al obtener Agenda - ingresos:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    //#endregion
+
+    //#region Omisiones proceso
+
+    app.confirmarOmisionProceso = async (req, res) => {
+
+        let t;
+
+        try {
+            t = await Sequelize.transaction();
+
+            let { idpickandup, ...omisionData } = req.body;
+
+            if(omisionData.evidencia_autorizacion){
+                omisionData.evidencia_autorizacion = saveBase64File(omisionData.evidencia_autorizacion, 'autorizacion_omision');
+            }
+
+            const omisionRegistrada = await OmisionProceso.create(omisionData, { transaction: t });
+
+            let fk;
+            let estatus;
+
+            switch (omisionData.modulo) {
+                case 'intercambios_entrada':
+
+                    fk = 'fk_omision_intercambios_entrada';
+                    const unidadEnCaseta = await Pickandup.findOne({
+                        attributes: ['estatus', 'fk_entrada', 'fk_intercambios_entrada'],
+                        where: {
+                            idpickandup: idpickandup
+                        },
+                        transaction: t
+                    });
+                    
+                    if(!unidadEnCaseta.fk_entrada) {
+                        estatus = 'en_caseta_entrada'
+                    } else {
+                        estatus = 'entrada'
+                    }
+
+                    break;
+
+                case 'inspeccion_entrada':
+                    fk = 'fk_omision_inspeccion_entrada';
+                    break;
+
+                case 'mantenimiento_entrada':
+                    fk = 'fk_omision_mantenimiento';
+                    break;
+
+                case 'inspeccion_salida':
+                    fk = 'fk_omision_inspeccion_salida';
+                    break;
+
+                case 'intercambios_salida':
+                    fk = 'fk_omision_intercambios_salida';
+                    const unidadEnCasetaSalida = await Pickandup.findOne({
+                        attributes: ['estatus', 'fk_salida', 'fk_intercambios_salida'],
+                        include: [
+                            {
+                                model: Salida,
+                                attributes: ['estatus'],
+                            }
+                        ],
+                        where: {
+                            idpickandup: idpickandup
+                        },
+                        transaction: t
+                    });
+                    
+                    if(!unidadEnCasetaSalida?.fk_salida) {
+                        estatus = 'en_caseta_salida';
+                    } else {
+                        estatus = unidadEnCasetaSalida?.Salida?.estatus;
+                    }
+                    break;
+            
+                default:
+                    break;
+            }
+
+             await Pickandup.update(
+                {
+                    [fk]: omisionRegistrada.id_omision_proceso,
+                    estatus: estatus
+                },
+                {
+                    where: { idpickandup: idpickandup },
+                    transaction: t
+                }
+            );
+
+            await t.commit();
+
+            switch (omisionData.modulo) {
+                case 'intercambios_entrada':
+                    io.emit('OMISION_INTERCAMBIOS_ENTRADA');
+                    break;
+
+                case 'inspeccion_entrada':
+                    
+                    break;
+
+                case 'mantenimiento_entrada':
+                    
+                    break;
+
+                case 'inspeccion_salida':
+                    
+                    break;
+
+                case 'intercambios_salida':
+                    io.emit('OMISION_INTERCAMBIOS_SALIDA');
+                    break;
+            
+                default:
+                    break;
+            }
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Proceso omitido correctamente',
+                result: null
+            });
+
+        } catch (error) {
+            if (t) await t.rollback();
+            console.error('Error al crear omision de proceso:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    //#endregion
+
     //  app.plantilla = async (req, res) => {
 
     //     // let t;

@@ -12,17 +12,17 @@ module.exports = app => {
         socket.broadcast.emit('salida-recargarUnidadesEnBase');
       });
 
-      socket.on('Entrada-UnidadConfirmadaEnCaseta', () => {
-        socket.broadcast.emit('entrada-recargarUnidadEnCaseta');
-      });
+      // socket.on('Entrada-UnidadConfirmadaEnCaseta', () => {
+      //   socket.broadcast.emit('entrada-recargarUnidadEnCaseta');
+      // });
 
-      socket.on('entrada-unidadEnCasetaCancelada', () => {
-        socket.broadcast.emit('entrada-recargarUnidadEnCaseta');
-      });
+      // socket.on('entrada-unidadEnCasetaCancelada', () => {
+      //   socket.broadcast.emit('entrada-recargarUnidadEnCaseta');
+      // });
 
-      socket.on('entrada-EnCasetaCancelada-programada', () => {
-        socket.broadcast.emit('entrada-limpiarUnidadEnCaseta');
-      });      
+      // socket.on('entrada-EnCasetaCancelada-programada', () => {
+      //   socket.broadcast.emit('entrada-limpiarUnidadEnCaseta');
+      // });      
       
     });
 };

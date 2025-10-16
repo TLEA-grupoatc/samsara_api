@@ -5,15 +5,16 @@ module.exports = app => {
 
       socket.on('salida-creada', () => {
         socket.broadcast.emit('salida-recargarSalidas');
+        socket.broadcast.emit('salida-recargarUnidadEnCaseta');
       });
 
       socket.on('salida-autorizacion-salida-hallazgo', () => {
         socket.broadcast.emit('salida-recargarSalidas');
       });
 
-      socket.on('salida-autorzacion-con-omision', () => {
-        socket.broadcast.emit('salida-recargarUnidadesEnBase');
-      });
+      // socket.on('salida-autorzacion-con-omision', () => {
+      //   socket.broadcast.emit('salida-recargarUnidadesEnBase');
+      // });
       
       socket.on('salida-confirmada', () => {
         socket.broadcast.emit('salida-recargarSalidas');

@@ -15,6 +15,8 @@ module.exports = app => {
 
     const Usuarios = app.database.models.Usuarios;
 
+    const io = app.io;
+
     app.ObtenerProgramacionAgenda = async (request, response) => {
 
         const base = request.params.base;
@@ -125,7 +127,7 @@ module.exports = app => {
             console.error('Error al buscar', error);
             response.status(500).json({ error: 'Error interno del servidor' });
         }
-    };
+    }
     
     app.ObtenerEntradas = async (request, response) => {
 
@@ -173,7 +175,7 @@ module.exports = app => {
         } catch (error) {
             response.status(500).send('Error al obtener los registros: ' + error.message);
         }
-    };
+    }
 
     app.ObtenerDetallesEntrada = async (req, res) => {
         
@@ -220,8 +222,8 @@ module.exports = app => {
 
         try {
             // t = await Sequelize.transaction();
-            const unidadEnCaseta = await Pickandup.findOne({
-                attributes: ['unidad', 'operador', 'estatus', 'fk_entrada', 'fk_intercambios_entrada'],
+            const unidadEnCaseta = await Pickandup.findAll({
+                attributes: ['idpickandup', 'unidad', 'operador', 'estatus', 'fk_entrada', 'fk_intercambios_entrada', 'fk_omision_intercambios_entrada'],
                 where: {
                     base: base,
                     estatus: 'en_caseta_entrada'
@@ -344,7 +346,8 @@ module.exports = app => {
                     {estatus: estatus},
                     { where:{ idpickandup: idpickandup } }
                 )
-
+            
+                io.emit('CASETA_ENTRADA_ACTUALIZADA');
                 return res.status(200).json({
                     OK: true,
                     msg: 'Ingreso en caseta confirmada',
@@ -361,14 +364,15 @@ module.exports = app => {
                         estatus: estatus
                     },
                 )
-
+                
+                io.emit('CASETA_ENTRADA_ACTUALIZADA');
                 return res.status(200).json({
                     OK: true,
                     msg: 'Ingreso en caseta confirmada',
                     result: unidadEnCaseta.idpickandup
                 });
             }
-
+            
         } catch (error) {
             // if (t) await t.rollback();
             console.error('Error al :', error);
@@ -620,19 +624,19 @@ module.exports = app => {
             estatus = 'entrada';
 
             // Validacion para saber si ya se cumplio con intercambios y guardias
-
-            // const unidadEnCaseta = await Pickandup.findOne({
-            //     attributes: ['unidad', 'operador', 'estatus', 'fk_entrada', 'fk_intercambios_entrada'],
-            //     where: {
-            //         base: base,
-            //         idpickandup: idpickandup
-            //     }
-            // });
-            // if(!unidadEnCaseta.fk_entrada || unidadEnCaseta.fk_intercambios_entrada) {
-            //     estatus = 'en_caseta_entrada'
-            // } else {
-            //     estatus = 'entrada'
-            // }
+            const unidadEnCaseta = await Pickandup.findOne({
+                attributes: ['unidad', 'operador', 'estatus', 'fk_entrada', 'fk_intercambios_entrada', 'fk_omision_intercambios_entrada'],
+                where: {
+                    base: base,
+                    idpickandup: idpickandup
+                }
+            });
+            
+            if(!unidadEnCaseta.fk_intercambios_entrada && !unidadEnCaseta.fk_omision_intercambios_entrada) {
+                estatus = 'en_caseta_entrada'
+            } else {
+                estatus = 'entrada'
+            }
 
             const check_id_agenda = id_agenda === 'null' ? null : id_agenda
             
@@ -724,7 +728,7 @@ module.exports = app => {
             }
     
             await t.commit();
-            // if (t) await t.rollback();
+            io.emit('CASETA_ENTRADA_ACTUALIZADA');
             return res.status(200).json({
                 OK: true,
                 msg: 'Entrada registrada correctamente',
@@ -738,19 +742,14 @@ module.exports = app => {
                 msg: error,
             });
         }
-    };
+    }
 
     app.unidadEnCasetaCancelada = async (req, res) => {
 
-        // let t;
         const idpickandup = req.params.idpickandup;
         const id_agenda = req.params.id_agenda;
-
-        // console.log(idpickandup);
-        // console.log(typeof id_agenda, id_agenda);
         
         try {
-            // t = await Sequelize.transaction();
 
             let pickandupActualizado;
 
@@ -769,7 +768,7 @@ module.exports = app => {
                 });
             }
 
-            // await t.commit();
+            io.emit('CASETA_ENTRADA_ACTUALIZADA');
             return res.status(200).json({
                 OK: true,
                 msg: 'Cancelado correctamente',
@@ -850,7 +849,8 @@ const agendaDiaActual = async (sequelize, base) => {
                         RA.id_reprogramacion_arribo AS id_reprogramacion_arribo,
                         RA.fecha_arribo_reprogramado AS fecha_programada,
                         RA.cumplimiento_arribo_reprogramacion AS cumplimiento,
-                        RA.horario_arribo_reprogramado AS horario_arribo
+                        RA.horario_arribo_reprogramado AS horario_arribo,
+                        MPA.motivo AS motivo_agenda
                     FROM
                         (
                             SELECT *,
@@ -858,6 +858,7 @@ const agendaDiaActual = async (sequelize, base) => {
                             FROM pd_reprogramaciones_arribos
                         ) RA
                         LEFT JOIN pd_agenda CA ON RA.fk_agenda = CA.id_agenda
+                        LEFT JOIN pd_motivo_programacion_arribo MPA ON CA.fk_motivo_programacion_arribo = MPA.id_motivo_programacion_arribo
                     WHERE
                         CA.base = :base
                         -- AND RA.fecha_arribo_reprogramado <= current_date()
@@ -869,9 +870,11 @@ const agendaDiaActual = async (sequelize, base) => {
                         NULL AS id_reprogramacion_arribo,
                         CA.fecha_arribo_programado AS fecha_programada,
                         CA.cumplimiento_arribo AS cumplimiento,
-                        CA.horario_arribo_programado AS horario_arribo
+                        CA.horario_arribo_programado AS horario_arribo,
+                        MPA.motivo AS motivo_agenda
                     FROM
                         pd_agenda CA
+                        LEFT JOIN pd_motivo_programacion_arribo MPA ON CA.fk_motivo_programacion_arribo = MPA.id_motivo_programacion_arribo
                     WHERE
                         CA.base = :base
                         -- AND DATE(CA.fecha_arribo_programado) <= current_date()
@@ -891,6 +894,7 @@ const agendaDiaActual = async (sequelize, base) => {
                     PAU.operador,
                     PAU.division,
                     PAU.unidad_negocio,
+                    UA.motivo_agenda,
                     DATE(UA.fecha_programada) AS fecha_programada,
                     UA.horario_arribo
                 FROM
@@ -916,4 +920,3 @@ const agendaDiaActual = async (sequelize, base) => {
 }
 
 //#endregion
-

@@ -1,9 +1,9 @@
 const fs = require('fs');
+const moment = require('moment');
 const path = require('path');
-const { Op } = require('sequelize');
-// const moment = require('moment');
 
-// const axios = require('axios');
+const axios = require('axios');
+const { Op } = require('sequelize');
 
 
 module.exports = app => {
@@ -18,7 +18,7 @@ module.exports = app => {
 
     const Sequelize = app.database.sequelize;
 
-    app.obtenerUnidadesConEntrada = async (req, res) => {
+    app.obtenerUnidadesMantenimientoEv = async (req, res) => {
         
         const { base } = req.params;
 
@@ -36,7 +36,7 @@ module.exports = app => {
                     }
                 ],
                 where: {
-                    estatus: 'entrada',
+                    estatus: 'mantenimiento',
                     base: base,
                     fk_evidencias: null
                 },

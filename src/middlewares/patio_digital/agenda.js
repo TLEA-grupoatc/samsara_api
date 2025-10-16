@@ -23,7 +23,7 @@ module.exports = app => {
             });
 
             const pickandup = arriboProgramado?.dataValues;
-            console.log(pickandup)
+            // console.log(pickandup)
 
             if(pickandup?.fk_agenda && !pickandup?.fk_entrada && !pickandup?.fk_salida && pickandup?.estatus !== 'salida_salida'){
                 return res.status(200).json({

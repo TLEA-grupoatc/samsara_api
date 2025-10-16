@@ -5122,8 +5122,6 @@ module.exports = app => {
                     }
                 });
                 
-                console.log(existe.length);
-                
                 if(existe.length > 0) {
                     if(rr.fecha_reporte_entrega != null) {
                         let data = new itine({
@@ -5145,36 +5143,89 @@ module.exports = app => {
                         for(const ubi of ubicaciones) {
                             if(existe[0].economico === ubi.unidad) {
                                 
-                                async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
-                                    const pointA = [lon1, lat1];
-                                    const pointB = [lon2, lat2];
+                                // async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
+                                //     const pointA = [lon1, lat1];
+                                //     const pointB = [lon2, lat2];
 
-                                    const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+                                //     const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
 
-                                    try {
-                                        const response = await axios.get(url);
-                                        const data = response.data;
+                                //     try {
+                                //         const response = await axios.get(url);
+                                //         const data = response.data;
 
-                                        if (data.routes.length > 0) {
-                                            const route = data.routes[0];
-                                            const distanciaKm = (route.distance / 1000).toFixed(2);
-                                            const tiempoMin = Math.round(route.duration / 60);
+                                //         if (data.routes.length > 0) {
+                                //             const route = data.routes[0];
+                                //             const distanciaKm = (route.distance / 1000).toFixed(2);
+                                //             const tiempoMin = Math.round(route.duration / 60);
 
                                  
-                                            return {
-                                                provider: 'MapBox',
-                                                mode: 'driving',
-                                                distance_km: distanciaKm || 0,
-                                                duration_sec: tiempoMin || 0
-                                            };
-                                        } 
-                                        else {
-                                            console.log("2No se encontró ruta.                                       22222");
-                                        }
-                                    } catch (error) {
-                                        console.error("Error:", error.message);
+                                //             return {
+                                //                 provider: 'MapBox',
+                                //                 mode: 'driving',
+                                //                 distance_km: distanciaKm || 0,
+                                //                 duration_sec: tiempoMin || 0
+                                //             };
+                                //         } 
+                                //         else {
+                                //             console.log("2No se encontró ruta.                                       22222");
+                                //         }
+                                //     } catch (error) {
+                                //         console.error("Error:", error.message);
+                                //     }
+                                // }
+
+
+                                async function getRoute({ lat1, lon1, lat2, lon2, apiKey }) {
+                                const pointA = [lon1, lat1];
+                                const pointB = [lon2, lat2];
+
+                                const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+
+            
+                                try {
+                                    const response = await axios.get(url);
+                                    const data = response.data;
+
+                                    if (data.routes.length > 0) {
+                                    const route = data.routes[0];
+
+                                    // Conversión: metros → km, segundos → horas
+                                    const distance_km = (route.distance / 1000).toFixed(2);
+                                    const duration_hr = (route.duration / 3600).toFixed(2);
+
+                                    return {
+                                        provider: 'Mapbox',
+                                        mode: 'driving-traffic',
+                                        distance_km: parseFloat(distance_km),
+                                        duration_sec: parseFloat(duration_hr)
+                                    };
+                                    } else {
+                                    console.warn("No se encontró ruta.");
+                                    return null;
                                     }
+                                } catch (error) {
+                                    console.error("Error obteniendo ruta:", error.message);
+                                    return null;
                                 }
+                                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                                 const travel = await getRoute({
                                     lat1: ubi.latitud ,
@@ -5304,35 +5355,39 @@ module.exports = app => {
                         let coordenadasOrigen = direccionesCoor.find(c => c.direccion.toUpperCase().trim() === rr.origen_dom.toUpperCase().trim()) || { direccion: rr.origen_dom };
                         let coordenadasDestino = direccionesCoor.find(c => c.direccion.toUpperCase().trim() === rr.destinatario_dom.toUpperCase().trim()) || { direccion: rr.destinatario_dom };
 
-                        async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
-                            const pointA = [lon1, lat1];
-                            const pointB = [lon2, lat2];
+                     async function getRoute({ lat1, lon1, lat2, lon2, apiKey }) {
+                                const pointA = [lon1, lat1];
+                                const pointB = [lon2, lat2];
 
-                            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+                                const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
 
-                            try {
-                                const response = await axios.get(url);
-                                const data = response.data;
+            
+                                try {
+                                    const response = await axios.get(url);
+                                    const data = response.data;
 
-                                if (data.routes.length > 0) {
+                                    if (data.routes.length > 0) {
                                     const route = data.routes[0];
-                                    const distanciaKm = (route.distance / 1000).toFixed(2);
-                                    const tiempoMin = Math.round(route.duration / 60);
+
+                                    // Conversión: metros → km, segundos → horas
+                                    const distance_km = (route.distance / 1000).toFixed(2);
+                                    const duration_hr = (route.duration / 3600).toFixed(2);
 
                                     return {
-                                        provider: 'MapBox',
-                                        mode: 'driving',
-                                        distance_km: distanciaKm || 0,
-                                        duration_sec: tiempoMin || 0
+                                        provider: 'Mapbox',
+                                        mode: 'driving-traffic',
+                                        distance_km: parseFloat(distance_km),
+                                        duration_sec: parseFloat(duration_hr)
                                     };
-                                } 
-                                else {
-                                    console.log("1No se encontró ruta. para orden", rr.clave_bitacora);
+                                    } else {
+                                    console.warn("No se encontró ruta.");
+                                    return null;
+                                    }
+                                } catch (error) {
+                                    console.error("Error obteniendo ruta:", error.message);
+                                    return null;
                                 }
-                            } catch (error) {
-                                console.error("Error:", error.message);
-                            }
-                        }
+                                }
 
                         if(coordenadasOrigen.latitud == undefined || coordenadasDestino.latitud == undefined) {
                             direccionesnul.push({direccion_origen: coordenadasOrigen.direccion, direccion_destino: coordenadasDestino.direccion})
@@ -5411,35 +5466,39 @@ module.exports = app => {
                             for(const ubi of ubicaciones) {
                                 if(rr.unidad === ubi.unidad) {
                                     
-                                    async function getRoute({lat1, lon1, lat2, lon2, apiKey}) {
-                                        const pointA = [lon1, lat1];
-                                        const pointB = [lon2, lat2];
+                                async function getRoute({ lat1, lon1, lat2, lon2, apiKey }) {
+                                const pointA = [lon1, lat1];
+                                const pointB = [lon2, lat2];
 
-                                        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
+                                const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${pointA[0]},${pointA[1]};${pointB[0]},${pointB[1]}?alternatives=false&geometries=geojson&overview=full&steps=false&access_token=${apiKey}`;
 
-                                        try {
-                                            const response = await axios.get(url);
-                                            const data = response.data;
+            
+                                try {
+                                    const response = await axios.get(url);
+                                    const data = response.data;
 
-                                            if (data.routes.length > 0) {
-                                                const route = data.routes[0];
-                                                const distanciaKm = (route.distance / 1000).toFixed(2);
-                                                const tiempoMin = Math.round(route.duration / 60);
+                                    if (data.routes.length > 0) {
+                                    const route = data.routes[0];
 
-                                                return {
-                                                    provider: 'MapBox',
-                                                    mode: 'driving',
-                                                    distance_km: distanciaKm || 0,
-                                                    duration_sec: tiempoMin || 0
-                                                };
-                                            } 
-                                            else {
-                                                console.log("No se encontró ruta.                                       1111");
-                                            }
-                                        } catch (error) {
-                                            console.error("Error:", error.message);
-                                        }
+                                    // Conversión: metros → km, segundos → horas
+                                    const distance_km = (route.distance / 1000).toFixed(2);
+                                    const duration_hr = (route.duration / 3600).toFixed(2);
+
+                                    return {
+                                        provider: 'Mapbox',
+                                        mode: 'driving-traffic',
+                                        distance_km: parseFloat(distance_km),
+                                        duration_sec: parseFloat(duration_hr)
+                                    };
+                                    } else {
+                                    console.warn("No se encontró ruta.");
+                                    return null;
                                     }
+                                } catch (error) {
+                                    console.error("Error obteniendo ruta:", error.message);
+                                    return null;
+                                }
+                                }
 
                                     const travel = await getRoute({
                                         lat1: ubi.latitud,

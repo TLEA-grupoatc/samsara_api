@@ -5,6 +5,7 @@ const path = require('path');
 
 const puppeteer = require('puppeteer');
 const handlebars = require('handlebars');
+const { Op } = require('sequelize');
 
 
 
@@ -12,12 +13,53 @@ module.exports = app => {
 
     const Pickandup = app.database.models.PickAndUp;
     const Entrada = app.database.models.Entrada;
-    const InspeccionEntrada = app.database.models.InspeccionEntrada;
     const InspeccionReporteDanos = app.database.models.InspeccionReporteDanos;
     const PiezasReporteDanos = app.database.models.PiezasReporteDanos;
     
+    const InspeccionEntrada = app.database.models.InspeccionEntrada;
+    const InspeccionesInspEntrada = app.database.models.InspeccionesInspEntrada;
+    const HallazgosInspEntrada = app.database.models.HallazgosInspEntrada;
+
+    const CatalogoFamilia = app.database.models.CatalogoFamilia;
+    const CatalogoComponente = app.database.models.CatalogoComponente;
+    const Usuarios = app.database.models.Usuarios;
     
     const Sequelize = app.database.sequelize;
+
+    const io = app.io;
+
+    const saveBase64File = (base64Data, type, id, sucesivo) => {
+        
+          const evidenciaEntregadasPath = path.join(__dirname, '../../../uploads/fotos_inspeccion_entrada');
+        
+          if (!fs.existsSync(evidenciaEntregadasPath)) {
+            fs.mkdirSync(evidenciaEntregadasPath, { recursive: true });
+          }
+        
+          const matches = base64Data.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+          if (!matches || matches.length !== 3) {
+            throw new Error('Formato base64 inválido');
+          }
+        
+          const DateFormated = moment().format('DD.MM.YYYY_hh.mm');
+        
+          const mimeType = matches[1];
+          const extension = mimeType.split('/')[1];
+        
+          const buffer = Buffer.from(matches[2], 'base64');
+    
+          let filename;
+    
+        if(id){
+            filename = `${id}_${sucesivo}_${type}_${DateFormated}.${extension}`
+        } else {
+            filename = `${type}_${DateFormated}.${extension}`
+        }
+          
+          const filePath = path.join(evidenciaEntregadasPath, filename);
+          fs.writeFileSync(filePath, buffer);
+          return filename;
+    }
 
     app.obtenerUnidadesConEntrada = async (req, res) => {
         
@@ -29,15 +71,21 @@ module.exports = app => {
                 attributes: [
                     'idpickandup',
                     'unidad',
+                    'estatus',
+                    'fk_entrada',
+                    'fk_intercambios_entrada',
+                    'fk_omision_intercambios_entrada'
                 ],
                 include: [
                     {
                         model: Entrada,
-                        attributes: ['fecha_entrada']
+                        attributes: ['fecha_entrada', 'motivo_ingreso']
                     }
                 ],
                 where: {
-                    estatus: 'entrada',
+                    estatus: {
+                        [Op.in]: ['entrada', 'en_caseta_entrada']
+                    },
                     base: base,
                 },
                 order: [
@@ -45,54 +93,29 @@ module.exports = app => {
                 ]
             });
 
+            let unidadesMantenimiento = [];
+            let unidadesOtros = [];
+
+            unidades.forEach((unidad) => {
+                if(unidad?.Entrada?.motivo_ingreso.includes('Mantenimiento')){
+                    unidadesMantenimiento.push(unidad);
+                    return;
+                }
+
+                if(!unidad?.Entrada?.motivo_ingreso?.includes('Mantenimiento')){
+                    unidadesOtros.push(unidad);
+                    return;
+                }
+            });
+
             return res.status(200).json({
                 OK: true,
-                unidades: unidades
+                mantenimiento: unidadesMantenimiento,
+                otros: unidadesOtros
             });
             
         } catch (error) {
             console.error('Error en Programar Arribo:', error);
-            return res.status(500).json({ 
-                OK: false,
-                msg: error,
-            });
-        }
-    }
-
-    app.confirmarIngresoAFosa = async (req, res) => {
-        
-        const { idpickandup, id_usuario } = req.body;
-        let t;
-        try {
-            t = await Sequelize.transaction();
-
-            const inspeccionCreada = await InspeccionEntrada.create(
-                {fk_usuario_confirmacion_fosa: id_usuario},
-                { transaction: t }
-            )
-
-            await Pickandup.update(
-                {
-                    estatus: 'en_fosa_inspeccion',
-                    fk_inspeccion_entrada: inspeccionCreada.id_inspeccion_entrada
-                },
-                {
-                    where: {
-                        idpickandup: idpickandup
-                    },
-                    transaction: t
-                }
-            );
-            
-            await t.commit();
-            return res.status(200).json({
-                OK: true,
-                msg: 'Confirmado correctamente',
-                result: null
-            });
-        } catch (error) {
-            if (t) await t.rollback();
-            console.error('Error en confirmar ingreso a fosa:', error);
             return res.status(500).json({ 
                 OK: false,
                 msg: error,
@@ -111,19 +134,23 @@ module.exports = app => {
                     PAU.unidad,
                     PAU.division,
                     PAU.unidad_negocio,
-                    PAU.cargado,
                     PAU.operador,
+                    IE.id_inspeccion_entrada,
                     IE.fk_insp_reporte_danos,
+                    IE.fk_insp_ext_1,
+                    IE.fk_insp_ext_2,
+                    IE.fk_insp_fosa,
+                    IE.fk_insp_reporte_operador,
                     IE.creado_el,
                     IE.actualizado_el,
                     E.fecha_entrada,
-                    E.rem_1
+                    PAU.rem_1
                 FROM 
                     pd_pickandup PAU
                     LEFT JOIN pd_inspeccion_entrada IE ON PAU.fk_inspeccion_entrada = IE.id_inspeccion_entrada
                     LEFT JOIN pd_entrada E ON PAU.fk_entrada = E.id_entrada
                 WHERE
-                    PAU.estatus = 'en_fosa_inspeccion'
+                    PAU.estatus = 'en_fosa_inspeccion_entrada'
                     AND PAU.base = :base
                 `,
                 {
@@ -148,6 +175,292 @@ module.exports = app => {
             
         } catch (error) {
             console.error('Error al obtener unidad en fosa:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.obtenerDetallesInspeccion = async (req, res) => {
+
+        try {
+
+            const { id_inspeccion_entrada } = req.params;
+
+            const detalles = await InspeccionEntrada.findByPk(
+                id_inspeccion_entrada,
+                {
+                    attributes: [
+                        'id_inspeccion_entrada',
+                        'fk_insp_ext_1',
+                        'fk_insp_ext_2',
+                        'fk_insp_fosa',
+                        'fk_insp_reporte_operador',
+                        'fk_insp_reporte_danos',
+                        'fk_insp_reporte_danos_2',
+                        'video_insp_ext_1',
+                        'video_insp_ext_2',
+                        'video_insp_fosa',
+                        'video_insp_reporte_operador',
+                        'tracto_ot_correctivo',
+                        're1_ot_correctivo',
+                        'dl_ot_correctivo',
+                        're2_ot_correctivo',
+                    ],
+                    include: [
+                        {
+                            model: Pickandup,
+                            attributes: [
+                                'idpickandup',
+                                'unidad',
+                                'base',
+                                'unidad_negocio',
+                                'division'
+                            ],
+                        },
+                        {
+                            model: InspeccionesInspEntrada,
+                            as: 'InspExt1',
+                            attributes: [
+                                'id_checklist_insp_ent',
+                                'checklist',
+                                'tipo_checklist',
+                                'fecha_hora_inicio',
+                                'fecha_hora_fin',
+                                'fk_usuario_cre'
+                            ],
+                            include: [
+                                {
+                                    model: HallazgosInspEntrada,
+                                    include: [
+                                        {
+                                            model: CatalogoFamilia,
+                                            attributes: ['id_familia', 'nombre_familia']
+                                        },
+                                        {
+                                            model: CatalogoComponente,
+                                            attributes: ['id_componente', 'nombre_componente']
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: Usuarios,
+                                    attributes: ['nombre_empleado']
+                                }
+                            ]
+                        },
+                        {
+                            model: InspeccionesInspEntrada,
+                            as: 'InspExt2',
+                            attributes: [
+                                'checklist',
+                                'tipo_checklist',
+                                'fecha_hora_inicio',
+                                'fecha_hora_fin',
+                                'fk_usuario_cre'
+                            ],
+                            include: [
+                                {
+                                    model: HallazgosInspEntrada,
+                                    include: [
+                                        {
+                                            model: CatalogoFamilia,
+                                            attributes: ['id_familia', 'nombre_familia']
+                                        },
+                                        {
+                                            model: CatalogoComponente,
+                                            attributes: ['id_componente', 'nombre_componente']
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: Usuarios,
+                                    attributes: ['nombre_empleado']
+                                }
+                            ]
+                        },
+                        {
+                            model: InspeccionesInspEntrada,
+                            as: 'InspFosa',
+                            attributes: [
+                                'checklist',
+                                'tipo_checklist',
+                                'fecha_hora_inicio',
+                                'fecha_hora_fin',
+                                'fk_usuario_cre'
+                            ],
+                            include: [
+                                {
+                                    model: HallazgosInspEntrada,
+                                    include: [
+                                        {
+                                            model: CatalogoFamilia,
+                                            attributes: ['id_familia', 'nombre_familia']
+                                        },
+                                        {
+                                            model: CatalogoComponente,
+                                            attributes: ['id_componente', 'nombre_componente']
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: Usuarios,
+                                    attributes: ['nombre_empleado']
+                                }
+                            ]
+                        },
+                        {
+                            model: InspeccionesInspEntrada,
+                            as: 'InspRepOp',
+                            attributes: [
+                                'checklist',
+                                'tipo_checklist',
+                                'fecha_hora_inicio',
+                                'fecha_hora_fin',
+                                'fk_usuario_cre'
+                            ],
+                            include: [
+                                {
+                                    model: Usuarios,
+                                    attributes: ['nombre_empleado']
+                                },
+                                {
+                                    model: HallazgosInspEntrada,
+                                    include: [
+                                        {
+                                            model: CatalogoFamilia,
+                                            attributes: ['id_familia', 'nombre_familia']
+                                        },
+                                        {
+                                            model: CatalogoComponente,
+                                            attributes: ['id_componente', 'nombre_componente']
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                    ],
+                    // where: { id_inspeccion_entrada: id_inspeccion_entrada }
+                }
+            );
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Obtenido unidades inspeccionadas correctamente',
+                result: detalles
+            });
+
+        } catch (error) {
+            console.error('Error al obtener Unidades inspeccionadas:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+     app.obtenerUnidadesinspeccionadas = async (req, res) => {
+
+        try {
+
+            const { base } = req.params;
+
+            const inspecciones = await Sequelize.query(
+                `
+                SELECT
+                    INSP_ENT.id_inspeccion_entrada,
+                    PAU.idpickandup,
+                    PAU.unidad,
+                    PAU.rem_1,
+                    PAU.rem_2,
+                    PAU.unidad_negocio,
+                    PAU.division,
+                    PAU.operador,
+                    ENT.fecha_entrada,
+                    INSP_ENT.creado_el AS fecha_inspeccion
+                FROM
+                    pd_inspeccion_entrada INSP_ENT
+                    LEFT JOIN pd_pickandup PAU ON INSP_ENT.id_inspeccion_entrada = PAU.fk_inspeccion_entrada
+                    LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
+                WHERE
+                    PAU.base = :base
+                ORDER BY
+                    INSP_ENT.id_inspeccion_entrada DESC;
+                `,
+                {
+                    replacements: { base },
+                    type: Sequelize.QueryTypes.SELECT
+                }
+            );
+
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Obtenido unidades inspeccionadas correctamente',
+                result: inspecciones
+            });
+
+        } catch (error) {
+            console.error('Error al obtener detalles unidad inspeccionada:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.confirmarIngresoAFosa = async (req, res) => {
+        
+        const { idpickandup, id_usuario, base } = req.body;
+        let t;
+        try {
+            t = await Sequelize.transaction();
+
+            const UnidadEnFosaExist = await Pickandup.findOne({
+                where: {
+                    estatus: 'en_fosa_inspeccion_entrada',
+                    base: base
+                }
+            });
+
+            if(UnidadEnFosaExist){
+                // console.log(UnidadEnFosaExist)
+                return res.status(200).json({
+                    OK: false,
+                    msg: 'Ya hay una unidad en fosa',
+                    result: null
+                });
+            }
+
+            const inspeccionCreada = await InspeccionEntrada.create(
+                {fk_usuario_confirmacion_fosa: id_usuario},
+                { transaction: t }
+            )
+
+            await Pickandup.update(
+                {
+                    estatus: 'en_fosa_inspeccion_entrada',
+                    fk_inspeccion_entrada: inspeccionCreada.id_inspeccion_entrada
+                },
+                {
+                    where: {
+                        idpickandup: idpickandup
+                    },
+                    transaction: t
+                }
+            );
+            
+            await t.commit();
+            io.emit('FOSA_INSPECCION_ENTRADA_ACTUALIZADA');
+            return res.status(200).json({
+                OK: true,
+                msg: 'Confirmado correctamente',
+                result: null
+            });
+        } catch (error) {
+            if (t) await t.rollback();
+            console.error('Error en confirmar ingreso a fosa:', error);
             return res.status(500).json({ 
                 OK: false,
                 msg: error,
@@ -480,14 +793,187 @@ module.exports = app => {
         }
     }
 
+    app.guardarChecklistInspeccion = async (req, res) => {
+
+        let t;
+
+        try {
+            t = await Sequelize.transaction();
+            let { checklist, id_inspeccion_entrada, checklistSeleccionado, ...inspeccionData } = req.body;
+
+            inspeccionData.checklist = checklistSeleccionado;
+            const inspeccionHecha = await InspeccionesInspEntrada.create(inspeccionData, { transaction: t });
+
+            let sucesivo = 0;
+
+            if(checklist.length > 0){
+                checklist.forEach((check) => {
+                    check.fk_checklist_insp_ent = inspeccionHecha.id_checklist_insp_ent;
+                    if(check.foto_hallazgo_1){
+                        check.foto_hallazgo_1 = saveBase64File(check.foto_hallazgo_1, 'foto_hallazgo_1', inspeccionHecha.id_checklist_insp_ent, sucesivo);
+                        sucesivo++;
+                    }
+    
+                    if(check.foto_hallazgo_2){
+                        check.foto_hallazgo_2 = saveBase64File(check.foto_hallazgo_2, 'foto_hallazgo_2', inspeccionHecha.id_checklist_insp_ent, sucesivo);
+                        sucesivo++;
+                    }
+                });
+                // console.log(checklist)
+                await HallazgosInspEntrada.bulkCreate(checklist, { transaction: t });
+            }
+
+            let fk;
+
+            switch (checklistSeleccionado) {
+                case 'pd_insp_ext_1':
+                    fk = 'fk_insp_ext_1'
+                    break;
+
+                case 'pd_insp_ext_2':
+                    fk = 'fk_insp_ext_2'
+                    break;
+
+                case 'pd_insp_fosa':
+                    fk = 'fk_insp_fosa'
+                    break;
+
+                case 'insp_reporte_op':
+                    fk = 'fk_insp_reporte_operador'
+                    break;
+            
+                default:
+                    break;
+            }
+
+            await InspeccionEntrada.update(
+                { [fk]: inspeccionHecha.id_checklist_insp_ent },
+                {
+                    where: { id_inspeccion_entrada: id_inspeccion_entrada },
+                    transaction: t
+                }
+            )
+
+            const unidadInspeccionada = await InspeccionEntrada.findOne({
+                attributes: ['fk_insp_ext_1', 'fk_insp_ext_2', 'fk_insp_fosa', 'fk_insp_reporte_operador'],
+                where: { id_inspeccion_entrada: id_inspeccion_entrada },
+                transaction: t
+            });
+
+            if(unidadInspeccionada.fk_insp_ext_1 && unidadInspeccionada.fk_insp_ext_2 && unidadInspeccionada.fk_insp_fosa && unidadInspeccionada.fk_insp_reporte_operador){
+                await Pickandup.update(
+                    {estatus: 'mantenimiento'},
+                    {
+                        where: { fk_inspeccion_entrada: id_inspeccion_entrada },
+                        transaction: t
+                    }
+                );
+            }
+
+            await t.commit();
+
+            io.emit('FOSA_INSPECCION_ENTRADA_ACTUALIZADA');
+            io.emit('INSPECCION_ENTRADA_FINALIZADA');
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Inpseccion guardada correctamente',
+                result: null
+            });
+
+        } catch (error) {
+            console.error('Error al guardar inspeccion:', error);
+            if (t) await t.rollback();
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.actualizarEvidenciasInspeccionEntrada = async (req, res) => {
+
+        const {idpickandup, id_inspeccion_entrada, id_usuario, tracto_ot_correctivo, re1_ot_correctivo, dl_ot_correctivo, re2_ot_correctivo} = req.body;
+        const documentosEvidencias = req.files;
+        
+        const evidenciasPath = path.join(__dirname, '../../../uploads/videos_inspeccion_entrada');
+        
+        let t;
+        let evidenciasPorActualizar = {
+            tracto_ot_correctivo,
+            re1_ot_correctivo,
+            dl_ot_correctivo,
+            re2_ot_correctivo,
+        };
+
+        try {
+            t = await Sequelize.transaction();
+
+            const columnasEvidencias = [
+                'video_insp_ext_1',
+                'video_insp_ext_2',
+                'video_insp_fosa',
+                'video_insp_reporte_operador',
+            ];
+
+            const evidenciasExistentes = await InspeccionEntrada.findOne({
+                attributes: columnasEvidencias,
+                where: { id_inspeccion_entrada: id_inspeccion_entrada },
+                transaction: t,
+            });
+
+            let documentosMap = {};
+            if (Array.isArray(documentosEvidencias)) {
+                for (const doc of documentosEvidencias) {
+                    documentosMap[doc.fieldname] = [doc];
+                }
+            } else {
+                documentosMap = documentosEvidencias || {};
+            }
+
+            for (let evidencia of columnasEvidencias) {
+                const archivoRecibido = documentosMap?.[evidencia]?.[0]?.filename;
+                if (archivoRecibido) {
+                    if (evidenciasExistentes[evidencia]) {
+                        EliminarEvidenciaAnterior(evidenciasExistentes[evidencia], evidenciasPath);
+                    }
+                    evidenciasPorActualizar[evidencia] = archivoRecibido;
+                }
+            }
+
+            await InspeccionEntrada.update(
+                evidenciasPorActualizar,
+                {
+                    where: { id_inspeccion_entrada: id_inspeccion_entrada },
+                    transaction: t,
+                }
+            );
+
+            await t.commit();
+
+            return res.json({
+                OK: true,
+                msg: 'Evidencias actualizadas correctamente'
+            });
+
+        } catch (error) {
+            if (t) await t.rollback();
+            console.error('Error en actualizar evidencias:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     return app;
 }
 
-// const EliminarEvidenciaAnterior = (nombreArchivo, filepath) => {
-//   if(nombreArchivo){
-//     const previousFilePath = path.join(filepath, nombreArchivo);
-//     if (fs.existsSync(previousFilePath)) {
-//       fs.unlinkSync(previousFilePath);
-//     }
-//   }
-// }
+const EliminarEvidenciaAnterior = (nombreArchivo, filepath) => {
+  if(nombreArchivo){
+    const previousFilePath = path.join(filepath, nombreArchivo);
+    if (fs.existsSync(previousFilePath)) {
+      fs.unlinkSync(previousFilePath);
+    }
+  }
+}

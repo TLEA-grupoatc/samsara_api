@@ -5,11 +5,12 @@ const moment = require("moment");
 module.exports = app => {
 
     const Pickandup = app.database.models.PickAndUp;
-    const IntercambiosEntrada = app.database.models.IntercambiosEntrada;
+    const IntercambiosSalida = app.database.models.IntercambiosSalida;
+    const Salida = app.database.models.Salida;
     const HallazgosIntercambios = app.database.models.HallazgosIntercambios;
     const CatalogoComponente = app.database.models.CatalogoComponente;
     const CatalogoFamilia = app.database.models.CatalogoFamilia;
-    
+
     const Sequelize = app.database.sequelize;
 
     const io = app.io;
@@ -47,7 +48,7 @@ module.exports = app => {
       return filename;
     }
 
-    app.obtenerIntercambiosEntrada = async (req, res) => {
+    app.obtenerIntercambiosSalida = async (req, res) => {
 
         const base = req.params.base;
 
@@ -57,22 +58,22 @@ module.exports = app => {
                     PAU.idpickandup,
                     PAU.unidad,
                     PAU.rem_1,
-                    IE.id_intercambios_entrada,
-                    IE.pqs_vencimiento,
-                    IE.pqs_presion,
-                    IE.pqs_seguro,
-                    IE.espuma_vencimiento,
-                    IE.espuma_presion,
-                    IE.espuma_seguro,
-                    IE.fecha_intercambio,
-                    IE.observaciones
+                    INSP_S.id_intercambios_salida,
+                    INSP_S.pqs_vencimiento,
+                    INSP_S.pqs_presion,
+                    INSP_S.pqs_seguro,
+                    INSP_S.espuma_vencimiento,
+                    INSP_S.espuma_presion,
+                    INSP_S.espuma_seguro,
+                    INSP_S.fecha_intercambio,
+                    INSP_S.observaciones
                 FROM
-                    pd_intercambios_entrada AS IE
-                    LEFT JOIN pd_pickandup AS PAU ON IE.id_intercambios_entrada = PAU.fk_intercambios_entrada
+                    pd_intercambios_salida INSP_S
+                    LEFT JOIN pd_pickandup PAU ON INSP_S.id_intercambios_salida = PAU.fk_intercambios_salida
                 WHERE
                     PAU.base = :base
                 ORDER BY
-                    IE.id_intercambios_entrada DESC
+                    INSP_S.id_intercambios_salida DESC
                 LIMIT 25;
             `;
 
@@ -95,7 +96,7 @@ module.exports = app => {
         }
     }
 
-    app.obtenerIntercambiosOmitidosEntrada = async (req, res) => {
+    app.obtenerIntercambiosOmitidosSalida = async (req, res) => {
 
         const base = req.params.base;
 
@@ -138,7 +139,7 @@ module.exports = app => {
         }
     }
 
-    app.crearIntercambioEntrada = async (req, res) => {
+    app.crearIntercambioSalida = async (req, res) => {
 
         let t;
 
@@ -159,44 +160,53 @@ module.exports = app => {
                 intercambio.foto_tarjeta_iave = saveBase64File(intercambio.foto_tarjeta_iave, 'foto_tarjeta_iave');
             }
 
-            const intercambioCreado = await IntercambiosEntrada.create(intercambio, { transaction: t });
+            const intercambioCreado = await IntercambiosSalida.create(intercambio, { transaction: t });
 
             let sucesivo = 0;
 
             if(checklist.length > 0){
                 checklist.forEach((check) => {
-                    check.fk_intercambios_entrada = intercambioCreado.id_intercambios_entrada
+                    check.fk_intercambios_salida = intercambioCreado.id_intercambios_salida
                     if(check.foto_hallazgo_1){
-                        check.foto_hallazgo_1 = saveBase64File(check.foto_hallazgo_1, 'foto_hallazgo_1', intercambioCreado.id_intercambios_entrada, sucesivo);
+                        check.foto_hallazgo_1 = saveBase64File(check.foto_hallazgo_1, 'foto_hallazgo_1', intercambioCreado.id_intercambios_salida, sucesivo);
                         sucesivo++;
                     }
     
                     if(check.foto_hallazgo_2){
-                        check.foto_hallazgo_2 = saveBase64File(check.foto_hallazgo_2, 'foto_hallazgo_2', intercambioCreado.id_intercambios_entrada, sucesivo);
+                        check.foto_hallazgo_2 = saveBase64File(check.foto_hallazgo_2, 'foto_hallazgo_2', intercambioCreado.id_intercambios_salida, sucesivo);
                         sucesivo++;
                     }
-    
                 });
     
                 await HallazgosIntercambios.bulkCreate(checklist, { transaction: t } );
             }
 
             const unidadEnCaseta = await Pickandup.findOne({
-                attributes: ['estatus', 'fk_entrada', 'fk_intercambios_entrada', 'fk_omision_intercambios_entrada'],
+                attributes: ['estatus', 'fk_salida', 'fk_intercambios_salida', 'fk_omision_intercambios_salida'],
+                include: [
+                    {
+                        model: Salida,
+                        attributes: ['estatus'],
+                    }
+                ],
                 where: {
                     idpickandup: idpickandup
                 }
             });
             
-            if(!unidadEnCaseta.fk_entrada) {
-                estatus = 'en_caseta_entrada'
+            let estatus;
+
+            const dataUnidadEnCaseta = JSON.parse(JSON.stringify(unidadEnCaseta));
+            
+            if(dataUnidadEnCaseta?.fk_salida) {
+                estatus = dataUnidadEnCaseta?.Salida?.estatus;
             } else {
-                estatus = 'entrada'
+                estatus = 'en_caseta_salida'
             }
             
             await Pickandup.update(
                 {
-                    fk_intercambios_entrada: intercambioCreado.id_intercambios_entrada,
+                    fk_intercambios_salida: intercambioCreado.id_intercambios_salida,
                     estatus: estatus,
                     placas_tracto: placas_tracto,
                     rem_1: rem_1,
@@ -212,7 +222,7 @@ module.exports = app => {
 
             await t.commit();
 
-            io.emit('CASETA_ENTRADA_ACTUALIZADA');
+            io.emit('CASETA_SALIDA_ACTUALIZADA');
             io.emit('INTERCAMBIO_CREADO');
             return res.status(200).json({
                 OK: true,
@@ -230,7 +240,7 @@ module.exports = app => {
         }
     }
 
-    app.obtenerDetallesIntercambiosEntrada = async (req, res) => {
+    app.obtenerDetallesIntercambiosSalida = async (req, res) => {
 
         // let t;
 
@@ -253,7 +263,7 @@ module.exports = app => {
                     ],
                     include: [
                         {
-                            model: IntercambiosEntrada,
+                            model: IntercambiosSalida,
                             include: [
                                 {
                                     model: HallazgosIntercambios,
