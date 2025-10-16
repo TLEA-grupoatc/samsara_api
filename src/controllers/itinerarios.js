@@ -5376,8 +5376,8 @@ module.exports = app => {
                                     return {
                                         provider: 'Mapbox',
                                         mode: 'driving-traffic',
-                                        distance_km: parseFloat(distance_km),
-                                        duration_sec: parseFloat(duration_hr)
+                                        distance_km: distance_km,
+                                        duration_sec: duration_hr
                                     };
                                     } else {
                                     console.warn("No se encontró ruta.");
@@ -5487,8 +5487,8 @@ module.exports = app => {
                                     return {
                                         provider: 'Mapbox',
                                         mode: 'driving-traffic',
-                                        distance_km: parseFloat(distance_km),
-                                        duration_sec: parseFloat(duration_hr)
+                                        distance_km: distance_km,
+                                        duration_sec: duration_hr
                                     };
                                     } else {
                                     console.warn("No se encontró ruta.");
