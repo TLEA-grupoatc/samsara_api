@@ -97,14 +97,11 @@ module.exports = app => {
             let unidadesOtros = [];
 
             unidades.forEach((unidad) => {
-                if(unidad?.Entrada?.motivo_ingreso.includes('Mantenimiento')){
+                const motivo = unidad?.Entrada?.motivo_ingreso ?? '';
+                if (motivo.includes('Mantenimiento')) {
                     unidadesMantenimiento.push(unidad);
-                    return;
-                }
-
-                if(!unidad?.Entrada?.motivo_ingreso?.includes('Mantenimiento')){
+                } else {
                     unidadesOtros.push(unidad);
-                    return;
                 }
             });
 
@@ -115,7 +112,7 @@ module.exports = app => {
             });
             
         } catch (error) {
-            console.error('Error en Programar Arribo:', error);
+            console.error('Error en obtener unidades con ingreso:', error);
             return res.status(500).json({ 
                 OK: false,
                 msg: error,
