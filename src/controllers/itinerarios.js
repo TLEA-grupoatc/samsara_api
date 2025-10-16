@@ -5196,8 +5196,8 @@ module.exports = app => {
                                     return {
                                         provider: 'Mapbox',
                                         mode: 'driving-traffic',
-                                        distance_km: parseFloat(distance_km),
-                                        duration_sec: parseFloat(duration_hr)
+                                        distance_km: distance_km,
+                                        duration_sec: duration_hr
                                     };
                                     } else {
                                     console.warn("No se encontró ruta.");
@@ -5228,7 +5228,7 @@ module.exports = app => {
 
 
                                 const travel = await getRoute({
-                                    lat1: ubi.latitud ,
+                                    lat1: ubi.latitud,
                                     lon1: ubi.longitud,
                                     lat2: Number(existe[0].destino_latitud) ,
                                     lon2: Number(existe[0].destino_longitud),
@@ -5321,7 +5321,7 @@ module.exports = app => {
                                     geocerca: ubi.geocerca,
                                     combustible: ubi.fuelpercent,
                                     km: kmrestantes,
-                                    tiempo: Math.round(travel.duration_sec / 60),
+                                    tiempo: travel.duration_sec,
                                     velocidad: ubi.km,
                                     estado: restarcombustible < -2 ? 'En Movimiento' : restarcombustible > -1 ? 'Detenido' : 'Sin Cambios',
                                     odometer: ubi.odometer,
@@ -5424,7 +5424,7 @@ module.exports = app => {
                                 ruta_destino_os: rr.ruta_destino_os.trim(),
                                 ruta_origen_os: rr.ruta_origen_os.trim(),
                                 fecha_carga: rr.fecha_carga,
-                                tiempo: Math.round(travel.duration_sec / 60),
+                                tiempo: travel.duration_sec,
                                 km: travel.distance_km,
                                 fecha: rr.fecha_orden,
                                 fecha_creacion: moment(today).format('YYYY-MM-DD'),
@@ -5520,7 +5520,7 @@ module.exports = app => {
                                         geocerca: ubi.geocerca,
                                         combustible: ubi.fuelpercent,
                                         km: kmrestantes,
-                                        tiempo: Math.round(travel.duration_sec / 60),
+                                        tiempo: travel.duration_sec,
                                         velocidad: ubi.km,
                                         estado: ubi.estadounidad,
                                         odometer: ubi.odometer,
