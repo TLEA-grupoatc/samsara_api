@@ -223,7 +223,7 @@ module.exports = app => {
         try {
             // t = await Sequelize.transaction();
             const unidadEnCaseta = await Pickandup.findAll({
-                attributes: ['idpickandup', 'unidad', 'operador', 'estatus', 'fk_entrada', 'fk_intercambios_entrada', 'fk_omision_intercambios_entrada'],
+                attributes: ['idpickandup', ['fk_agenda', 'id_agenda'], 'unidad', 'operador', 'estatus', 'fk_entrada', 'fk_intercambios_entrada', 'fk_omision_intercambios_entrada'],
                 where: {
                     base: base,
                     estatus: 'en_caseta_entrada'

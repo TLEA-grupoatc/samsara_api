@@ -82,7 +82,7 @@ module.exports = app => {
 
     app.post('/crearDopingOperador', verificarToken, Fo.crearDopingOperador);
 
-    app.get('/obtenerDanosUnidadesOpe', verificarToken, Fo.obtenerDanosUnidadesOpe);
+    app.get('/obtenerDanosUnidadesOpe', Fo.obtenerDanosUnidadesOpe);
 
     app.post('/crearDanoUnidadOperador', verificarToken, Fo.crearDanoUnidadOperador);
     
