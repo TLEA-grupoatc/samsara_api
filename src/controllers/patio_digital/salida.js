@@ -224,7 +224,7 @@ module.exports = app => {
 
         try {
             const unidadEnCaseta = await Pickandup.findAll({
-                attributes: ['idpickandup', 'unidad', 'operador', 'estatus', 'fk_salida', 'fk_intercambios_salida', 'fk_omision_intercambios_salida'],
+                attributes: ['idpickandup', 'unidad', 'operador_salida', 'estatus', 'fk_salida', 'fk_intercambios_salida', 'fk_omision_intercambios_salida'],
                 where: {
                     base: base,
                     estatus: 'en_caseta_salida'
@@ -537,12 +537,15 @@ module.exports = app => {
 
     app.confirmarUnidadEnCasetaSalida = async (req, res) => {
         
-        const idpickandup = req.body.idpickandup;
+        const { idpickandup, operador_salida} = req.body;
 
         try {
 
             const unidadEnCaseta = await Pickandup.update(
-                { estatus: 'en_caseta_salida' },
+                {
+                    estatus: 'en_caseta_salida',
+                    operador_salida: operador_salida
+                },
                 {
                     where: {idpickandup: idpickandup }
                 }

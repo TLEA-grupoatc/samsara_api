@@ -273,7 +273,7 @@ module.exports = app => {
                 case 'intercambios_salida':
                     fk = 'fk_omision_intercambios_salida';
                     const unidadEnCasetaSalida = await Pickandup.findOne({
-                        attributes: ['estatus', 'fk_salida', 'fk_intercambios_salida'],
+                        attributes: ['estatus', 'fk_salida'],
                         include: [
                             {
                                 model: Salida,
