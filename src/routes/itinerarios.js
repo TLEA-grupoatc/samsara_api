@@ -11,6 +11,8 @@ module.exports = app => {
     app.get('/getInnerItinerariosXF', Iti.getInnerItinerariosXF);
 
     app.get('/itinerarioP', Iti.itinerarioP);
+    
+    app.get('/reporteInmovilizadoresPruebas', Iti.reporteInmovilizadoresPruebas);
 
     app.get('/obtenerRecorrido/:idunidad/:start/:end', Iti.obtenerRecorrido);
     

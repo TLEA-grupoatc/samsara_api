@@ -33,6 +33,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         }, 
+        horasgeocerca: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         combustible: {
             type: DataType.INTEGER,
             allowNull: true
