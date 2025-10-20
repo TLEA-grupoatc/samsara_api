@@ -457,6 +457,30 @@ module.exports = app => {
         });
     }
 
+    
+    app.obtenerSolicitudesDeGastosDepositados = (req, res) => {  
+        var today = new Date();
+        const hoy = moment(today).format('YYYY-MM-DD');
+        
+        gasto.findAll({
+            where: {
+                // fecha_creacion: hoy,
+                estatus: req.params.estatus
+            },
+            order: [['fecha_solicitud', 'DESC']],
+            limit: 1500
+        }).then(result => {
+            res.json({
+                OK: true,
+                Gastos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
     app.obtenerSolicitudesDeGastosXEstatusPorAprobar = (req, res) => {  
