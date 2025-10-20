@@ -468,7 +468,7 @@ module.exports = app => {
                 estatus: req.params.estatus
             },
             order: [['fecha_solicitud', 'DESC']],
-            limit: 1500
+            limit: 8000
         }).then(result => {
             res.json({
                 OK: true,

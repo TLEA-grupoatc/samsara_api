@@ -3,16 +3,21 @@ const moment = require('moment');
 module.exports = app => {
     const gasto = app.database.models.SolicitudGastos;
     const origendestino = app.database.models.OrigenesDestinosGastos;
+    const Sequelize = require('sequelize');
+    const { literal } = require('sequelize');
+    const Op = Sequelize.Op;
 
     app.getSolicitudesGastos = () => {
         var today = new Date();
         const hoy = moment(today).format('YYYY-MM-DD');
+
         
         gasto.findAll({
-            // where: {
-            //     fecha_creacion: hoy
-            // },
-            limit: 8000,
+            where: {
+                estatus: {
+                    [Op.ne]: ['Depositado']
+                },
+            },
             order: [['fecha_solicitud', 'DESC']]
         }).then(result => {
             app.io.emit('SHOW_GASTOS', {Gastos: result});
