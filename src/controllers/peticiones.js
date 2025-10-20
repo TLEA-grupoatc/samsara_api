@@ -2169,6 +2169,16 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+
     app.obtenerSalidasEntradasGeocercas = (req, res) => {
         // Buscar todas las entradas/salidas de geocercas desde la fecha indicada
         entradaSalidaGeocerca.findAll({

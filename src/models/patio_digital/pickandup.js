@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         operador_salida: {
             type: DataTypes.STRING(100),
-            allowNull: false
+            allowNull: true
         },
         autorizacion_salida_con_omision: {
             type: DataTypes.BOOLEAN,
