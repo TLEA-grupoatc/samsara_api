@@ -12,6 +12,7 @@ module.exports = app => {
             // where: {
             //     fecha_creacion: hoy
             // },
+            limit: 8000,
             order: [['fecha_solicitud', 'DESC']]
         }).then(result => {
             app.io.emit('SHOW_GASTOS', {Gastos: result});
