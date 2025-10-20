@@ -5978,55 +5978,110 @@ module.exports = app => {
 
         let allResults = [];
 
-        const pstartDate = moment().subtract(1, 'days').format('YYYY-MM-DD');
+        const pstartDate = moment().subtract(5, 'days').format('YYYY-MM-DD');
         const pendDate = moment().format('YYYY-MM-DD');
-        const startDate = pendDate.toString() + 'T00:00:00Z';
+        const startDate = pstartDate.toString() + 'T00:00:00Z';
         const endDate = pendDate.toString() + 'T23:59:59Z';
 
         var vueltas = 0;
 
-        for(let i = 0; i < listatractos.length; i += 1) {
-            vueltas += 1;
-            const batch = listatractos.slice(i, i + 1);
+        // for(let i = 0; i < listatractos.length; i += 20) {
+        //     vueltas += 1;
+        //     const batch = listatractos.slice(i, i + 10);
+        //     try {
+        //         console.log(batch);
 
-            try {
-                console.log(batch);
+        //         const params = {
+        //             vehicleIds: batch,
+        //             startTime: startDate,
+        //             endTime: endDate
+        //         };
 
-                const params = {
-                    vehicleIds: batch,
-                    startTime: startDate,
-                    endTime: endDate
-                };
+        //         const response = await Samsara.getEngineImmobilizerStates(params);
 
-                const response = await Samsara.getEngineImmobilizerStates(params);
+        //         let grouped = {};
+        //         if(response.data && Array.isArray(response.data.data)) {
+        //             response.data.data.forEach(item => {
+        //                 const id = item.vehicleId;
+        //                 const fecha = new Date(item.happenedAtTime);
+        //                 if(!grouped[id] || new Date(grouped[id].happenedAtTime) < fecha) {
+        //                     grouped[id] = item;
+        //                 }
+        //             });
+        //         }
 
-                let grouped = {};
-                if(response.data && Array.isArray(response.data.data)) {
-                    response.data.data.forEach(item => {
-                        const id = item.vehicleId;
-                        const fecha = new Date(item.happenedAtTime);
-                        if(!grouped[id] || new Date(grouped[id].happenedAtTime) < fecha) {
-                            grouped[id] = item;
-                        }
-                    });
-                }
+        //         allResults.push(...Object.values(grouped));
+        //     }
+        //     catch (error) {
+        //         console.error(`Error con tractos ${batch.join(',')}:`, error);
+        //     }
+        //     if(vueltas % 5 === 0) {
+        //         await new Promise(resolve => setTimeout(resolve, 1000));
+        //     }
+        // }
 
-                allResults.push(...Object.values(grouped));
-            }
-            catch (error) {
-                console.error(`Error con tractos ${batch.join(',')}:`, error);
-            }
 
-            if(vueltas % 5 === 0) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
+
+
+
+
+
+
+
+
+
+for (let i = 0; i < listatractos.length; i += 100) {
+  vueltas += 1;
+
+  // 1) que el tamaño del slice coincida con el "step"
+  const batch = listatractos.slice(i, i + 100);
+
+  try {
+    console.log('Batch', vueltas, batch);
+
+    const params = {
+      vehicleIds: batch.join(','),               // confirma si el SDK requiere array o string
+      startTime: new Date(startDate).toISOString(), // si ya vienen en ISO, omite
+      endTime: new Date(endDate).toISOString(),
+    };
+
+    const response = await Samsara.getEngineImmobilizerStates(params);
+
+    // 2) agrupar por vehículo con el registro más reciente
+    const grouped = new Map(); // vehicleId -> item más reciente
+
+    const rows = response?.data?.data;
+    if (Array.isArray(rows)) {
+      for (const item of rows) {
+        const id = item.vehicleId;
+        const ts = Date.parse(item.happenedAtTime); // NaN si no es válida
+        if (!Number.isFinite(ts)) continue;
+
+        const prev = grouped.get(id);
+        if (!prev || Date.parse(prev.happenedAtTime) < ts) {
+          grouped.set(id, item);
         }
+      }
+    }
+
+    allResults.push(...grouped.values());
+  } catch (error) {
+    console.error(`Error con tractos ${batch.join(',')}:`, error);
+  }
+
+  // Pausa cada 5 lotes para no golpear rate limits
+  if (vueltas % 5 === 0) {
+    await new Promise(r => setTimeout(r, 1000));
+  }
+}
+
+// al final tienes en allResults el último estado por vehículo de cada batch
 
 
         res.json({
             OK: true,
-            Resultados: allResults,
-            Total: allResults.length
+            Total: allResults.length,
+            Resultados: allResults
         });
     }
 
