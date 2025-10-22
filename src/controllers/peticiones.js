@@ -1200,7 +1200,7 @@ module.exports = app => {
                     [reporte.sequelize.fn('COUNT', reporte.sequelize.col('km')), 'min'],
                     [reporte.sequelize.fn('MAX', reporte.sequelize.col('km')), 'velocidad_maxima'],
                     [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 8 AND 114 THEN 1 ELSE 0 END")), 'dentro'],
-                    [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 115 AND 250 THEN 1 ELSE 0 END")), 'fuera']
+                    [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 115 AND 250 THEN 1 ELSE 0 END")), 'fuera'],
                     [Sequelize.literal(`
                         JSON_ARRAYAGG(
                             JSON_OBJECT(
