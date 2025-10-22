@@ -44,6 +44,8 @@ jspm_packages/
 images/
 documentos/
 
+sessions/
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 

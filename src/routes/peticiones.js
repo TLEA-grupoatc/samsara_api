@@ -23,6 +23,8 @@ module.exports = app => {
     app.get('/obtenerEventos', verificarToken, Peticion.obtenerEventos);
 
 
+    app.get('/obtenerReporteConDetalle/:fechainicio/:fechafin', Peticion.obtenerReporteConDetalle);
+
     app.get('/obtenerReporte/:fechainicio/:fechafin', Peticion.obtenerReporte);
 
     app.get('/obtenerReporteJson/:fechainicio/:fechafin', Peticion.obtenerReporteJson);

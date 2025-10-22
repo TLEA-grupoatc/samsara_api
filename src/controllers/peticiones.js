@@ -1185,6 +1185,63 @@ module.exports = app => {
         });
     }
 
+
+
+
+
+
+    app.obtenerReporteConDetalle = async (req, res) => {
+        try {
+            const { fechainicio, fechafin } = req.params;
+
+            const result = await reporte.findAll({
+                attributes: [
+                    'unidad',
+                    [Sequelize.fn('MIN', Sequelize.col('km')), 'km_minima'],
+                    [Sequelize.fn('MAX', Sequelize.col('km')), 'velocidad_maxima'],
+                    [Sequelize.fn('SUM',Sequelize.literal('CASE WHEN km BETWEEN 8 AND 114 THEN 1 ELSE 0 END')), 'dentro'],
+                    [Sequelize.fn('SUM',Sequelize.literal('CASE WHEN km BETWEEN 115 AND 250 THEN 1 ELSE 0 END')), 'fuera'],
+                    [Sequelize.literal(`
+                        JSON_ARRAYAGG(
+                            JSON_OBJECT(
+                                'unidad', unidad,
+                                'km', km,
+                                'fechahorakm', DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s')
+                            )
+                        )
+                    `),'detalle']
+                ],
+                where: {
+                    fechahorakm: { [Op.between]: [fechainicio, fechafin] },
+                    km: { [Op.gte]: 8 }
+                },
+                group: ['unidad'],
+                order: [['unidad', 'ASC']]
+            });
+
+            res.json({
+                OK: true,
+                fechas: `${fechainicio} ${fechafin}`,
+                Total: result.length,
+                Reporte: result
+            });
+        } catch (error) {
+            res.status(412).json({ OK: false, msg: error.message });
+        }
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.obtenerReporte = async (req, res) => {
         reporte.findAll({
             attributes: [
@@ -1295,6 +1352,9 @@ module.exports = app => {
             });
         });
     }
+
+
+
 
     app.obtenerEventos = (req, res) => {
         var fecha = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss');
