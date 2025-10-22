@@ -107,10 +107,10 @@ module.exports = app => {
     
     app.get('/resumenCantidadActividadeOperador/:year/:month', Fo.resumenCantidadActividadeOperador);
     
-    app.get('/resumenActividadesOperador/:columna/:dato', Fo.resumenActividadesOperador);
+    app.get('/resumenActividadesOperador', Fo.resumenActividadesOperador);
 
 
-    app.get('/obtenerRegistrosOperadores', Fo.obtenerRegistrosOperadores);
+    app.get('/obtenerRegistrosOperadores/:columna/:dato', Fo.obtenerRegistrosOperadores);
     
     
     
