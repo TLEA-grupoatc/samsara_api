@@ -112,7 +112,7 @@ module.exports = app => {
             });
             
         } catch (error) {
-            console.error('Error en obtener unidades con ingreso:', error);
+            console.error('Error en Programar Arribo:', error);
             return res.status(500).json({ 
                 OK: false,
                 msg: error,
@@ -138,17 +138,33 @@ module.exports = app => {
                     IE.fk_insp_ext_2,
                     IE.fk_insp_fosa,
                     IE.fk_insp_reporte_operador,
+                    IE.fk_insp_expres,
                     IE.creado_el,
                     IE.actualizado_el,
                     E.fecha_entrada,
-                    PAU.rem_1
+                    PAU.rem_1,
+                    prev_IE.ultima_inspeccion
                 FROM 
                     pd_pickandup PAU
                     LEFT JOIN pd_inspeccion_entrada IE ON PAU.fk_inspeccion_entrada = IE.id_inspeccion_entrada
                     LEFT JOIN pd_entrada E ON PAU.fk_entrada = E.id_entrada
+                    LEFT JOIN (
+                        SELECT 
+                            PAU2.unidad,
+                            IE2.creado_el,
+                            LAG(IE2.creado_el) OVER (
+                                PARTITION BY PAU2.unidad 
+                                ORDER BY IE2.creado_el ASC
+                            ) AS ultima_inspeccion
+                        FROM 
+                            pd_pickandup PAU2
+                            LEFT JOIN pd_inspeccion_entrada IE2 ON PAU2.fk_inspeccion_entrada = IE2.id_inspeccion_entrada
+                        ORDER BY
+                            IE2.creado_el DESC
+                        LIMIT 1
+                    ) AS prev_IE ON prev_IE.unidad = PAU.unidad
                 WHERE
-                    PAU.estatus = 'en_fosa_inspeccion_entrada'
-                    AND PAU.base = :base
+                    PAU.estatus = 'en_fosa_inspeccion_entrada' AND PAU.base = :base;
                 `,
                 {
                     replacements: { base },
@@ -204,6 +220,7 @@ module.exports = app => {
                         're1_ot_correctivo',
                         'dl_ot_correctivo',
                         're2_ot_correctivo',
+                        'creado_el'
                     ],
                     include: [
                         {
@@ -337,15 +354,67 @@ module.exports = app => {
                                 }
                             ]
                         },
+                        {
+                            model: InspeccionesInspEntrada,
+                            as: 'InspExpres',
+                            attributes: [
+                                'checklist',
+                                'tipo_checklist',
+                                'fecha_hora_inicio',
+                                'fecha_hora_fin',
+                                'fk_usuario_cre'
+                            ],
+                            include: [
+                                {
+                                    model: Usuarios,
+                                    attributes: ['nombre_empleado']
+                                },
+                                {
+                                    model: HallazgosInspEntrada,
+                                    include: [
+                                        {
+                                            model: CatalogoFamilia,
+                                            attributes: ['id_familia', 'nombre_familia']
+                                        },
+                                        {
+                                            model: CatalogoComponente,
+                                            attributes: ['id_componente', 'nombre_componente']
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
                     ],
-                    // where: { id_inspeccion_entrada: id_inspeccion_entrada }
                 }
             );
+
+            const unidad = detalles?.PickAndUp?.unidad;
+            const creadoEl = detalles?.creado_el;
+
+            let previo = null;
+            if (unidad && creadoEl) {
+                previo = await InspeccionEntrada.findOne({
+                    attributes: ['id_inspeccion_entrada', 'creado_el'],
+                    include: [
+                    {
+                        model: Pickandup,
+                        attributes: [],
+                        where: { unidad }
+                    }
+                    ],
+                    where: {
+                        creado_el: { [Op.lt]: creadoEl }
+                    },
+                    order: [['creado_el', 'DESC']],
+                    limit: 1
+                });
+            }
 
             return res.status(200).json({
                 OK: true,
                 msg: 'Obtenido unidades inspeccionadas correctamente',
-                result: detalles
+                result: detalles,
+                previo: previo,
             });
 
         } catch (error) {
@@ -357,7 +426,7 @@ module.exports = app => {
         }
     }
 
-     app.obtenerUnidadesinspeccionadas = async (req, res) => {
+    app.obtenerUnidadesinspeccionadas = async (req, res) => {
 
         try {
 
@@ -370,20 +439,46 @@ module.exports = app => {
                     PAU.idpickandup,
                     PAU.unidad,
                     PAU.rem_1,
-                    PAU.rem_2,
                     PAU.unidad_negocio,
                     PAU.division,
                     PAU.operador,
                     ENT.fecha_entrada,
-                    INSP_ENT.creado_el AS fecha_inspeccion
+                    INSP_ENT.creado_el AS fecha_hora_inicio_inspeccion,
+                    NULLIF(
+                        GREATEST(
+                            COALESCE(INSP_EXT1.fecha_hora_fin, '1970-01-01 00:00:00'),
+                            COALESCE(INSP_EXT2.fecha_hora_fin, '1970-01-01 00:00:00'),
+                            COALESCE(INSP_FOSA.fecha_hora_fin, '1970-01-01 00:00:00'),
+                            COALESCE(INSP_REPOP.fecha_hora_fin, '1970-01-01 00:00:00'),
+                            COALESCE(INSP_EXP.fecha_hora_fin, '1970-01-01 00:00:00')
+                        ),
+                        '1970-01-01 00:00:00'
+                    ) AS fecha_hora_fin_inspeccion,
+                    CASE 
+                        WHEN INSP_EXT1.fecha_hora_fin IS NOT NULL
+                            AND INSP_EXT2.fecha_hora_fin IS NOT NULL
+                            AND INSP_FOSA.fecha_hora_fin IS NOT NULL
+                            AND INSP_REPOP.fecha_hora_fin IS NOT NULL
+                            THEN 1
+                        WHEN INSP_REPOP.fecha_hora_fin IS NOT NULL
+                            AND INSP_EXP.fecha_hora_fin IS NOT NULL
+                            THEN 1
+                        ELSE 0
+                    END AS inspeccion_finalizada
                 FROM
                     pd_inspeccion_entrada INSP_ENT
                     LEFT JOIN pd_pickandup PAU ON INSP_ENT.id_inspeccion_entrada = PAU.fk_inspeccion_entrada
                     LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_EXT1 ON INSP_ENT.fk_insp_ext_1 = INSP_EXT1.id_checklist_insp_ent
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_EXT2 ON INSP_ENT.fk_insp_ext_2 = INSP_EXT2.id_checklist_insp_ent
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_FOSA ON INSP_ENT.fk_insp_fosa = INSP_FOSA.id_checklist_insp_ent
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_REPOP ON INSP_ENT.fk_insp_reporte_operador = INSP_REPOP.id_checklist_insp_ent
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_EXP ON INSP_ENT.fk_insp_expres = INSP_EXP.id_checklist_insp_ent
                 WHERE
                     PAU.base = :base
                 ORDER BY
-                    INSP_ENT.id_inspeccion_entrada DESC;
+                    INSP_ENT.id_inspeccion_entrada DESC
+                LIMIT 25;
                 `,
                 {
                     replacements: { base },
@@ -391,6 +486,80 @@ module.exports = app => {
                 }
             );
 
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Obtenido unidades inspeccionadas correctamente',
+                result: inspecciones
+            });
+
+        } catch (error) {
+            console.error('Error al obtener detalles unidad inspeccionada:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.obtenerBusquedaInspeccionEntrada = async (req, res) => {
+
+        try {
+
+            const { searchTerm } = req.params;
+
+            const inspecciones = await Sequelize.query(
+                `
+                SELECT
+                    INSP_ENT.id_inspeccion_entrada,
+                    PAU.idpickandup,
+                    PAU.unidad,
+                    PAU.rem_1,
+                    PAU.unidad_negocio,
+                    PAU.division,
+                    PAU.operador,
+                    ENT.fecha_entrada,
+                    INSP_ENT.creado_el AS fecha_hora_inicio_inspeccion,
+                    NULLIF(
+                        GREATEST(
+                            COALESCE(INSP_EXT1.fecha_hora_fin, '1970-01-01 00:00:00'),
+                            COALESCE(INSP_EXT2.fecha_hora_fin, '1970-01-01 00:00:00'),
+                            COALESCE(INSP_FOSA.fecha_hora_fin, '1970-01-01 00:00:00'),
+                            COALESCE(INSP_REPOP.fecha_hora_fin, '1970-01-01 00:00:00'),
+                            COALESCE(INSP_EXP.fecha_hora_fin, '1970-01-01 00:00:00')
+                        ),
+                        '1970-01-01 00:00:00'
+                    ) AS fecha_hora_fin_inspeccion,
+                    CASE 
+                        WHEN INSP_EXT1.fecha_hora_fin IS NOT NULL
+                            AND INSP_EXT2.fecha_hora_fin IS NOT NULL
+                            AND INSP_FOSA.fecha_hora_fin IS NOT NULL
+                            AND INSP_REPOP.fecha_hora_fin IS NOT NULL
+                            THEN 1
+                        WHEN INSP_REPOP.fecha_hora_fin IS NOT NULL
+                            AND INSP_EXP.fecha_hora_fin IS NOT NULL
+                            THEN 1
+                        ELSE 0
+                    END AS inspeccion_finalizada
+                FROM
+                    pd_inspeccion_entrada INSP_ENT
+                    LEFT JOIN pd_pickandup PAU ON INSP_ENT.id_inspeccion_entrada = PAU.fk_inspeccion_entrada
+                    LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_EXT1 ON INSP_ENT.fk_insp_ext_1 = INSP_EXT1.id_checklist_insp_ent
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_EXT2 ON INSP_ENT.fk_insp_ext_2 = INSP_EXT2.id_checklist_insp_ent
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_FOSA ON INSP_ENT.fk_insp_fosa = INSP_FOSA.id_checklist_insp_ent
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_REPOP ON INSP_ENT.fk_insp_reporte_operador = INSP_REPOP.id_checklist_insp_ent
+                    LEFT JOIN pd_inspecciones_insp_entrada INSP_EXP ON INSP_ENT.fk_insp_expres = INSP_EXP.id_checklist_insp_ent
+                WHERE
+                    PAU.unidad LIKE :searchTerm
+                ORDER BY
+                    INSP_ENT.id_inspeccion_entrada DESC;
+                `,
+                {
+                    replacements: { searchTerm: `%${searchTerm}%` },
+                    type: Sequelize.QueryTypes.SELECT
+                }
+            );
 
             return res.status(200).json({
                 OK: true,
@@ -838,6 +1007,10 @@ module.exports = app => {
                 case 'insp_reporte_op':
                     fk = 'fk_insp_reporte_operador'
                     break;
+
+                case 'pd_insp_expres':
+                    fk = 'fk_insp_expres'
+                    break;
             
                 default:
                     break;
@@ -852,20 +1025,37 @@ module.exports = app => {
             )
 
             const unidadInspeccionada = await InspeccionEntrada.findOne({
-                attributes: ['fk_insp_ext_1', 'fk_insp_ext_2', 'fk_insp_fosa', 'fk_insp_reporte_operador'],
+                attributes: ['fk_insp_ext_1', 'fk_insp_ext_2', 'fk_insp_fosa', 'fk_insp_reporte_operador', 'fk_insp_expres'],
                 where: { id_inspeccion_entrada: id_inspeccion_entrada },
                 transaction: t
             });
 
-            if(unidadInspeccionada.fk_insp_ext_1 && unidadInspeccionada.fk_insp_ext_2 && unidadInspeccionada.fk_insp_fosa && unidadInspeccionada.fk_insp_reporte_operador){
-                await Pickandup.update(
-                    {estatus: 'mantenimiento'},
-                    {
-                        where: { fk_inspeccion_entrada: id_inspeccion_entrada },
-                        transaction: t
-                    }
-                );
+            if(unidadInspeccionada.fk_insp_expres){
+
+                if(unidadInspeccionada.fk_insp_expres && unidadInspeccionada.fk_insp_reporte_operador){
+                    await Pickandup.update(
+                        {estatus: 'mantenimiento'},
+                        {
+                            where: { fk_inspeccion_entrada: id_inspeccion_entrada },
+                            transaction: t
+                        }
+                    );
+                }
+                
+            } else {
+
+                if(unidadInspeccionada.fk_insp_ext_1 && unidadInspeccionada.fk_insp_ext_2 && unidadInspeccionada.fk_insp_fosa && unidadInspeccionada.fk_insp_reporte_operador){
+                    await Pickandup.update(
+                        {estatus: 'mantenimiento'},
+                        {
+                            where: { fk_inspeccion_entrada: id_inspeccion_entrada },
+                            transaction: t
+                        }
+                    );
+                }
+
             }
+
 
             await t.commit();
 

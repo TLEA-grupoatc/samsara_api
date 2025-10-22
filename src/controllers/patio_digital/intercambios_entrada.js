@@ -95,6 +95,53 @@ module.exports = app => {
         }
     }
 
+    app.obtenerBusquedaIntercambiosEntrada = async (req, res) => {
+
+        const searchTerm = req.params.searchTerm;
+
+        try {
+            const query = `
+                SELECT
+                    PAU.idpickandup,
+                    PAU.unidad,
+                    PAU.rem_1,
+                    IE.id_intercambios_entrada,
+                    IE.pqs_vencimiento,
+                    IE.pqs_presion,
+                    IE.pqs_seguro,
+                    IE.espuma_vencimiento,
+                    IE.espuma_presion,
+                    IE.espuma_seguro,
+                    IE.fecha_intercambio,
+                    IE.observaciones
+                FROM
+                    pd_intercambios_entrada AS IE
+                    LEFT JOIN pd_pickandup AS PAU ON IE.id_intercambios_entrada = PAU.fk_intercambios_entrada
+                WHERE
+                    PAU.unidad LIKE :searchTerm
+                ORDER BY
+                    IE.id_intercambios_entrada DESC;
+            `;
+
+            const result = await Sequelize.query(query, {
+                replacements: { searchTerm: `%${searchTerm}%` },
+                type: Sequelize.QueryTypes.SELECT
+            });
+
+            res.status(200).json({
+                OK: true,
+                result
+            });
+
+        } catch (error) {
+            console.error('Error al obtener intercambios:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     app.obtenerIntercambiosOmitidosEntrada = async (req, res) => {
 
         const base = req.params.base;
@@ -175,7 +222,6 @@ module.exports = app => {
                         check.foto_hallazgo_2 = saveBase64File(check.foto_hallazgo_2, 'foto_hallazgo_2', intercambioCreado.id_intercambios_entrada, sucesivo);
                         sucesivo++;
                     }
-    
                 });
     
                 await HallazgosIntercambios.bulkCreate(checklist, { transaction: t } );
@@ -250,6 +296,7 @@ module.exports = app => {
                         'placas_rem_1',
                         'rem_2',
                         'placas_rem_2',
+                        'operador'
                     ],
                     include: [
                         {

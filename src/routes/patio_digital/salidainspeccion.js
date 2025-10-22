@@ -7,6 +7,8 @@ module.exports = app => {
     app.get('/salidainspeccion/obtenerunidadenfosasalida/:base', salidaInspeccion.obtenerUnidadEnFosaSalida);
 
     app.get('/salidainspeccion/obtenerunidadespreliberadas/:base', salidaInspeccion.obtenerUnidadesPreliberadas);
+    app.get('/salidainspeccion/obtenerunidadespreliberadas/busqueda/:searchTerm', salidaInspeccion.obtenerBusquedaUnidadesPreliberadas);
+
     app.get('/salidainspeccion/obtenerunidadesliberadas/:base', salidaInspeccion.obtenerUnidadesLiberadas);
     app.get('/salidainspeccion/obtenerdetalle/:id_inspeccion_entrada', salidaInspeccion.obtenerDetallesInspeccionSalida);
 

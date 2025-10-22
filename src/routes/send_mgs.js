@@ -5,4 +5,7 @@ module.exports = app => {
     app.post('/send_message', Send.send_message);
 
     app.post('/sendConvoy', Send.sendConvoy);
+
+
+    app.post('/enviarWhats', Send.enviarWhats);
 }

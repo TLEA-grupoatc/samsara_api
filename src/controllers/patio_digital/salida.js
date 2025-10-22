@@ -143,7 +143,7 @@ module.exports = app => {
                     PAU.idpickandup,
                     S.id_salida,
                     PAU.base,
-                    S.operador,
+                    PAU.operador_salida,
                     PAU.autorizacion_salida_con_omision,
                     PAU.division,
                     PAU.unidad_negocio,
@@ -163,7 +163,7 @@ module.exports = app => {
                     S.estatus ASC,
                     S.fecha_salida DESC,
                     S.id_salida ASC
-                LIMIT 50
+                LIMIT 50;
             `;
 
             const result = await sequelize.query(query, {
@@ -192,7 +192,7 @@ module.exports = app => {
                     'idpickandup',
                     'base',
                     'unidad',
-                    'operador',
+                    'operador_salida',
                     'unidad_negocio',
                     'division',
                 ],

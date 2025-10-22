@@ -10,6 +10,11 @@ const http = require('http').createServer(app);
 const cron = require('node-cron');
 const ngrok = require("@ngrok/ngrok");
 const dotenv = require('dotenv').config();
+
+const path = require('path');
+const qrcode = require('qrcode-terminal');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+
 const socketIO = require('socket.io')(http, {
   cors: {
     origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "https://apisamsara.tlea.online"],
@@ -44,6 +49,7 @@ app.io = socketIO;
 app.use(cors());
 
 consign({cwd: 'src'}).include('libs/config.js').then('./database.js').then('middlewares').then('controllers').then('routes').then('sockets').into(app);
+const fs = require('fs');
 
 const alerta = app.database.models.Alertas;
 const geogaso = app.database.models.GeoGaso;
@@ -52,9 +58,16 @@ const itine = app.database.models.Itinerarios;
 const itineDet = app.database.models.ItinerarioDetalle;
 const entradaSalidaGeocerca = app.database.models.EntradaSalidaGeocerca;
 
+const SESSIONS_DIR = path.resolve(__dirname, 'sessions');
+if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+
+// === Cliente WhatsApp (sesión persistente con LocalAuth) ===
+let client;
+let isReady = false;
+
 const axios = require('axios');
 const Samsara = require("@api/samsara-dev-rel");
-const fs = require('fs');
+
 Samsara.auth(process.env.KEYSAM);
 
 cron.schedule('* * * * *', () => {   
@@ -600,10 +613,115 @@ app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
 
 
 
+app.post('/enviarWhatsuno', async (req, res) => {
+  const { numero, mensaje } = req.body || {};
+  if (!numero || !mensaje) {
+    return res.status(400).json({ error: 'Faltan parámetros: numero y mensaje' });
+  }
+
+  try {
+    await initWhatsClient();
+
+    // Espera a que el cliente esté listo (por si viene justo después de escanear el QR)
+    if (!isReady) {
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Timeout esperando WhatsApp ready')), 30000);
+        client.once('ready', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      });
+    }
+
+    const chatId = normalizeNumber(numero);
+    const result = await client.sendMessage(chatId, String(mensaje));
+
+    return res.json({
+      ok: true,
+      to: chatId,
+      messageId: result.id?._serialized || result.id || null,
+      Mensaje: 'Enviado con Exito!'
+    });
+  } catch (err) {
+    console.error('❌ Error /enviarWhats:', err);
+    return res.status(500).json({ ok: false, error: err.message || String(err) });
+  }
+});
 
 
 
 
+
+
+function buildPuppeteerArgs() {
+  const args = [];
+  if (process.env.DISABLE_SANDBOX) {
+    args.push('--no-sandbox', '--disable-setuid-sandbox');
+  }
+  args.push('--disable-dev-shm-usage', '--disable-gpu');
+  return args;
+}
+
+async function initWhatsClient() {
+  if (client) return client;
+
+  client = new Client({
+    authStrategy: new LocalAuth({
+      dataPath: SESSIONS_DIR,
+      clientId: 'default' // puedes cambiar para múltiples sesiones
+    }),
+    puppeteer: {
+      headless: process.env.HEADLESS,
+      args: buildPuppeteerArgs()
+    }
+  });
+
+  client.on('qr', (qr) => {
+    console.log('📲 Escanea este QR para vincular WhatsApp (aparece 1 sola vez):');
+    qrcode.generate(qr, { small: true });
+  });
+
+  client.on('ready', () => {
+    isReady = true;
+    console.log('✅ WhatsApp listo para enviar mensajes');
+  });
+
+  client.on('authenticated', () => {
+    console.log('🔐 Autenticado');
+  });
+
+  client.on('auth_failure', (m) => {
+    isReady = false;
+    console.error('❌ Falló autenticación:', m);
+  });
+
+  client.on('disconnected', async (reason) => {
+    isReady = false;
+    console.error('⚠️ Desconectado:', reason);
+    try {
+      await client.destroy();
+    } catch (_) {}
+    client = null;
+    setTimeout(() => {
+      console.log('🔁 Re-inicializando cliente...');
+      initWhatsClient();
+    }, 3000);
+  });
+
+  await client.initialize();
+  return client;
+}
+
+
+function normalizeNumber(raw) {
+  // Deja solo dígitos
+  let num = String(raw).replace(/\D/g, '');
+  // Si no trae prefijo país, se lo agregamos
+  if (!num.startsWith(process.env.DEFAULT_COUNTRY_PREFIX)) {
+    num = process.env.DEFAULT_COUNTRY_PREFIX + num;
+  }
+  return `${num}@c.us`;
+}
 
 
 
@@ -700,7 +818,8 @@ async function ultimaubi(iduni) {
   }
 }
 
-http.listen(app.get('port'), () => {
+http.listen(app.get('port'), async () => {
+   await initWhatsClient();
   console.log(`Server on port ${app.get('port')}`.random);
 });
 

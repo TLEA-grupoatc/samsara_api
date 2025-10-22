@@ -282,6 +282,55 @@ module.exports = app => {
         }
     }
 
+    app.obtenerBusquedaUnidadesPreliberadas = async (req, res) => {
+
+        try {
+
+            const { searchTerm } = req.params;
+
+            const inspecciones = await Sequelize.query(
+                `
+                SELECT
+                    INSP_SAL.id_inspeccion_salida,
+                    PAU.idpickandup,
+                    PAU.unidad,
+                    PAU.rem_1,
+                    PAU.rem_2,
+                    PAU.operador,
+                    PAU.unidad_negocio,
+                    PAU.division,
+                    INSP_ENT.creado_el AS fecha_inspeccion_entrada,
+                    INSP_SAL.fecha_preliberacion
+                FROM
+                    pd_inspeccion_salida INSP_SAL
+                    LEFT JOIN pd_pickandup PAU ON INSP_SAL.id_inspeccion_salida = PAU.fk_inspeccion_salida
+                    LEFT JOIN pd_inspeccion_entrada INSP_ENT ON PAU.fk_inspeccion_entrada = INSP_ENT.id_inspeccion_entrada
+                WHERE
+                    PAU.unidad LIKE :searchTerm
+                    AND INSP_SAL.fecha_preliberacion IS NOT NULL;
+                `,
+                {
+                    replacements: { searchTerm: `%${searchTerm}%` },
+                    type: Sequelize.QueryTypes.SELECT
+                }
+            );
+
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Obtenido unidades inspeccionadas correctamente',
+                result: inspecciones
+            });
+
+        } catch (error) {
+            console.error('Error al obtener detalles unidad inspeccionada:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     app.confirmarIngresoAFosaSalida = async (req, res) => {
         const { idpickandup, id_usuario, base } = req.body;
         let t;

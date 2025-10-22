@@ -96,6 +96,53 @@ module.exports = app => {
         }
     }
 
+    app.obtenerBusquedaIntercambiosSalida = async (req, res) => {
+
+        const searchTerm = req.params.searchTerm;
+
+        try {
+            const query = `
+                SELECT
+                    PAU.idpickandup,
+                    PAU.unidad,
+                    PAU.rem_1,
+                    INSP_S.id_intercambios_salida,
+                    INSP_S.pqs_vencimiento,
+                    INSP_S.pqs_presion,
+                    INSP_S.pqs_seguro,
+                    INSP_S.espuma_vencimiento,
+                    INSP_S.espuma_presion,
+                    INSP_S.espuma_seguro,
+                    INSP_S.fecha_intercambio,
+                    INSP_S.observaciones
+                FROM
+                    pd_intercambios_salida INSP_S
+                    LEFT JOIN pd_pickandup PAU ON INSP_S.id_intercambios_salida = PAU.fk_intercambios_salida
+                WHERE
+                    PAU.unidad LIKE :searchTerm
+                ORDER BY
+                    INSP_S.id_intercambios_salida DESC;
+            `;
+
+            const result = await Sequelize.query(query, {
+                replacements: { searchTerm: `%${searchTerm}%` },
+                type: Sequelize.QueryTypes.SELECT
+            });
+
+            res.status(200).json({
+                OK: true,
+                result
+            });
+
+        } catch (error) {
+            console.error('Error al obtener intercambios:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     app.obtenerIntercambiosOmitidosSalida = async (req, res) => {
 
         const base = req.params.base;
@@ -254,6 +301,7 @@ module.exports = app => {
                 {
                     attributes: [
                         'unidad',
+                        'operador_salida',
                         'division',
                         'unidad_negocio',
                         'rem_1',

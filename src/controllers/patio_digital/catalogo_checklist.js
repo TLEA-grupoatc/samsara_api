@@ -323,6 +323,8 @@ module.exports = app => {
                     CO.id_componente,
                     CO.nombre_componente,
                     FA.id_familia,
+                    CH.posicion,
+                    CH.requiere_posiciones,
                     FA.nombre_familia
                 FROM
                     pd_catalogo_checklist CH
@@ -330,7 +332,9 @@ module.exports = app => {
                     LEFT JOIN pd_catalogo_familia FA ON CO.fk_familia = FA.id_familia
                 WHERE
                     nombre_checklist = :checklist
-                    AND CO.activo = 1;
+                    AND CO.activo = 1
+                ORDER BY
+                    CH.posicion ASC;
                 `,
                 {
                     type: Sequelize.QueryTypes.SELECT,
@@ -432,7 +436,7 @@ module.exports = app => {
 
 
             await t.commit();
-            io.emit('PD_CATALOGO_CHECKLIST')
+            io.emit('PD_CATALOGO_CHECKLIST_ACTUALIZADO')
             return res.status(200).json({
                 OK: true,
                 msg: 'Checklist actualizado correctamente',

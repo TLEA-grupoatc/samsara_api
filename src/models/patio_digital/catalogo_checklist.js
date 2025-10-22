@@ -18,6 +18,9 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING(300),
             allowNull: true,
         },
+        requiere_posiciones: {
+            type: DataType.BOOLEAN,
+        },
         tipo_checklist: {
             type: DataType.INTEGER,
         },
@@ -26,6 +29,9 @@ module.exports = (sequelize, DataType) => {
             allowNull: true,
         },
         activo: {
+            type: DataType.INTEGER,
+        },
+        posicion: {
             type: DataType.INTEGER,
         },
         creado_el: {

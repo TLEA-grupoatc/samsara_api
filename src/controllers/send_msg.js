@@ -108,6 +108,43 @@ module.exports = app => {
   };
 
 
+  app.enviarWhats = async (req, res) => {
+    const { numero, mensaje } = req.body;
+
+    if (!numero || !mensaje) {
+      return res.status(400).json({ error: 'Faltan parámetros: numero y mensaje son requeridos.' });
+    }
+
+    const data = {
+      messaging_product: 'whatsapp',
+      to: numero, // Ejemplo: '528117658634'
+      type: 'text',
+      text: { body: mensaje }
+    };
+
+    try {
+      const response = await axios.post(
+        `https://graph.facebook.com/v22.0/1326759748836677/messages`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.TOKENWP}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Mensaje enviado correctamente',
+        response: response.data
+      });
+    } catch (error) {
+      console.error('Error enviando mensaje:', error.response?.data || error.message);
+      res.status(500).json({ error: 'No se pudo enviar el mensaje' });
+    }
+  };
+
   
   
   return app;

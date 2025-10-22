@@ -7,6 +7,8 @@ module.exports = app => {
     app.get('/arriboinspeccion/obtenerunidadenfosa/:base', arriboinspeccion.obtenerUnidadEnFosa);
 
     app.get('/arriboinspeccion/obtenerunidadesinspeccionadas/:base', arriboinspeccion.obtenerUnidadesinspeccionadas);
+    app.get('/arriboinspeccion/busquedainspecciones/:searchTerm', arriboinspeccion.obtenerBusquedaInspeccionEntrada);
+
     app.get('/arriboinspeccion/obtenerdetalle/:id_inspeccion_entrada', arriboinspeccion.obtenerDetallesInspeccion);
 
     app.post('/arriboinspeccion/confirmaringresofosa', arriboinspeccion.confirmarIngresoAFosa);
