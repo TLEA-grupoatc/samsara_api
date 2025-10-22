@@ -1192,6 +1192,9 @@ module.exports = app => {
 
     app.obtenerReporteConDetalle = async (req, res) => {
         try {
+
+            await reporte.sequelize.query('SET SESSION group_concat_max_len = 1000000;');
+
             const { fechainicio, fechafin } = req.params;
 
             const result = await reporte.findAll({
@@ -1201,21 +1204,44 @@ module.exports = app => {
                     [reporte.sequelize.fn('MAX', reporte.sequelize.col('km')), 'velocidad_maxima'],
                     [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 8 AND 114 THEN 1 ELSE 0 END")), 'dentro'],
                     [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 115 AND 250 THEN 1 ELSE 0 END")), 'fuera'],
-                    [Sequelize.literal(`
-                        JSON_ARRAYAGG(
-                            JSON_ARRAY(
-                                DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s'),
-                                km
-                            )
-                        )
-                    `), 'detalle']
+                    // [Sequelize.literal(`
+                    //     JSON_ARRAYAGG(
+                    //         JSON_ARRAY(
+                    //             DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s'),
+                    //             km
+                    //         )
+                    //     )
+                    // `), 'detalle']
+
+
+[
+  Sequelize.literal(`
+    CONCAT(
+      '[',
+      COALESCE(
+        GROUP_CONCAT(
+          JSON_OBJECT(
+            DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s'), km
+          )
+          ORDER BY fechahorakm ASC
+          SEPARATOR ','
+        ),
+        ''
+      ),
+      ']'
+    )
+  `),
+  'detalle'
+]
+
+
                 ],
                 where: {
                     fechahorakm: { [Op.between]: [fechainicio, fechafin] },
                     km: { [Op.gte]: 8 }
                 },
                 group: ['unidad'],
-                order: [['unidad', 'ASC']]
+                order: [['unidad', 'ASC'], ['fechahorakm', 'ASC']]
             });
 
             res.json({
