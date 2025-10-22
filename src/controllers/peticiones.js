@@ -1241,7 +1241,7 @@ module.exports = app => {
                     km: { [Op.gte]: 8 }
                 },
                 group: ['unidad'],
-                order: [['unidad', 'ASC'], ['fechahorakm', 'ASC']]
+                order: [['unidad', 'ASC']]
             });
 
             res.json({
