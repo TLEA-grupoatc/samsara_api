@@ -656,7 +656,7 @@ app.post('/enviarWhatsuno', async (req, res) => {
 function buildPuppeteerArgs() {
   const args = [];
   if (process.env.DISABLE_SANDBOX) {
-    args.push('--no-sandbox', '--disable-setuid-sandbox');
+    args.push('--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage');
   }
   args.push('--disable-dev-shm-usage', '--disable-gpu');
   return args;
