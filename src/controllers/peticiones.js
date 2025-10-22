@@ -1203,12 +1203,12 @@ module.exports = app => {
                     [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 115 AND 250 THEN 1 ELSE 0 END")), 'fuera'],
                     [Sequelize.literal(`
                         JSON_ARRAYAGG(
-                            JSON_OBJECT(
-                                'fechahorakm', DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s'),
-                                'km', km
+                            JSON_ARRAY(
+                                DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s'),
+                                km
                             )
                         )
-                    `),'detalle']
+                    `), 'detalle']
                 ],
                 where: {
                     fechahorakm: { [Op.between]: [fechainicio, fechafin] },
