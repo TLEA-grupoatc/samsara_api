@@ -56,7 +56,6 @@ module.exports = app => {
         });
     }
 
-
     app.obtenerReporteSamsara = (req, res) => {
         var fecha = moment(new Date()).format('YYYY-MM-DD');
         var paraValidadfecha = moment(new Date()).format('YYYY-MM-DD');
@@ -97,8 +96,6 @@ module.exports = app => {
         });
     }
 
-
-
     function getDatesArray(startDate, endDate) {
         const dates = [];
         let currentDate = new Date(startDate);
@@ -135,15 +132,6 @@ module.exports = app => {
             return 0;
         }
     }
-
-
-
-
-
-
-
-
-
 
     async function getPercent(day, idtracto) {
         try {
@@ -193,7 +181,6 @@ module.exports = app => {
         }
     }
 
-
     app.obtenerGeoGasolineras = (req, res) => {
         geogaso.findAll({
             order: [
@@ -212,6 +199,5 @@ module.exports = app => {
         });
     }
 
-      
     return app;
 }

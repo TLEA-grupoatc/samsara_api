@@ -2710,6 +2710,46 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+    app.obtenerRegistrosOperadores = (req, res) => {
+        var columna = req.params.columna;
+
+        operador.findAll({
+            where: {
+                [columna]: req.params.dato
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Operadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     app.obtenerCronogramaCursos = (req, res) => {
         const year = req.params.year ? parseInt(req.params.year) : moment().year();
         const month = req.params.month ? parseInt(req.params.month) : moment().month() + 1; // 1-based
