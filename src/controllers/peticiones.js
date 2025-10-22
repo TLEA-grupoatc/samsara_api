@@ -1204,9 +1204,8 @@ module.exports = app => {
                     [Sequelize.literal(`
                         JSON_ARRAYAGG(
                             JSON_OBJECT(
-                                'unidad', unidad,
-                                'km', km,
                                 'fechahorakm', DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s')
+                                'km', km
                             )
                         )
                     `),'detalle']
