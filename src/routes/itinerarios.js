@@ -15,6 +15,8 @@ module.exports = app => {
     app.get('/reporteInmovilizadoresPruebas', Iti.reporteInmovilizadoresPruebas);
 
     app.get('/obtenerRecorrido/:idunidad/:start/:end', Iti.obtenerRecorrido);
-    
+
+    app.put('/agregarComentarioItinerarios/:id_itinerarios', Iti.agregarComentarioItinerarios);
+
     app.get('/CalculoDeRuta', Iti.CalculoDeRuta);
 }
