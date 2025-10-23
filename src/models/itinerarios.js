@@ -112,6 +112,14 @@ module.exports = (sequelize, DataType) => {
         fecha_cierre_itinerario: {
             type: DataType.STRING,
             allowNull: true
+        },
+        comentarios: {
+            type: DataType.STRING,
+            allowNull: true
+        },
+        usuario: {
+            type: DataType.STRING,
+            allowNull: true
         }
     },
     {

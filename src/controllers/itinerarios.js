@@ -5639,6 +5639,33 @@ module.exports = app => {
 
 
 
+    app.agregarComentarioItinerarios = async (req, res) => {
+        let data = new itine({
+            comentarios: req.body.comentarios,
+            usuario: req.body.usuario
+        });
+
+        itine.update(data.dataValues, {
+            where: {
+                id_itinerarios: req.params.id_itinerarios
+            },
+            fields: ['comentarios', 'usuario']
+        }).then(result => {
+            res.json({
+                OK: true,
+                Resultado: result
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err.message
+            });
+        });
+    }
+
+
+
+
     app.obtenerRecorrido = async (req, res) => {
         var start = new Date(req.params.start).getTime();
         var end = new Date(req.params.end).getTime();
