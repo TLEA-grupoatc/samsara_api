@@ -207,13 +207,18 @@ module.exports = app => {
                         conteo: 1,
                         referencias: [item.referencia2]
                     };
-                } else {
+                    console.log(agrupados[key], '1');
+                } 
+                else {
                     agrupados[key].conteo += 1;
                     agrupados[key].referencias.push(item.referencia2);
+                    console.log(agrupados[key], '2');
                 }
             });
 
             const resultado = Object.values(agrupados);
+            
+
 
             var direccionesCoor = [
                {"direccion": "AV. HIROSHIMA, Col. COMPLEJO INDUSTRIAL SALAMANCA C.P. 36875 SALAMANCA, GUANAJUATO", "longitud": -101.1957172, "latitud": 20.5739314},
@@ -5467,7 +5472,8 @@ module.exports = app => {
                                     'fecha',
                                     'fecha_creacion',
                                     'fecha_reporte_entrega',
-                                    'fecha_cierre_itinerario'
+                                    'fecha_cierre_itinerario',
+                                    'vines'
                                 ]
                             });
 
