@@ -580,6 +580,7 @@ module.exports = app => {
             base,
             id_usuario,
             turno,
+            operador_intercambio,
             unidad,
             operador,
             fecha_arribo_programado,
@@ -599,10 +600,25 @@ module.exports = app => {
         try {
             t = await sequelize.transaction();
 
+            const diaActual = moment().format('DD/MM/YYYY');
+            const fechaFormateada = moment(fecha_arribo_programado).format('DD/MM/YYYY');
+
+            const checkAgenda = diaActual === fechaFormateada;
+            const checkMotivo = id_motivo_programacion_arribo === 9;
+
+            if(checkAgenda && !checkMotivo){
+                return res.status(200).json({ 
+                OK: false,
+                msg: 'Debes agendar con al menos un día de anticipación.',
+                result: null,
+            });
+            }
+
              const programacion = new Agenda({    
                 base: base,
                 fk_usuario: id_usuario,
                 turno: turno,
+                operador_intercambio: operador_intercambio,
                 fecha_arribo_programado: fecha_arribo_programado,
                 horario_arribo_programado: horario_arribo_programado,
                 comentarios: comentarios,
@@ -670,6 +686,7 @@ module.exports = app => {
             const programacion = {
                 base: arribo.base,
                 turno: arribo.turno,
+                operador_intercambio: arribo.operador_intercambio,
                 horario_arribo_programado: arribo.horario_arribo_programado,
                 comentarios: arribo.comentarios,
                 fk_motivo_programacion_arribo: arribo.id_motivo_programacion_arribo,
@@ -900,7 +917,6 @@ module.exports = app => {
 
     const anularAgendaAutomatico = async () => {
         let t;
-
         try {
             t = await sequelize.transaction();
 

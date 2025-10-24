@@ -1202,38 +1202,24 @@ module.exports = app => {
                     'unidad',
                     [reporte.sequelize.fn('COUNT', reporte.sequelize.col('km')), 'min'],
                     [reporte.sequelize.fn('MAX', reporte.sequelize.col('km')), 'velocidad_maxima'],
-                    [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 8 AND 114 THEN 1 ELSE 0 END")), 'dentro'],
-                    [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 115 AND 250 THEN 1 ELSE 0 END")), 'fuera'],
-                    // [Sequelize.literal(`
-                    //     JSON_ARRAYAGG(
-                    //         JSON_ARRAY(
-                    //             DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s'),
-                    //             km
-                    //         )
-                    //     )
-                    // `), 'detalle']
-
-
-[
-  Sequelize.literal(`
-    CONCAT(
-      '[',
-      COALESCE(
-        GROUP_CONCAT(
-          JSON_OBJECT(
-            DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s'), km
-          )
-          ORDER BY fechahorakm ASC
-          SEPARATOR ','
-        ),
-        ''
-      ),
-      ']'
-    )
-  `),
-  'detalle'
-]
-
+                    [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 8 AND 105 THEN 1 ELSE 0 END")), 'dentro'],
+                    [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 106 AND 250 THEN 1 ELSE 0 END")), 'fuera'],
+                    [Sequelize.literal(`
+                        CONCAT(
+                        '[',
+                        COALESCE(
+                            GROUP_CONCAT(
+                            JSON_OBJECT(
+                                DATE_FORMAT(fechahorakm, '%Y-%m-%d %H:%i:%s'), km
+                            )
+                            ORDER BY fechahorakm ASC
+                            SEPARATOR ','
+                            ),
+                            ''
+                        ),
+                        ']'
+                        )
+                    `), 'detalle']
 
                 ],
                 where: {
@@ -1273,8 +1259,8 @@ module.exports = app => {
                 'unidad',
                 [reporte.sequelize.fn('COUNT', reporte.sequelize.col('km')), 'min'],
                 [reporte.sequelize.fn('MAX', reporte.sequelize.col('km')), 'velocidad_maxima'],
-                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 8 AND 114 THEN 1 ELSE 0 END")), 'dentro'],
-                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 115 AND 250 THEN 1 ELSE 0 END")), 'fuera']
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 8 AND 105 THEN 1 ELSE 0 END")), 'dentro'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN km BETWEEN 106 AND 250 THEN 1 ELSE 0 END")), 'fuera']
             ],
             where: {
                 fechahorakm: {

@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(45),
             allowNull: true
         },
+        operador_intercambio: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
         comentarios: { 
             type: DataTypes.STRING(300),
             allowNull: true
