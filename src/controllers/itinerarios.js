@@ -207,12 +207,10 @@ module.exports = app => {
                         conteo: 1,
                         referencias: [item.referencia2]
                     };
-                    console.log(agrupados[key], '1');
                 } 
                 else {
                     agrupados[key].conteo += 1;
                     agrupados[key].referencias.push(item.referencia2);
-                    console.log(agrupados[key], '2');
                 }
             });
 
@@ -5441,7 +5439,7 @@ module.exports = app => {
                                 fecha_creacion: moment(today).format('YYYY-MM-DD'),
                                 fecha_reporte_entrega: rr.fecha_reporte_entrega,
                                 fecha_cierre_itinerario: null,
-                                vines: rr.referencias
+                                vines: rr.referencias.toString()
                             });
 
                             const resultado = await itine.create(nuevoRegistro.dataValues, {
