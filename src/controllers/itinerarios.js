@@ -203,11 +203,13 @@ module.exports = app => {
                 
                 if (!agrupados[key]) {
                     agrupados[key] = {
-                    ...item,
-                    conteo: 1
+                        ...item,
+                        conteo: 1,
+                        referencias: [item.referencia2]
                     };
                 } else {
                     agrupados[key].conteo += 1;
+                    agrupados[key].referencias.push(item.referencia2);
                 }
             });
 
@@ -5433,7 +5435,8 @@ module.exports = app => {
                                 fecha: rr.fecha_orden,
                                 fecha_creacion: moment(today).format('YYYY-MM-DD'),
                                 fecha_reporte_entrega: rr.fecha_reporte_entrega,
-                                fecha_cierre_itinerario: null
+                                fecha_cierre_itinerario: null,
+                                vines: rr.referencias
                             });
 
                             const resultado = await itine.create(nuevoRegistro.dataValues, {

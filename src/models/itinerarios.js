@@ -120,6 +120,10 @@ module.exports = (sequelize, DataType) => {
         usuario: {
             type: DataType.STRING,
             allowNull: true
+        },
+        vines: {
+            type: DataType.STRING,
+            allowNull: true
         }
     },
     {

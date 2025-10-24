@@ -631,9 +631,9 @@ module.exports = app => {
             
             const today = new Date();
             const fifteenDaysAgo = new Date();
-            fifteenDaysAgo.setDate(today.getDate() - 8);
+            fifteenDaysAgo.setDate(today.getDate() - 4);
             
-            let result = await pool.request().query("SELECT vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.fecha_carga, vos.unidad, vos.origen_desc, vos.destino_desc, vos.ruta_destino_os, vos.ruta_origen_os, vos.fecha_reporte_entrega FROM vordenser AS vos \
+            let result = await pool.request().query("SELECT vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.fecha_carga, vos.unidad, vos.origen_desc, vos.destino_desc, vos.ruta_destino_os, vos.ruta_origen_os, vos.fecha_reporte_entrega, vos.referencia2 FROM vordenser AS vos \
                 INNER JOIN bitacoras AS bt on bt.clave_bitacora = vos.clave_bitacora \
                 WHERE vos.fecha_orden BETWEEN '" + moment(fifteenDaysAgo).format('YYYY-MM-DD') + "T10:00:00.000Z' AND '" + moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z' \
                 AND vos.clave_bitacora IS NOT NULL AND vos.fch_can IS NULL");
@@ -643,8 +643,6 @@ module.exports = app => {
             res.json({
                 OK: true,
                 total: result['recordsets'][0].length,
-                fechai: moment(fifteenDaysAgo).format('YYYY-MM-DD') + "T10:00:00.000Z'",
-                fechaf: moment(today).format('YYYY-MM-DD') + "T23:59:59.000Z",
                 Registros: result['recordsets'][0]
             });
         }
