@@ -120,7 +120,7 @@ module.exports = app => {
 
     app.getInnerItinerariosXF = async (req, res) => {
         const hoy = moment().format('YYYY-MM-DD');
-        const cincodias = moment().subtract(4, 'days').format('YYYY-MM-DD');
+        const cincodias = moment().subtract(5, 'days').format('YYYY-MM-DD');
 
         try {
             const resultados = await itine.findAll({
