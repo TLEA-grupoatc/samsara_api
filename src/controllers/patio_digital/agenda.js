@@ -604,7 +604,7 @@ module.exports = app => {
             const fechaFormateada = moment(fecha_arribo_programado).format('DD/MM/YYYY');
 
             const checkAgenda = diaActual === fechaFormateada;
-            const checkMotivo = id_motivo_programacion_arribo === 9;
+            const checkMotivo = (id_motivo_programacion_arribo === 9 || id_motivo_programacion_arribo === 11 || id_motivo_programacion_arribo === 12);
 
             if(checkAgenda && !checkMotivo){
                 return res.status(200).json({ 

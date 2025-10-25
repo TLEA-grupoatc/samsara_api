@@ -97,6 +97,8 @@ module.exports = app => {
                         WHEN PAU.base = 2 THEN 'SALAMANCA'
                     END AS base,
                     PAU.unidad AS economico,
+                    MPA.motivo AS motivo_ingreso_agenda,
+                    ENT.motivo_ingreso AS motivo_ingreso_entrada,
                     U.tag AS unidad,
                     COR.nombre_coor,
                     DATE(AGE.fecha_arribo_programado) AS fecha_arribo_programado,
@@ -107,6 +109,7 @@ module.exports = app => {
                     LEFT JOIN unidad U ON U.name = PAU.unidad 
                     LEFT JOIN coordinador COR ON U.idcoordinador = COR.id_coordinador
                     LEFT JOIN pd_agenda AGE ON PAU.fk_agenda = AGE.id_agenda
+                    LEFT JOIN pd_motivo_programacion_arribo MPA ON AGE.fk_motivo_programacion_arribo = MPA.id_motivo_programacion_arribo
                     LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada;
             `,
             { type: Sequelize.QueryTypes.SELECT }
