@@ -15,7 +15,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       if(!pregunta) return res.status(400).json({ error: 'Falta la pregunta' });
 
       const schema = `Tabla Liquidaciones: id_liquidacion(INT), operador(STRING), monto(FLOAT), fecha(STRING), estado(STRING), folio(STRING)`;
-      const systemPrompt = `Eres un asistente que convierte preguntas a código Sequelize. Genera solo el código JS sin explicaciones.`;
+      const systemPrompt = `Eres un asistente que convierte preguntas en consultas Sequelize y devuelve los resultados como texto legible para humanos.`;
 
       const chat = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
