@@ -11,97 +11,159 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   app.preguntar = async (req, res) => {
     try {
-      const pregunta = req.params.pregunta;
-      if(!pregunta) return res.status(400).json({ error: 'Falta la pregunta' });
+    //   const pregunta = req.params.pregunta;
+    //   if(!pregunta) return res.status(400).json({ error: 'Falta la pregunta' });
 
-      const schema = `Tabla Liquidaciones: id_liquidacion(INT), operador(STRING), monto(FLOAT), fecha(STRING), estado(STRING), folio(STRING)`;
-      // const systemPrompt = `Eres un asistente que convierte preguntas a código Sequelize. Genera solo el código JS sin explicaciones.`;
-      const systemPrompt = `Quiero que actúes como un desarrollador senior experto en Node.js, Sequelize y MySQL. Eres el arquitecto principal y mantenedor de un sistema de gestión de 'liquidaciones'. Tu trabajo es ayudarme a mí (que soy un gerente o usuario de negocio) a obtener datos del sistema.
+    //   const schema = `Tabla Liquidaciones: id_liquidacion(INT), operador(STRING), monto(FLOAT), fecha(STRING), estado(STRING), folio(STRING)`;
+    //   const systemPrompt = `Eres un asistente que convierte preguntas a código Sequelize. Genera solo el código JS sin explicaciones.`;
 
-Contexto Técnico: El backend está en Node.js con Sequelize, conectado a una base de datos MySQL.
+    //   const chat = await openai.chat.completions.create({
+    //     model: 'gpt-3.5-turbo',
+    //     messages: [
+    //       { role: 'system', content: systemPrompt + '\n' + schema },
+    //       { role: 'user', content: pregunta }
+    //     ],
+    //     temperature: 0
+    //   });
+    //   const codigo = chat.choices[0].message.content.trim();
 
-Modelos de Datos Supuestos (Tablas): Para tus respuestas, asume que tenemos los siguientes modelos de Sequelize:
+    //   if(/destroy|drop|update|delete|insert/i.test(codigo)) {
+    //     return res.status(400).json({ error: 'Consulta no permitida.' });
+    //   }
 
-Usuario:
+    //   const fn = new AsyncFunction(
+    //     'Liquidaciones', 'sequelize', 'Op',
+    //     `'use strict';\nreturn (async () => { return ${codigo}; })();`
+    //   );
+    //   const datos = await fn(liquidacion, Sequelize, Sequelize.Op);
 
-id (numérico)
+    //   // res.json({ ok: true, code: codigo, datos });
+    //   res.json({ ok: true, respuesta: datos });
 
-nombre (string, ej: "Hugo")
 
-apellido (string, ej: "Guerrero")
 
-rol (string, ej: 'liquidador', 'admin')
 
-Liquidacion:
 
-id (numérico)
 
-monto (decimal)
 
-fecha_creacion (datetime)
 
-fecha_pago (datetime, puede ser null)
 
-estatus (string, con valores: 'pendiente', 'pagada', 'rechazada')
 
-usuarioId (foreign key a Usuario. Este es el 'liquidador')
 
-Asociaciones de Sequelize:
+    // --- COPIA Y PEGA ESTE CÓDIGO EN TU RUTA DE EXPRESS ---
 
-Usuario.hasMany(Liquidacion, { foreignKey: 'usuarioId' })
+// Asume que 'liquidacion' (el modelo), 'Sequelize' y 'AsyncFunction' están definidos fuera de esta ruta.
+// const liquidacion = ...; // Tu modelo Sequelize 'Liquidaciones'
+// const Sequelize = ...; // La instancia de Sequelize
+// const { Op } = require('sequelize');
+// const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+// const chat = ...; // Tu cliente de OpenAI/Gemini/etc.
 
-Liquidacion.belongsTo(Usuario, { as: 'liquidador', foreignKey: 'usuarioId' })
+try {
+    const pregunta = req.params.pregunta;
+    if (!pregunta) {
+        return res.status(400).json({ error: 'Falta la pregunta' });
+    }
 
-Tu Tarea: Yo te haré preguntas en lenguaje natural, de forma coloquial. Tú debes:
+    // ESTE ES EL NUEVO PROMPT DETALLADO
+    // Define el modelo y las reglas de traducción.
+    const systemPrompt = `
+Eres un desarrollador senior experto en Node.js y Sequelize.
+Tu única tarea es traducir la pregunta del usuario en una consulta de Sequelize.
 
-Entender mi pregunta.
-
-Traducirla mentalmente a la consulta de Sequelize (usando Op, fn, col, where, include, group, order, etc.) necesaria para obtener esa información.
-
-Darme una respuesta directa y humanizada a mi pregunta.
-
-Importante: Después de tu respuesta, muéstrame el fragmento de código de Sequelize que usarías para generar esa respuesta, dentro de un bloque de código.
-
-Ejemplo de cómo debes responder:
-
-Mi Pregunta: "Oye, ¿cuáles liquidaciones están pendientes de pago?"
-
-Tu Respuesta: "¡Hola! Claro, revisando el sistema, las liquidaciones que están marcadas como 'pendientes' son la #1045 ($2,500) y la #1046 ($1,200).
-
-JavaScript
-
-const { Op } = require('sequelize');
-
-const pendientes = await Liquidacion.findAll({
-  where: {
-    estatus: 'pendiente'
-  },
-  attributes: ['id', 'monto']
+CONTEXTO DE BASE DE DATOS:
+Asume que ya existe un modelo de Sequelize definido así:
+const Liquidaciones = sequelize.define('Liquidaciones', {
+  id_liquidacion: { type: DataTypes.INTEGER, primaryKey: true },
+  operador: { type: DataTypes.STRING },
+  monto: { type: DataTypes.FLOAT },
+  fecha: { type: DataTypes.STRING }, // Formato 'YYYY-MM-DD'
+  estado: { type: DataTypes.STRING }, // Valores: 'pendiente', 'pagada', 'rechazada'
+  folio: { type: DataTypes.STRING }
 });
-Empieza ahora. Estás listo para mi primera pregunta.`;
 
-      const chat = await openai.chat.completions.create({
+VARIABLES DISPONIBLES:
+La función que ejecutará tu código ya te provee las variables:
+- 'Liquidaciones': El modelo de Sequelize.
+- 'sequelize': La instancia de Sequelize (para 'fn' y 'col').
+- 'Op': El objeto 'Op' de Sequelize (para [Op.like], [Op.gte], etc.).
+
+REGLAS DE TRADUCCIÓN:
+1. 'pendiente de pago', 'para pago' -> significa { estado: 'pendiente' }
+2. 'rechazadas' -> significa { estado: 'rechazada' }
+3. 'pagadas' -> significa { estado: 'pagada' }
+4. 'de [nombre]' (ej: "de hugo guerrero") -> significa { operador: { [Op.like]: '%hugo guerrero%' } }
+5. 'del mes' -> Asume el mes actual. Si hoy es Octubre (10) de 2025, usa { fecha: { [Op.like]: '2025-10-%' } }
+6. 'de la semana' -> No puedes procesar esto, devuelve una lista vacía: Promise.resolve([])
+7. 'liquidador con mas liquidaciones' -> Debes usar 'sequelize.fn', 'sequelize.col', 'group' y 'order'.
+
+REGLAS DE SALIDA:
+- Genera ÚNICAMENTE el código de la consulta.
+- NO incluyas 'await', 'const datos =', comentarios, ni explicaciones.
+- NO uses bloques de código \`\`\`.
+- Tu salida debe ser una expresión de Sequelize que devuelva una promesa, lista para ser insertada en \`return \${codigo};\`.
+
+EJEMPLOS DE SALIDA:
+Pregunta: cuales son rechazadas
+Salida: Liquidaciones.findAll({ where: { estado: 'rechazada' } })
+
+Pregunta: liquidacion de hugo guerrero para pago
+Salida: Liquidaciones.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' }, estado: 'pendiente' } })
+
+Pregunta: reporte de liquidaciones del mes
+Salida: Liquidaciones.findAll({ where: { fecha: { [Op.like]: '%2025-10-%' } } })
+
+Pregunta: liquidador con mas liquidaciones
+Salida: Liquidaciones.findAll({
+  attributes: ['operador', [sequelize.fn('COUNT', sequelize.col('id_liquidacion')), 'total']],
+  group: ['operador'],
+  order: [[sequelize.fn('COUNT', sequelize.col('id_liquidacion')), 'DESC']],
+  limit: 1
+})
+    `; // Fin del systemPrompt
+
+    const chatCompletion =  await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: systemPrompt + '\n' + schema },
-          { role: 'user', content: pregunta }
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: pregunta }
         ],
-        temperature: 0
-      });
-      const codigo = chat.choices[0].message.content.trim();
+        temperature: 0 // Esencial para que siga las reglas estrictamente
+    });
 
-      if(/destroy|drop|update|delete|insert/i.test(codigo)) {
+    const codigo = chatCompletion.choices[0].message.content.trim();
+
+    // Filtro de seguridad (¡Muy bien hecho!)
+    if (/destroy|drop|update|delete|insert/i.test(codigo)) {
         return res.status(400).json({ error: 'Consulta no permitida.' });
-      }
+    }
 
-      const fn = new AsyncFunction(
+    // Si el código está vacío o es inválido, puede fallar aquí
+    if (!codigo || !codigo.startsWith("Liquidaciones.")) {
+        if(codigo.includes("Promise.resolve([])")) {
+             // Maneja el caso de "la semana"
+             return res.json({ ok: true, respuesta: [] });
+        }
+        console.error("Respuesta de IA no válida:", codigo);
+        return res.status(500).json({ error: 'Error al generar la consulta de IA.' });
+    }
+
+    const fn = new AsyncFunction(
         'Liquidaciones', 'sequelize', 'Op',
         `'use strict';\nreturn (async () => { return ${codigo}; })();`
-      );
-      const datos = await fn(liquidacion, Sequelize, Sequelize.Op);
+    );
 
-      // res.json({ ok: true, code: codigo, datos });
-      res.json({ ok: true, respuesta: datos });
+    // Asume que 'liquidacion' es tu modelo 'Liquidaciones' importado
+    const datos = await fn(liquidacion, Sequelize, Sequelize.Op);
+
+    res.json({ ok: true, respuesta: datos });
+
+} catch (error) {
+    console.error('Error en la ruta:', error);
+    res.status(500).json({ error: 'Error interno del servidor', details: error.message });
+}
+
+// --- FIN DEL CÓDIGO ---
     } 
     catch (err) {
       res.status(500).json({ error: err.message });
