@@ -1,13 +1,12 @@
 const moment = require('moment');
 const dotenv = require('dotenv').config();
 module.exports = app => {
-
     const axios = require('axios');
-    const itine = app.database.models.Itinerarios;
-    const itineDet = app.database.models.ItinerarioDetalle;
-
     const Samsara = require("@api/samsara-dev-rel");
     Samsara.auth(process.env.KEYSAM);
+
+    const itine = app.database.models.Itinerarios;
+    const itineDet = app.database.models.ItinerarioDetalle;
 
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
@@ -117,7 +116,6 @@ module.exports = app => {
         }
     };
 
-
     app.getInnerItinerariosXF = async (req, res) => {
         const hoy = moment().format('YYYY-MM-DD');
         const cincodias = moment().subtract(5, 'days').format('YYYY-MM-DD');
@@ -173,7 +171,8 @@ module.exports = app => {
             res.json({
                 OK: true,
                 Total: datosFiltrados.length,
-                Resumen: datosFiltrados
+                Resumen: datosFiltrados,
+                TodosLosDatos: resultados
             });
 
         } catch (error) {
@@ -183,7 +182,6 @@ module.exports = app => {
             });
         }
     };
-
 
     app.itinerarioP = async (req, res) => {
         try {
@@ -5640,12 +5638,6 @@ module.exports = app => {
         }
     };
 
-
-
-
-
-
-
     app.agregarComentarioItinerarios = async (req, res) => {
         let data = new itine({
             comentarios: req.body.comentarios,
@@ -5670,9 +5662,6 @@ module.exports = app => {
         });
     }
 
-
-
-
     app.obtenerRecorrido = async (req, res) => {
         var start = new Date(req.params.start).getTime();
         var end = new Date(req.params.end).getTime();
@@ -5693,8 +5682,6 @@ module.exports = app => {
             });
         }
     }
-
-
     
     app.obtenerRecorridoMesActual = async (req, res) => {
         var primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -6049,11 +6036,6 @@ module.exports = app => {
             });
         }
     }
-
-
-
-
-
 
     app.reporteInmovilizadoresPruebas = async (req, res) => {
         var listatractos = [
@@ -6473,13 +6455,6 @@ for (let i = 0; i < listatractos.length; i += 100) {
             Resultados: allResults
         });
     }
-
-
-
-
-
-
-   
 
     return app;
 }
