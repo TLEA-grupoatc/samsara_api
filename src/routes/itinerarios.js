@@ -16,6 +16,8 @@ module.exports = app => {
 
     app.get('/obtenerRecorrido/:idunidad/:start/:end', Iti.obtenerRecorrido);
 
+    app.get('/obtenerRecorridoMesActual', Iti.obtenerRecorridoMesActual);
+
     app.put('/agregarComentarioItinerarios/:id_itinerarios', Iti.agregarComentarioItinerarios);
 
     app.get('/CalculoDeRuta', Iti.CalculoDeRuta);
