@@ -43,6 +43,7 @@ node_modules/
 jspm_packages/
 images/
 documentos/
+.wwebjs_cache/
 
 sessions/
 
