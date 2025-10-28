@@ -137,12 +137,12 @@ module.exports = app => {
                     {
                         model: itineDet,
                         as: 'ItinerarioDetalles',
-                        required: true
+                        required: false
                     },
                     {
                         model: comentariosItine,
                         as: 'ComentariosItinerarios',
-                        required: true
+                        required: false
                     }
                 ],
                 order: [['fecha_creacion', 'DESC']],
