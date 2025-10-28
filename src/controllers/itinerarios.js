@@ -171,8 +171,7 @@ module.exports = app => {
             res.json({
                 OK: true,
                 Total: datosFiltrados.length,
-                Resumen: datosFiltrados,
-                TodosLosDatos: resultados
+                Resumen: datosFiltrados
             });
 
         } catch (error) {

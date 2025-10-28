@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(100),
             allowNull: true
         },
+        evidencia_agenda: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
         comentarios: { 
             type: DataTypes.STRING(300),
             allowNull: true

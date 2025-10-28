@@ -1,5 +1,7 @@
 const moment = require("moment");
 const { Op } = require('sequelize');
+const path = require('path');
+const fs = require('fs');
 
 const axios = require('axios');
 
@@ -16,6 +18,32 @@ module.exports = app => {
     const Unidades = app.database.models.Unidades;
 
     const sequelize = app.database.sequelize;
+
+    const saveBase64File = (base64Data, type) => {
+    
+      const evidenciaEntregadasPath = path.join(__dirname, '../../../uploads/evidencias_agenda');
+    
+      if (!fs.existsSync(evidenciaEntregadasPath)) {
+        fs.mkdirSync(evidenciaEntregadasPath, { recursive: true });
+      }
+    
+      const matches = base64Data.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+      if (!matches || matches.length !== 3) {
+        throw new Error('Formato base64 inválido');
+      }
+    
+      const DateFormated = moment().format('DD.MM.YYYY_hh.mm');
+    
+      const mimeType = matches[1];
+      const extension = mimeType.split('/')[1];
+    
+      const buffer = Buffer.from(matches[2], 'base64');
+      let filename = `${type}_${DateFormated}.${extension}`;
+      
+      const filePath = path.join(evidenciaEntregadasPath, filename);
+      fs.writeFileSync(filePath, buffer);
+      return filename;
+    }
 
     app.pruebaAdvan = async (request, response) => {
         const test = moment('2025-06-19 14:21:28', 'YYYY-MM-DD')
@@ -581,6 +609,7 @@ module.exports = app => {
             id_usuario,
             turno,
             operador_intercambio,
+            evidencia_agenda,
             unidad,
             operador,
             fecha_arribo_programado,
@@ -600,25 +629,32 @@ module.exports = app => {
         try {
             t = await sequelize.transaction();
 
-            const diaActual = moment().format('DD/MM/YYYY');
-            const fechaFormateada = moment(fecha_arribo_programado).format('DD/MM/YYYY');
+            const today = moment().startOf('day');
+            const fecha = moment(fecha_arribo_programado).startOf('day');
 
-            const checkAgenda = diaActual === fechaFormateada;
+            const checkAgenda = fecha.isSameOrBefore(today);
             const checkMotivo = (id_motivo_programacion_arribo === 9 || id_motivo_programacion_arribo === 11 || id_motivo_programacion_arribo === 12);
 
             if(checkAgenda && !checkMotivo){
-                return res.status(200).json({ 
-                OK: false,
-                msg: 'Debes agendar con al menos un día de anticipación.',
-                result: null,
-            });
+                return res.status(200).json({
+                    OK: false,
+                    msg: 'Debes agendar con al menos un día de anticipación.',
+                    result: null,
+                });
             }
 
-             const programacion = new Agenda({    
+            let evidencia_nombre = null;
+
+            if(evidencia_agenda){
+                evidencia_nombre = saveBase64File(evidencia_agenda, 'evidencia_agenda');
+            }
+             
+            const programacion = new Agenda({    
                 base: base,
                 fk_usuario: id_usuario,
                 turno: turno,
                 operador_intercambio: operador_intercambio,
+                evidencia_agenda: evidencia_nombre,
                 fecha_arribo_programado: fecha_arribo_programado,
                 horario_arribo_programado: horario_arribo_programado,
                 comentarios: comentarios,
@@ -683,10 +719,17 @@ module.exports = app => {
                 cargado: arribo.cargado,
             }
 
+            let evidencia_nombre = null;
+
+            if(arribo.evidencia_agenda){
+                evidencia_nombre = saveBase64File(arribo.evidencia_agenda, 'evidencia_agenda');
+            }
+
             const programacion = {
                 base: arribo.base,
                 turno: arribo.turno,
                 operador_intercambio: arribo.operador_intercambio,
+                evidencia_agenda: evidencia_nombre,
                 horario_arribo_programado: arribo.horario_arribo_programado,
                 comentarios: arribo.comentarios,
                 fk_motivo_programacion_arribo: arribo.id_motivo_programacion_arribo,
