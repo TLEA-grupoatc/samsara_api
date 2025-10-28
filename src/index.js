@@ -89,6 +89,16 @@ cron.schedule('0 * * * *', () => {
   }); 
 });
 
+cron.schedule('0 */2 * * *', () => {   
+// cron.schedule('* * * * *', () => {   
+  app.obtenerRecorridoMesActual({}, {
+    json: (data) => console.log(data),
+    status: (statusCode) => ({
+      json: (data) => console.log(statusCode, data)
+    })
+  }); 
+});
+
 app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
@@ -560,11 +570,6 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   }
 });
 
-
-
-
-
-
 app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
   const payload = req.body;
   var today = new Date();
@@ -613,6 +618,9 @@ app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
 
 
 
+
+
+
 app.post('/enviarWhatsuno', async (req, res) => {
   const { numero, mensaje } = req.body || {};
   if (!numero || !mensaje) {
@@ -647,9 +655,6 @@ app.post('/enviarWhatsuno', async (req, res) => {
     return res.status(500).json({ ok: false, error: err.message || String(err) });
   }
 });
-
-
-
 
 
 
@@ -712,7 +717,6 @@ async function initWhatsClient() {
   return client;
 }
 
-
 function normalizeNumber(raw) {
   // Deja solo dígitos
   let num = String(raw).replace(/\D/g, '');
@@ -722,9 +726,6 @@ function normalizeNumber(raw) {
   }
   return `${num}@c.us`;
 }
-
-
-
 
 async function ubicacion(idsam) {
   try {

@@ -8,6 +8,8 @@ module.exports = app => {
     const itine = app.database.models.Itinerarios;
     const itineDet = app.database.models.ItinerarioDetalle;
 
+    const trip = app.database.models.Trips;
+
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
@@ -5683,11 +5685,12 @@ module.exports = app => {
     }
     
     app.obtenerRecorridoMesActual = async (req, res) => {
+        var today = new Date();
         var primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         var ultimoDiaMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
         
-        var start = new Date(primerDiaMes.setHours(primerDiaMes.getHours() - 6)).getTime();
-        var end = new Date(ultimoDiaMes.setHours(17, 59, 59)).getTime();
+        var start = new Date(today).getTime();
+        var end = new Date(today.setHours(23, 59, 59)).getTime();
 
         var listaTractos = [
             "281474983153054",
@@ -6005,27 +6008,71 @@ module.exports = app => {
 "281474998732059"
         ]
 
-        let resumen = [];
-
         try {
-            for (const idunidad of listaTractos) {
+            for(const idunidad of listaTractos) {
                 const { data } = await Samsara.v1getFleetTrips({
                     vehicleId: idunidad,
                     startMs: start,
                     endMs: end
                 });
 
-                resumen.push({
-                    idunidad,
-                    viajes: data.trips || []
-                });
+                if(data.trips && data.trips.length > 0) {
+                    for(const tp of data.trips) {
+                        
+                        let nuevoRegistro = new trip({
+                            idunidad: idunidad,
+                            startMs: moment(tp.startMs).format('YYYY-MM-DD HH:mm:ss'),
+                            endMs: tp.endMs > 0 ? moment(tp.endMs).format('YYYY-MM-DD HH:mm:ss') : 0,
+                            startLocation: tp.startLocation,
+                            endLocation: tp.endLocation,
+                            startAddress: tp.startAddress?.name,
+                            endAddress: tp.endAddress?.name,
+                            startCoordinatesLat: tp.startCoordinates?.latitude,
+                            startCoordinatesLon: tp.startCoordinates?.longitude,
+                            endCoordinatesLat: tp.endCoordinates?.latitude,
+                            endCoordinatesLon: tp.endCoordinates?.longitude,
+                            distanceMeters: tp.distanceMeters / 1000, //convertido a kilometros
+                            fuelConsumedMl: tp.fuelConsumedMl / 1000, //convertido a litros
+                            tollMeters: tp.tollMeters,
+                            driverId: tp.driverId,
+                            codriverIds: tp.codriverIds?.join(','),
+                            startOdometer: tp.startOdometer,
+                            endOdometer: tp.endOdometer,
+                            assetIds: tp.assetIds?.join(',')
+                        });
+                        await trip.create(nuevoRegistro.dataValues, {
+                            fields: [
+                                'idunidad',
+                                'startMs',
+                                'endMs',
+                                'startLocation',
+                                'endLocation',
+                                'startAddress', 
+                                'endAddress',
+                                'startCoordinatesLat',
+                                'startCoordinatesLon',
+                                'endCoordinatesLat',
+                                'endCoordinatesLon',    
+                                'distanceMeters',
+                                'fuelConsumedMl',
+                                'tollMeters',
+                                'driverId',
+                                'codriverIds',
+                                'startOdometer',
+                                'endOdometer',
+                                'assetIds'
+                            ]
+                        });
+                    }
+                }
             }
 
             res.json({
                 OK: true,
-                Inicio: primerDiaMes,
-                Fin: ultimoDiaMes,
-                Resumen: resumen
+                InicioT: start,
+                FinT: end,
+                Inicio: moment(start).format('YYYY-MM-DD HH:mm:ss'),
+                Fin: moment(end).format('YYYY-MM-DD HH:mm:ss')
             });
         } 
         catch (error) {
@@ -6035,6 +6082,39 @@ module.exports = app => {
             });
         }
     }
+
+
+
+
+
+
+
+
+    app.getTripsXF = (req, res) => {
+        const treintaDias = moment().subtract(30, 'days').format('YYYY-MM-DD HH:mm:ss');
+
+        trip.findAll({
+            where: {
+                startMs: { [Op.gte]: treintaDias }
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Resumen: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
 
     app.reporteInmovilizadoresPruebas = async (req, res) => {
         var listatractos = [

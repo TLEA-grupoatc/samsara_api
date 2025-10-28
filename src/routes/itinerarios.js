@@ -13,12 +13,14 @@ module.exports = app => {
     app.get('/itinerarioP', Iti.itinerarioP);
     
     app.get('/reporteInmovilizadoresPruebas', Iti.reporteInmovilizadoresPruebas);
-
+    
     app.get('/obtenerRecorrido/:idunidad/:start/:end', Iti.obtenerRecorrido);
-
+    
     app.get('/obtenerRecorridoMesActual', Iti.obtenerRecorridoMesActual);
-
+    
     app.put('/agregarComentarioItinerarios/:id_itinerarios', Iti.agregarComentarioItinerarios);
+    
+    app.get('/getTripsXF', Iti.getTripsXF);
 
     app.get('/CalculoDeRuta', Iti.CalculoDeRuta);
 }
