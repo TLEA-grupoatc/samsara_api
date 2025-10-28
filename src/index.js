@@ -621,48 +621,8 @@ app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
 
 
 
-// app.post('/enviarWhatsuno', async (req, res) => {
-//   const { numero, mensaje } = req.body || {};
-//   if (!numero || !mensaje) {
-//     return res.status(400).json({ error: 'Faltan parámetros: numero y mensaje' });
-//   }
-
-//   try {
-//     await initWhatsClient();
-
-//     // Espera a que el cliente esté listo (por si viene justo después de escanear el QR)
-//     if (!isReady) {
-//       await new Promise((resolve, reject) => {
-//         const timeout = setTimeout(() => reject(new Error('Timeout esperando WhatsApp ready')), 30000);
-//         client.once('ready', () => {
-//           clearTimeout(timeout);
-//           resolve();
-//         });
-//       });
-//     }
-
-//     const chatId = normalizeNumber(numero);
-//     const result = await client.sendMessage(chatId, String(mensaje));
-
-//     return res.json({
-//       ok: true,
-//       to: chatId,
-//       messageId: result.id?._serialized || result.id || null,
-//       Mensaje: 'Enviado con Exito!'
-//     });
-//   } catch (err) {
-//     console.error('❌ Error /enviarWhats:', err);
-//     return res.status(500).json({ ok: false, error: err.message || String(err) });
-//   }
-// });
-
-
-
-
-
-
 app.post('/enviarWhatsuno', async (req, res) => {
-  const { numero, mensaje, intervaloMinutos = 0, repeticiones = 1 } = req.body || {};
+  const { numero, mensaje } = req.body || {};
   if (!numero || !mensaje) {
     return res.status(400).json({ error: 'Faltan parámetros: numero y mensaje' });
   }
@@ -670,7 +630,7 @@ app.post('/enviarWhatsuno', async (req, res) => {
   try {
     await initWhatsClient();
 
-    // Espera a que el cliente esté listo
+    // Espera a que el cliente esté listo (por si viene justo después de escanear el QR)
     if (!isReady) {
       await new Promise((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('Timeout esperando WhatsApp ready')), 30000);
@@ -682,36 +642,76 @@ app.post('/enviarWhatsuno', async (req, res) => {
     }
 
     const chatId = normalizeNumber(numero);
-    const delayMs = intervaloMinutos * 60 * 1000;
-
-    // Función para enviar mensaje
-    const enviarMensaje = async (intento) => {
-      try {
-        const result = await client.sendMessage(chatId, String(mensaje));
-        console.log(`✅ Mensaje ${intento}/${repeticiones} enviado a ${chatId}`);
-        if (intento === repeticiones) {
-          console.log('✅ Envíos completados.');
-        }
-      } catch (err) {
-        console.error(`❌ Error enviando mensaje ${intento}:`, err);
-      }
-    };
-
-    // Programa los envíos
-    for (let i = 0; i < repeticiones; i++) {
-      setTimeout(() => enviarMensaje(i + 1), i * delayMs);
-    }
+    const result = await client.sendMessage(chatId, String(mensaje));
 
     return res.json({
       ok: true,
       to: chatId,
-      Mensaje: `Programados ${repeticiones} envíos cada ${intervaloMinutos} minutos`
+      messageId: result.id?._serialized || result.id || null,
+      Mensaje: 'Enviado con Exito!'
     });
   } catch (err) {
-    console.error('❌ Error /enviarWhatsuno:', err);
+    console.error('❌ Error /enviarWhats:', err);
     return res.status(500).json({ ok: false, error: err.message || String(err) });
   }
 });
+
+
+
+
+
+
+// app.post('/enviarWhatsuno', async (req, res) => {
+//   const { numero, mensaje, intervaloMinutos = 0, repeticiones = 1 } = req.body || {};
+//   if (!numero || !mensaje) {
+//     return res.status(400).json({ error: 'Faltan parámetros: numero y mensaje' });
+//   }
+
+//   try {
+//     await initWhatsClient();
+
+//     // Espera a que el cliente esté listo
+//     if (!isReady) {
+//       await new Promise((resolve, reject) => {
+//         const timeout = setTimeout(() => reject(new Error('Timeout esperando WhatsApp ready')), 30000);
+//         client.once('ready', () => {
+//           clearTimeout(timeout);
+//           resolve();
+//         });
+//       });
+//     }
+
+//     const chatId = normalizeNumber(numero);
+//     const delayMs = intervaloMinutos * 60 * 1000;
+
+//     // Función para enviar mensaje
+//     const enviarMensaje = async (intento) => {
+//       try {
+//         const result = await client.sendMessage(chatId, String(mensaje));
+//         console.log(`✅ Mensaje ${intento}/${repeticiones} enviado a ${chatId}`);
+//         if (intento === repeticiones) {
+//           console.log('✅ Envíos completados.');
+//         }
+//       } catch (err) {
+//         console.error(`❌ Error enviando mensaje ${intento}:`, err);
+//       }
+//     };
+
+//     // Programa los envíos
+//     for (let i = 0; i < repeticiones; i++) {
+//       setTimeout(() => enviarMensaje(i + 1), i * delayMs);
+//     }
+
+//     return res.json({
+//       ok: true,
+//       to: chatId,
+//       Mensaje: `Programados ${repeticiones} envíos cada ${intervaloMinutos} minutos`
+//     });
+//   } catch (err) {
+//     console.error('❌ Error /enviarWhatsuno:', err);
+//     return res.status(500).json({ ok: false, error: err.message || String(err) });
+//   }
+// });
 
 
 
