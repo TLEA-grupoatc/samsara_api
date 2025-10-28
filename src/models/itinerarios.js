@@ -136,6 +136,11 @@ module.exports = (sequelize, DataType) => {
             foreignKey: 'id_itinerarios',
             targetKey: 'id_itinerarios'
         });
+
+        Itinerarios.hasMany(models.ComentariosItinerarios, {
+            foreignKey: 'id_itinerarios',
+            targetKey: 'id_itinerarios'
+        });
     };
     
     return Itinerarios;

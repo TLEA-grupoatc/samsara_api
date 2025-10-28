@@ -7,6 +7,7 @@ module.exports = app => {
 
     const itine = app.database.models.Itinerarios;
     const itineDet = app.database.models.ItinerarioDetalle;
+    const comentariosItine = app.database.models.ComentariosItinerarios;
 
     const trip = app.database.models.Trips;
 
@@ -132,11 +133,18 @@ module.exports = app => {
                         [Op.is]: null
                     }
                 },
-                include: [{
-                    model: itineDet,
-                    as: 'ItinerarioDetalles',
-                    required: true
-                }],
+                include: [
+                    {
+                        model: itineDet,
+                        as: 'ItinerarioDetalles',
+                        required: true
+                    },
+                    {
+                        model: comentariosItine,
+                        as: 'ComentariosItinerarios',
+                        required: true
+                    }
+                ],
                 order: [['fecha_creacion', 'DESC']],
             });
 
