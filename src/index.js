@@ -651,7 +651,7 @@ app.post('/enviarWhatsuno', async (req, res) => {
       try {
         const result = await client.sendMessage(chatId, String(mensaje));
         console.log(`✅ Mensaje ${intento}/${repeticiones} enviado a ${chatId}`);
-        if (intento === repeticiones) {
+        if(intento === repeticiones) {
           console.log('✅ Envíos completados.');
         }
       } catch (err) {
@@ -667,12 +667,11 @@ app.post('/enviarWhatsuno', async (req, res) => {
     return res.json({
       ok: true,
       to: chatId,
-      messageId: result.id?._serialized || result.id || null,
       Mensaje: 'Enviado con Exito!'
     });
   } catch (err) {
     console.error('❌ Error /enviarWhats:', err);
-    return res.status(500).json({ ok: false, error: err.message || String(err) });
+    return res.status(412).json({ ok: false, error: err.message || String(err) });
   }
 });
 
