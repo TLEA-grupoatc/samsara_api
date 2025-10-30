@@ -239,7 +239,17 @@ app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), asy
   const payload = req.body;
 
   const date = payload.eventTime;
-  const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
+  const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
+  var operador = '';
+
+  try {
+    const { data } = await Samsara.getDriverVehicleAssignments({ filterBy: 'vehicles', vehicleIds: payload.event.device.id });
+    if (data && data.data && data.data.length > 0 && data.data[0].driver && data.data[0].driver.name) {
+      operador = data.data[0].driver.name;
+    }
+  } catch (err) {
+    console.error(err);
+  }
 
   let nuevaAlerta = new alerta({
     eventId: payload.eventId,
@@ -253,7 +263,7 @@ app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), asy
     id_unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['id'],
     unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['name'],
     numero_empleado: null,
-    operador: null,
+    operador: operador,
     fecha_cierre: null,
     primer_interaccion: '',
     aplica: 0,
