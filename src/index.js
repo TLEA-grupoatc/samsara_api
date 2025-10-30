@@ -54,8 +54,6 @@ const fs = require('fs');
 const alerta = app.database.models.Alertas;
 const geogaso = app.database.models.GeoGaso;
 const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
-const itine = app.database.models.Itinerarios;
-const itineDet = app.database.models.ItinerarioDetalle;
 const entradaSalidaGeocerca = app.database.models.EntradaSalidaGeocerca;
 
 const SESSIONS_DIR = path.resolve(__dirname, 'sessions');
@@ -102,13 +100,13 @@ cron.schedule('0 */2 * * *', () => {
 app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
-  const filePath = './webhookAPITLEA_payload.txt';
+  // const filePath = './webhookAPITLEA_payload.txt';
 
-  fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
-    if(err) {
-      console.error('Error writing payload to file:', err);
-    }
-  });
+  // fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
+  //   if(err) {
+  //     console.error('Error writing payload to file:', err);
+  //   }
+  // });
 
   const timestamp = payload.eventMs;
   const date = new Date(timestamp);
@@ -280,21 +278,9 @@ app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), asy
       'ponderacion'
     ]
   }).then(result => {}).catch(error => { console.log(error.message); });
+
+   res.status(200).send('Ok');
 });
-
-// app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-//   const payload = req.body;
-//   const filePath = './webhookAPITLEA_payload.txt';
-
-//   fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
-//     if (err) {
-//       console.error('Error writing payload to file:', err);
-//       res.status(500).send('Error saving payload');
-//     } else {
-//       res.status(200).send('Payload saved');
-//     }
-//   });
-// });
 
 app.post('/webhookGeoGaso', async (req, res) => {
   const payload = req.body;
@@ -361,6 +347,8 @@ app.post('/webhookGeoGaso', async (req, res) => {
       ]
     }).then(result => {}).catch(error => { console.log(error.message); });
   }
+
+   res.status(200).send('Ok');
 });
 
 app.post('/webhookSalidaGeoGaso', async (req, res) => {
@@ -420,6 +408,8 @@ app.post('/webhookSalidaGeoGaso', async (req, res) => {
   else {
     console.log('no encontrado');
   }
+
+   res.status(200).send('Ok');
 });
 
 app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), async (req, res) => {
@@ -617,6 +607,8 @@ app.post('/ubicacionporeconomico', bodyParser.raw({type: 'application/json'}), a
   else {
     console.log('Evento no reconocido:', payload.data?.conditions[0].description);
   }
+
+   res.status(200).send('Ok');
 });
 
 app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
@@ -663,6 +655,8 @@ app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
       'fecha_creacion'
     ]
   }).then(result => {}).catch(error => { console.log(error.message); });
+
+   res.status(200).send('Ok');
 });
 
 
@@ -906,10 +900,6 @@ http.listen(app.get('port'), async () => {
 
 
 
-
-
-
-
 // http.listen(app.get('port'), async () => {
 //   try {
 //     await ngrok.authtoken(process.env.TOKENNGROK);
@@ -921,137 +911,4 @@ http.listen(app.get('port'), async () => {
 //   catch (error) {
 //     console.error('Error al iniciar el túnel Ngrok:', error);
 //   }
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// app.post('/webhookComboy', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-//   const payload = req.body;
-// });
-
-
-
-
-
-
-
-
-
-
-// app.post('/webhookManipulacion', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-//   const payload = req.body;
-// });
-
-
-
-
-// app.post('/webhookSamsara', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-//   const payload = req.body;
-
-//   console.log(payload);
-
-//   if(payload.eventType == 'Alert') {
-//     var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
-//     var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
-
-//     const timestamp = payload.eventMs;
-//     const date = new Date(timestamp);
-//     const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
-
-//     let nuevaAlerta = new alerta({
-//       eventId: payload.eventId,
-//       eventType: payload.eventType,
-//       event: eventoformat2,
-//       eventDescription: payload.event.details,
-//       eventTime: formato,
-//       eventMs: null,
-//       alertEventURL: payload.event.alertEventUrl,
-//       incidentUrl: null,
-//       id_unidad: payload.event.device.id,
-//       unidad: payload.event.device.name
-//     });
-
-//     await alerta.create(nuevaAlerta.dataValues, {
-//         fields: [
-//           'eventId', 
-//           'eventType', 
-//           'event', 
-//           'eventDescription', 
-//           'eventTime', 
-//           'eventMs', 
-//           'alertEventURL', 
-//           'incidentUrl', 
-//           'id_unidad', 
-//           'unidad'
-//         ]
-//     })
-//     .then(result => {})
-//     .catch(error => { console.log(error.message); });
-//   }
-//   else  {
-//     console.log(payload.data.conditions[0]);
-
-
-//     var data = payload.data.conditions[0];
-//     var validar = data['description'];
-//     const date = payload.eventTime;
-//     const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
-
-//     let nuevaAlerta = new alerta({
-//       eventId: payload.eventId,
-//       eventType: payload.eventType,
-//       event: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
-//       eventDescription: validar == "Harsh Event" ? data['description'] : 'Parada No Autorizada',
-//       eventTime: formato,
-//       eventMs: null,
-//       alertEventURL: payload.data.incidentUrl,
-//       incidentUrl: null,
-//       id_unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['id'] : data['details']['insideGeofence']['vehicle']['id'],
-//       unidad: validar == "Harsh Event" ? data['details']['harshEvent']['vehicle']['name'] : data['details']['insideGeofence']['vehicle']['name']
-//     });
-
-//     await alerta.create(nuevaAlerta.dataValues, {
-//       fields: [
-//         'eventId', 
-//         'eventType', 
-//         'event', 
-//         'eventDescription', 
-//         'eventTime', 
-//         'eventMs', 
-//         'alertEventURL', 
-//         'incidentUrl', 
-//         'id_unidad', 
-//         'unidad'
-//       ]
-//   })
-//   .then(result => {})
-//   .catch(error => { console.log(error.message); });
-//   }
-
-//   res.status(200).send('Ok');
 // });
