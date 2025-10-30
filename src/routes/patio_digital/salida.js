@@ -19,4 +19,7 @@ module.exports = app => {
     app.patch('/salida-salida/cancelarunidadcaseta', [verificarToken], Salida.cancelarUnidadEnCaseta);
     app.patch('/salida-salida/autorizarsalidaconomision', [verificarToken], Salida.autorizarSalidaConOmisiones);
     app.patch('/salida-salida/confirmarsalida', [verificarToken], Salida.confirmarSalida);
+    
+    app.patch('/salida-salida/confirmarsalidatemporal', [verificarToken], Salida.confirmarSalidaTemporal);
+
 }

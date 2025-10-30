@@ -55,6 +55,7 @@ module.exports = app => {
                     END AS base,
                     PAU.estatus,
                     PAU.unidad AS economico,
+                    PAU.salida_temporal,
                     ENT.fecha_entrada,
                     PAU.fk_entrada,
                     PAU.fk_salida

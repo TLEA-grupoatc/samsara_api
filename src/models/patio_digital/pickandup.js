@@ -42,6 +42,22 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.BOOLEAN,
             allowNull: true
         },
+        salida_temporal: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true
+        },
+        motivo_salida_temporal: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+        fecha_salida_temporal: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        fecha_regreso_salida_temporal: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
         creado_el: {
             type: DataTypes.DATE,
             allowNull: false,

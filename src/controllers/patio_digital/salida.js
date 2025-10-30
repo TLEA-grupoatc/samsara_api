@@ -41,7 +41,7 @@ module.exports = app => {
         try {
             
             const unidades = await Pickandup.findAll({
-                attributes: ['idpickandup', 'unidad', 'estatus', 'autorizacion_salida_con_omision'],
+                attributes: ['idpickandup', 'unidad', 'estatus', 'autorizacion_salida_con_omision', 'salida_temporal'],
                 where: {
                     fk_entrada: {
                         [Op.ne]: null
@@ -529,6 +529,39 @@ module.exports = app => {
             if (t) await t.rollback();
             console.error('Error en crear salida:', error);
             return res.status(500).json({
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+    
+    app.confirmarSalidaTemporal = async (req, res) => {
+
+        try {
+            const { idpickandup, motivo_salida_temporal } = req.body;
+
+            await Pickandup.update(
+                {
+                    salida_temporal: 1,
+                    motivo_salida_temporal: motivo_salida_temporal,
+                    fecha_salida_temporal: moment()
+                },
+                {
+                    where: { idpickandup: idpickandup }
+                }
+            );
+
+            io.emit('SALIDA_TEMPORAL_CONFIRMADA');
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Salida temporal confirmada correctamente',
+                result: null
+            });
+
+        } catch (error) {
+            console.error('Error al confrimar salida temporal:', error);
+            return res.status(500).json({ 
                 OK: false,
                 msg: error,
             });

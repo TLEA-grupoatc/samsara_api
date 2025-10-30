@@ -633,7 +633,7 @@ module.exports = app => {
             const fecha = moment(fecha_arribo_programado).startOf('day');
 
             const checkAgenda = fecha.isSameOrBefore(today);
-            const checkMotivo = (id_motivo_programacion_arribo === 9 || id_motivo_programacion_arribo === 11 || id_motivo_programacion_arribo === 12);
+            const checkMotivo = (id_motivo_programacion_arribo === 9 || id_motivo_programacion_arribo === 11 || id_motivo_programacion_arribo === 12 || id_motivo_programacion_arribo === 13);
 
             if(checkAgenda && !checkMotivo){
                 return res.status(200).json({
@@ -1276,6 +1276,8 @@ const programacionesYEstatusDeLaSemana = async (sequelize, base, fechaInicio, fe
 
     try {
 
+        let fechaInicioFinal = moment(fechaInicio).subtract(3, 'days').format('YYYY-MM-DD');
+
         const programacionesSemanaYEstatus = await sequelize.query(
         `
             WITH
@@ -1330,7 +1332,7 @@ const programacionesYEstatusDeLaSemana = async (sequelize, base, fechaInicio, fe
         {
             replacements: {
             base: base,
-            fechaInicio: fechaInicio,
+            fechaInicio: fechaInicioFinal,
             fechaFin: fechaFin
             },
             type: sequelize.QueryTypes.SELECT,

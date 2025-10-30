@@ -102,19 +102,20 @@ cron.schedule('0 */2 * * *', () => {
 app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
-  // const filePath = './webhookAPITLEA_payload.txt';
+  const filePath = './webhookAPITLEA_payload.txt';
 
-  // fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
-  //   if(err) {
-  //     console.error('Error writing payload to file:', err);
-  //   }
-  // });
+  fs.appendFile(filePath, JSON.stringify(payload, null, 2) + '\n', (err) => {
+    if(err) {
+      console.error('Error writing payload to file:', err);
+    }
+  });
 
   const timestamp = payload.eventMs;
   const date = new Date(timestamp);
   const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
   var validacionEvento = '';
   var eventoCase;
+  var ponde = 0
   
   var eventoformat1 = payload.event.details.replace('Se detectó un evento por ', "");
   var eventoformat2 = eventoformat1.split(' en el vehículo')[0];
@@ -152,44 +153,45 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
   }
 
   switch(eventoformat2) {
-    case 'Alto omitido': eventoCase = 'Alto omitido'; break;
-    case 'Rolling Stop': eventoCase = 'Alto omitido'; break;
+    case 'Alto omitido': eventoCase = 'Alto omitido'; ponde = 0; break;
+    case 'Rolling Stop': eventoCase = 'Alto omitido'; ponde = 0; break;
 
-    case 'Evento severo': eventoCase = 'Somnolencia'; break;
+    case 'Evento severo': eventoCase = 'Somnolencia'; ponde = 3; break;
 
-    case 'Botón de pánico': eventoCase = 'Botón de pánico'; break;
+    case 'Botón de pánico': eventoCase = 'Botón de pánico'; ponde = 0; break;
 
-    case 'Colisión': eventoCase = 'Accidente'; break;
-    case 'Crash': eventoCase = 'Accidente'; break;
+    case 'Colisión': eventoCase = 'Accidente'; ponde = 5; break;
+    case 'Crash': eventoCase = 'Accidente'; ponde = 5; break;
 
-    case 'Conducción distraída': eventoCase = 'Conducción distraída'; break;
-    case 'Distracted Driving': eventoCase = 'Conducción distraída'; break;
+    case 'Conducción distraída': eventoCase = 'Conducción distraída'; ponde = 0; break;
+    case 'Distracted Driving': eventoCase = 'Conducción distraída'; ponde = 0; break;
 
-    case 'Cuasi-colisión': eventoCase = 'Advertencia de Colisión Frontal'; break;
-    case 'Forward Collision Warning': eventoCase = 'Advertencia de Colisión Frontal'; break;
+    case 'Cuasi-colisión': eventoCase = 'Advertencia de Colisión Frontal'; ponde = 4; break;
+    case 'Forward Collision Warning': eventoCase = 'Advertencia de Colisión Frontal'; ponde = 4; break;
 
-    case 'Cámara obstruida': eventoCase = 'Cámara obstruida'; break;
-    case 'Obstructed Camera': eventoCase = 'Cámara obstruida'; break;
+    case 'Cámara obstruida': eventoCase = 'Cámara obstruida'; ponde = 2; break;
+    case 'Obstructed Camera': eventoCase = 'Cámara obstruida'; ponde = 2; break;
 
-    case 'Distancia de seguimiento': eventoCase = 'Distancia de seguimiento'; break;
-    case 'Following Distance': eventoCase = 'Distancia de seguimiento'; break;
+    case 'Distancia de seguimiento': eventoCase = 'Distancia de seguimiento'; ponde = 3; break;
+    case 'Following Distance': eventoCase = 'Distancia de seguimiento'; ponde = 3; break;
 
-    case 'Frenado brusco': eventoCase = 'Frenado brusco'; break;
-    case 'Harsh Brake': eventoCase = 'Frenado brusco'; break;
+    case 'Frenado brusco': eventoCase = 'Frenado brusco'; ponde = 3; break;
+    case 'Harsh Brake': eventoCase = 'Frenado brusco'; ponde = 3; break;
 
-    case 'Giro brusco': eventoCase = 'Giro brusco'; break;
-    case 'Harsh Turn': eventoCase = 'Giro brusco'; break;
+    case 'Giro brusco': eventoCase = 'Giro brusco'; ponde = 2; break;
+    case 'Harsh Turn': eventoCase = 'Giro brusco'; ponde = 2; break;
 
-    case 'Parada no Autorizada': eventoCase = 'Parada no Autorizada'; break;
-    case 'Exceso de Velocidad': eventoCase = 'Exceso de Velocidad'; break;
+    case 'Parada no Autorizada': eventoCase = 'Parada no Autorizada'; ponde = 3; break;
+
+    case 'Exceso de Velocidad': eventoCase = 'Exceso de Velocidad'; ponde = 4; break;
     
-    case 'Sin cinturón de seguridad': eventoCase = 'Sin cinturón de seguridad'; break;
-    case 'No Seat Belt': eventoCase = 'Sin cinturón de seguridad'; break;
+    case 'Sin cinturón de seguridad': eventoCase = 'Sin cinturón de seguridad'; ponde = 0; break;
+    case 'No Seat Belt': eventoCase = 'Sin cinturón de seguridad'; ponde = 0; break;
 
-    case 'Uso del móvil': eventoCase = 'Uso del móvil'; break;
-    case 'Mobile Usage': eventoCase = 'Uso del móvil'; break;
+    case 'Uso del móvil': eventoCase = 'Uso del móvil'; ponde = 2; break;
+    case 'Mobile Usage': eventoCase = 'Uso del móvil'; ponde = 2; break;
 
-    default: 'Otros Eventos'; break;
+    default: 'Otros Eventos'; ponde = 0; break;
   }
 
   let nuevaAlerta = new alerta({
@@ -207,7 +209,8 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
     operador: operador,
     fecha_cierre: null,
     primer_interaccion: '',
-    aplica: eventoCase === 'Parada no Autorizada' ? 1 : 0
+    aplica: eventoCase === 'Parada no Autorizada' ? 1 : 0,
+    ponderacion: ponde
   });
 
   await alerta.create(nuevaAlerta.dataValues, {
@@ -226,11 +229,57 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
       'operador',
       'fecha_cierre',
       'primer_interaccion',
-      'aplica'
+      'aplica',
+      'ponderacion'
     ]
   }).then(result => {}).catch(error => { console.log(error.message); });
 
   res.status(200).send('Ok');
+});
+
+app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+  const payload = req.body;
+
+  const date = payload.eventTime;
+  const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
+
+  let nuevaAlerta = new alerta({
+    eventId: payload.eventId,
+    eventType: payload.eventType,
+    alertConditionId: 'gatewayUnplugged',
+    webhookId: payload.webhookId,
+    event: 'GPS Desconectado',
+    eventDescription: 'Se ah Desconectado la Puerta de enlace',
+    eventTime: formato,
+    alertEventURL: payload.data.incidentUrl,
+    id_unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['id'],
+    unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['name'],
+    numero_empleado: null,
+    operador: null,
+    fecha_cierre: null,
+    primer_interaccion: '',
+    aplica: 0,
+    ponderacion: 2
+  });
+
+  await alerta.create(nuevaAlerta.dataValues, {
+    fields: [
+      'eventId', 
+      'eventType',
+      'alertConditionId',
+      'webhookId',
+      'event', 
+      'eventDescription', 
+      'eventTime', 
+      'alertEventURL', 
+      'id_unidad', 
+      'unidad',
+      'fecha_cierre',
+      'primer_interaccion',
+      'aplica',
+      'ponderacion'
+    ]
+  }).then(result => {}).catch(error => { console.log(error.message); });
 });
 
 // app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {
@@ -912,46 +961,7 @@ http.listen(app.get('port'), async () => {
 
 
 
-// app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-//   const payload = req.body;
 
-//   const date = payload.eventTime;
-//   const formato = moment(date).format('YYYY-MM-DD HH:mm:ss'); 
-
-//   let nuevaAlerta = new geogaso({
-//     eventId: payload.eventId,
-//     eventType: payload.eventType,
-//     alertConditionId: 'gatewayUnplugged',
-//     webhookId: payload.webhookId,
-//     event: 'GPS Desconectado',
-//     eventDescription: 'Se ah Desconectado la Puerta de enlace',
-//     eventTime: formato,
-//     alertEventURL: payload.data.incidentUrl,
-//     id_unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['id'],
-//     unidad: payload.data.conditions[0]['details']['gatewayUnplugged']['vehicle']['name'],
-//     numero_empleado: null,
-//     operador: null,
-//     fecha_cierre: null,
-//     primer_interaccion: ''
-//   });
-
-//   await alerta.create(nuevaAlerta.dataValues, {
-//     fields: [
-//       'eventId', 
-//       'eventType',
-//       'alertConditionId',
-//       'webhookId',
-//       'event', 
-//       'eventDescription', 
-//       'eventTime', 
-//       'alertEventURL', 
-//       'id_unidad', 
-//       'unidad',
-//       'fecha_cierre',
-//       'primer_interaccion'
-//     ]
-//   }).then(result => {}).catch(error => { console.log(error.message); });
-// });
 
 // app.post('/webhookManipulacion', bodyParser.raw({type: 'application/json'}), async (req, res) => {
 //   const payload = req.body;

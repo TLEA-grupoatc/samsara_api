@@ -16,5 +16,8 @@ module.exports = app => {
     app.post('/entrada/crearinit', [verificarToken], Entrada.crearInitEntrada);
     app.post('/entrada/createAInput', [verificarToken, RecibirEvidenciaCheckListEntrada], Entrada.CreateNewInto);
     
+    app.get('/entrada/pendientesregreso/:base', Entrada.obtenerUnidadesPendientesRegreso);
+    app.patch('/entrada/confirmarregreso', [verificarToken], Entrada.confirmarRegresoDeSalida);
+
     app.delete('/entrada/unidadencasetacancelada/:idpickandup/:id_agenda', [verificarToken], Entrada.unidadEnCasetaCancelada);
 }

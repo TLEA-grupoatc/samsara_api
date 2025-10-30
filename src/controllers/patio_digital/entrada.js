@@ -1,4 +1,4 @@
-const { QueryTypes } = require('sequelize');
+const { QueryTypes, Op } = require('sequelize');
 const path = require('path');
 const fs = require('fs');
 const moment = require("moment");
@@ -322,6 +322,74 @@ module.exports = app => {
             return res.status(500).json({ 
                 OK: false,
                 msg: err,
+            });
+        }
+    }
+
+    app.obtenerUnidadesPendientesRegreso = async (request, response) => {
+
+        const base = request.params.base;
+
+        try {
+            const query = `
+                SELECT
+                    idpickandup,
+                    unidad,
+                    salida_temporal,
+                    fecha_salida_temporal
+                FROM 
+                    pd_pickandup
+                WHERE
+                    base = :base
+                    AND salida_temporal = 1;
+            `;
+
+            const result = await sequelize.query(query, {
+                replacements: { base },
+                type: QueryTypes.SELECT
+            });
+
+            response.status(200).json({
+                OK: true,
+                result: result
+            });
+        } catch (error) {
+            response.status(500).send('Error al obtener los registros: ' + error.message);
+        }
+    }
+
+    app.confirmarRegresoDeSalida = async (req, res) => {
+
+        try {
+
+            const { idsUnidades } = req.body;
+
+            
+            await Pickandup.update(
+                {
+                    salida_temporal: 0,
+                    fecha_regreso_salida_temporal: moment()
+                },
+                {
+                    where: { 
+                        idpickandup: { [Op.in]: idsUnidades }
+                    }
+                }
+            );
+
+            io.emit('SALIDA_TEMPORAL_CONFIRMADA');
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Regreso de unidad confirmado correctamente',
+                result: null
+            });
+
+        } catch (error) {
+            console.error('Error al confirmar regreso de salida temporal:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
             });
         }
     }

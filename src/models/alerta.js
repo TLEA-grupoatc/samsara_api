@@ -75,6 +75,10 @@ module.exports = (sequelize, DataType) => {
         fechahora_interaccion:{
             type: DataType.DATE,
             allowNull: true
+        },
+        ponderacion:{
+            type: DataType.INTEGER,
+            allowNull: true
         }
     },
     {
