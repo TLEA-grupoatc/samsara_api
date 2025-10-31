@@ -2177,6 +2177,20 @@ module.exports = app => {
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Salida de carril' THEN '' END")), 'eventdiez'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Somnolencia' THEN '' END")), 'eventonce'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Parada no Autorizada' THEN '' END")), 'eventdoce'],
+
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Advertencia de Colisión Frontal' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventuno'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Accidente' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventdos'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Distancia de seguimiento' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventtres'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Frenado brusco' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventcuatro'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Giro brusco' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventcinco'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Cámara obstruida' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventseis'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Uso del móvil' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventsiete'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'GPS Desconectado' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventocho'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Exceso de Velocidad' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventnueve'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Salida de carril' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventdiez'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Somnolencia' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventonce'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Parada no Autorizada' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventdoce'],
+
             ],
             where: {
                 operador: {
