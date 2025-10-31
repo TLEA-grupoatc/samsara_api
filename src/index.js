@@ -110,7 +110,10 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
 
   const timestamp = payload.eventMs;
   const date = new Date(timestamp);
+  const hoy = new Date();
   const formato = moment(date).format('YYYY-MM-DD HH:mm:ss');
+  const formato2 = moment(hoy).format('YYYY-MM-DD');
+  const formato3 = moment(hoy).format('HH:mm:ss');
   var validacionEvento = '';
   var eventoCase;
   var ponde = 0
@@ -123,12 +126,16 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
   var numero_operador = null;
 
   try {
-    const { data } = await Samsara.getDriverVehicleAssignments({ filterBy: 'vehicles', vehicleIds: payload.event.device.id });
+    const { data } = await Samsara.getDriverVehicleAssignments({ filterBy: 'vehicles', startTime: `${formato2}T${formato3}Z`, vehicleIds: payload.event.device.id });
     if (data && data.data && data.data.length > 0 && data.data[0].driver && data.data[0].driver.name) {
       operador = data.data[0].driver.name;
     }
   } catch (err) {
     console.error(err);
+  }
+
+  if(payload.event.alertConditionId == 'DeviceLocationStoppedInGeofence') {
+    validacionEvento = 'Parada no Autorizada';
   }
 
   if(payload.event.alertConditionId == 'DeviceLocationStoppedInGeofence') {
@@ -234,6 +241,9 @@ app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (r
 
   res.status(200).send('Ok');
 });
+
+
+
 
 app.post('/webhookPuertaEnlace', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
