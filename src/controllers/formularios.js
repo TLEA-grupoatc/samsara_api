@@ -2066,8 +2066,9 @@ module.exports = app => {
             attributes: [
                 'unidad', 
                 'operador', 
-                'event', 
+                'event',
                 [Sequelize.fn('COUNT', Sequelize.col('event')), 'total']
+                [Sequelize.fn('SUM', Sequelize.col('ponderacion')), 'totalponde']
             ],
             where: {
                 eventTime: {
