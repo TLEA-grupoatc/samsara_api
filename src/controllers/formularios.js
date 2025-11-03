@@ -2385,7 +2385,18 @@ module.exports = app => {
 
 
     app.obtenerCursos = (req, res) => {
+        var primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        var ultimoDiaMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+        var formatpdm = moment(primerDiaMes).format('YYYY-MM-DD');
+        var formatudm = moment(ultimoDiaMes).format('YYYY-MM-DD');
+
         curso.findAll({
+            where: {
+                fecha: {
+                    [Op.between]: [formatpdm, formatudm]
+                }
+            },
             order: [['fecha_creacion', 'DESC']]
         }).then(result => {
             res.json({
