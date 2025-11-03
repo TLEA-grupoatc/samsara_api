@@ -2425,6 +2425,7 @@ module.exports = app => {
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion, 
             resultado: body.resultado, 
+            ponderacion: body.ponderacion, 
             estatus: body.estatus
         });
 
@@ -2440,6 +2441,7 @@ module.exports = app => {
                 'fecha_creacion', 
                 'usuario_creacion', 
                 'resultado', 
+                'ponderacion', 
                 'estatus'
             ]
         })
