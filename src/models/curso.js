@@ -40,6 +40,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         }, 
+        resultado: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         estatus: {
             type: DataType.STRING,
             allowNull: true

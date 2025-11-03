@@ -2413,6 +2413,7 @@ module.exports = app => {
             fecha: body.fecha, 
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion, 
+            resultado: body.resultado, 
             estatus: body.estatus
         });
 
@@ -2427,6 +2428,7 @@ module.exports = app => {
                 'fecha', 
                 'fecha_creacion', 
                 'usuario_creacion', 
+                'resultado', 
                 'estatus'
             ]
         })
