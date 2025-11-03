@@ -45,7 +45,7 @@ module.exports = (sequelize, DataType) => {
             allowNull: true
         }, 
         ponderacion: {
-            type: DataType.STRING,
+            type: DataType.INTEGER,
             allowNull: true
         }, 
         estatus: {
