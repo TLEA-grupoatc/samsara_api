@@ -44,6 +44,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         }, 
+        ponderacion: {
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         estatus: {
             type: DataType.STRING,
             allowNull: true
