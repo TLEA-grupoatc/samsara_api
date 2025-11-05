@@ -2397,7 +2397,7 @@ module.exports = app => {
                     [Op.between]: [formatpdm, formatudm]
                 }
             },
-            order: [['fecha_creacion', 'DESC']]
+            order: [['fecha', 'DESC']]
         }).then(result => {
             res.json({
                 OK: true,

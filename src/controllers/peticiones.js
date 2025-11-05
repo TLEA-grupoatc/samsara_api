@@ -2225,8 +2225,6 @@ module.exports = app => {
 
     cron.schedule('55 23 * * *', () => { cargaPonderacionOperador(); });
 
-    cron.schedule('26 08 * * *', () => { cargaPonderacionOperador(); });
-
     async function cargaPonderacionOperador () {
         var primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         var ultimoDiaMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
