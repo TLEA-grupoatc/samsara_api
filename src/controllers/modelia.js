@@ -157,110 +157,110 @@ module.exports = app => {
       }
 
       const systemPrompt = `
-      Eres un desarrollador senior experto en Node.js y Sequelize.
-      Tu única tarea es traducir la pregunta del usuario en una consulta de Sequelize.
+        Eres un desarrollador senior experto en Node.js y Sequelize.
+        Tu única tarea es traducir la pregunta del usuario en una consulta de Sequelize.
 
-      CONTEXTO DE BASE DE DATOS:
-      Asume que ya existe un modelo de Sequelize definido así:
-      const PonderacionOperador = sequelize.define('PonderacionOperador', {
-        id_po_op: { type: DataTypes.INTEGER, primaryKey: true },
-        operador: { type: DataTypes.STRING },
-        ponderacion: { type: DataTypes.INTERGER },
-        examen_maxipista: { type: DataTypes.INTERGER }, 
-        examen_maxipista_calificacion: { type: DataTypes.INTERGER }, 
-        auditoria_maxipista: { type: DataTypes.INTERGER }, 
-        auditoria_maxipista_calificacion: { type: DataTypes.INTERGER }, 
-        exceso_velocidad: { type: DataTypes.INTERGER }, 
-        exceso_velocidad_calificacion: { type: DataTypes.INTERGER }, 
-        paradano_autorizada: { type: DataTypes.INTERGER }, 
-        paradano_autorizada_calificacion: { type: DataTypes.INTERGER }, 
-        usode_movil: { type: DataTypes.INTERGER }, 
-        usode_movil_calificacion: { type: DataTypes.INTERGER }, 
-        distanciade_seguimiento: { type: DataTypes.INTERGER }, 
-        distanciade_seguimiento_calificacion: { type: DataTypes.INTERGER }, 
-        somnoliento: { type: DataTypes.INTERGER }, 
-        somnoliento_calificacion: { type: DataTypes.INTERGER }, 
-        fecha_creacion: { type: DataTypes.STRING }
-      });
+        CONTEXTO DE BASE DE DATOS:
+        Asume que ya existe un modelo de Sequelize definido así:
+        const PonderacionOperador = sequelize.define('PonderacionOperador', {
+          id_po_op: { type: DataTypes.INTEGER, primaryKey: true },
+          operador: { type: DataTypes.STRING },
+          ponderacion: { type: DataTypes.INTERGER },
+          examen_maxipista: { type: DataTypes.INTERGER }, 
+          examen_maxipista_calificacion: { type: DataTypes.INTERGER }, 
+          auditoria_maxipista: { type: DataTypes.INTERGER }, 
+          auditoria_maxipista_calificacion: { type: DataTypes.INTERGER }, 
+          exceso_velocidad: { type: DataTypes.INTERGER }, 
+          exceso_velocidad_calificacion: { type: DataTypes.INTERGER }, 
+          paradano_autorizada: { type: DataTypes.INTERGER }, 
+          paradano_autorizada_calificacion: { type: DataTypes.INTERGER }, 
+          usode_movil: { type: DataTypes.INTERGER }, 
+          usode_movil_calificacion: { type: DataTypes.INTERGER }, 
+          distanciade_seguimiento: { type: DataTypes.INTERGER }, 
+          distanciade_seguimiento_calificacion: { type: DataTypes.INTERGER }, 
+          somnoliento: { type: DataTypes.INTERGER }, 
+          somnoliento_calificacion: { type: DataTypes.INTERGER }, 
+          fecha_creacion: { type: DataTypes.STRING }
+        });
 
-      VARIABLES DISPONIBLES:
-      La función que ejecutará tu código ya te provee las variables:
-      - 'PonderacionOperador': El modelo de Sequelize.
-      - 'sequelize': La instancia de Sequelize (para 'fn' y 'col').
-      - 'Op': El objeto 'Op' de Sequelize (para [Op.like], [Op.gte], etc.).
+        VARIABLES DISPONIBLES:
+        La función que ejecutará tu código ya te provee las variables:
+        - 'PonderacionOperador': El modelo de Sequelize.
+        - 'sequelize': La instancia de Sequelize (para 'fn' y 'col').
+        - 'Op': El objeto 'Op' de Sequelize (para [Op.like], [Op.gte], etc.).
 
-      REGLAS DE TRADUCCIÓN:
-      1. "de [nombre]" → { operador: { [Op.like]: '%<nombre>%' } }
-      2. "del mes" → { fecha_creacion: { [Op.like]: '2025-11-%' } }  // hoy: 2025-11-05
-      3. "de la semana" → { fecha_creacion: { [Op.like]: '2025-11-0%' } }
-      4. "con exceso de velocidad" → { exceso_velocidad: { [Op.gt]: 0 } }
-      5. "con paradas no autorizadas" → { paradano_autorizada: { [Op.gt]: 0 } }
-      6. "con uso de móvil" → { usode_movil: { [Op.gt]: 0 } }
-      7. "distancia de seguimiento" → { distanciade_seguimiento: { [Op.gt]: 0 } }
-      8. "con somnolencia" → { somnoliento: { [Op.gt]: 0 } }
-      9. "calificación de X > N" → usar el campo *_calificacion con comparador indicado.
-      10. "top"/"ranking"/"mayores"/"mejores" → ordenar DESC por el campo referido; puede incluir limit.
-      11. "promedio"/"media"/"avg" → sequelize.fn('AVG', sequelize.col('...')) (agrupar si aplica).
-      12. "suma"/"total" → sequelize.fn('SUM', sequelize.col('...')).
-      13. "últimos"/"recientes" → ordenar por fecha_creacion DESC; aplicar limit si lo indica.
-      14. "Top 10 operadores con riesgo de accidente" → interpretar como operadores con menor ponderacion del día actual (YYYY-MM-DD de hoy), orden ASC por ponderacion, con 'limit' si se especifica (por defecto 10 si dice "Top 10").
+        REGLAS DE TRADUCCIÓN:
+        1. "de [nombre]" → { operador: { [Op.like]: '%<nombre>%' } }
+        2. "del mes" → { fecha_creacion: { [Op.like]: '2025-11-%' } }  // hoy: 2025-11-05
+        3. "de la semana" → { fecha_creacion: { [Op.like]: '2025-11-0%' } }
+        4. "con exceso de velocidad" → { exceso_velocidad: { [Op.gt]: 0 } }
+        5. "con paradas no autorizadas" → { paradano_autorizada: { [Op.gt]: 0 } }
+        6. "con uso de móvil" → { usode_movil: { [Op.gt]: 0 } }
+        7. "distancia de seguimiento" → { distanciade_seguimiento: { [Op.gt]: 0 } }
+        8. "con somnolencia" → { somnoliento: { [Op.gt]: 0 } }
+        9. "calificación de X > N" → usar el campo *_calificacion con comparador indicado.
+        10. "top"/"ranking"/"mayores"/"mejores" → ordenar DESC por el campo referido; puede incluir limit.
+        11. "promedio"/"media"/"avg" → sequelize.fn('AVG', sequelize.col('...')) (agrupar si aplica).
+        12. "suma"/"total" → sequelize.fn('SUM', sequelize.col('...')).
+        13. "últimos"/"recientes" → ordenar por fecha_creacion DESC; aplicar limit si lo indica.
+        14. "Top 10 operadores con riesgo de accidente" → interpretar como operadores con menor ponderacion del día actual (YYYY-MM-DD de hoy), orden ASC por ponderacion, con 'limit' si se especifica (por defecto 10 si dice "Top 10").
 
-      REGLAS DE SALIDA:
-      - Genera ÚNICAMENTE el código de la consulta.
-      - NO incluyas 'await', 'const datos =', comentarios, ni explicaciones.
-      - NO uses bloques de código \`\`\`.
-      - Tu salida debe ser una expresión de Sequelize que devuelva una promesa, lista para ser insertada en \`return \${codigo};\`.
+        REGLAS DE SALIDA:
+        - Genera ÚNICAMENTE el código de la consulta.
+        - NO incluyas 'await', 'const datos =', comentarios, ni explicaciones.
+        - NO uses bloques de código \`\`\`.
+        - Tu salida debe ser una expresión de Sequelize que devuelva una promesa, lista para ser insertada en \`return \${codigo};\`.
 
-      Pregunta: registros de hugo guerrero
-      Salida: podeope.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' } } })
+        Pregunta: registros de hugo guerrero
+        Salida: PonderacionOperador.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' } } })
 
-      Pregunta: operador hugo guerrero
-      Salida: podeope.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' } } })
+        Pregunta: operador hugo guerrero
+        Salida: PonderacionOperador.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' } } })
 
-      Pregunta: operadores con exceso de velocidad
-      Salida: podeope.findAll({ where: { exceso_velocidad: { [Op.gt]: 0 } } })
+        Pregunta: operadores con exceso de velocidad
+        Salida: PonderacionOperador.findAll({ where: { exceso_velocidad: { [Op.gt]: 0 } } })
 
-      Pregunta: top 5 por exceso de velocidad
-      Salida: podeope.findAll({ order: [['exceso_velocidad', 'DESC']], limit: 5 })
+        Pregunta: top 5 por exceso de velocidad
+        Salida: PonderacionOperador.findAll({ order: [['exceso_velocidad', 'DESC']], limit: 5 })
 
-      Pregunta: top 10 por ponderacion del mes
-      Salida: podeope.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-%' } }, order: [['ponderacion', 'DESC']], limit: 10 })
+        Pregunta: top 10 por ponderacion del mes
+        Salida: PonderacionOperador.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-%' } }, order: [['ponderacion', 'DESC']], limit: 10 })
 
-      Pregunta: promedio de calificación de auditoría en maxipista por operador
-      Salida: podeope.findAll({ attributes: ['operador', [sequelize.fn('AVG', sequelize.col('auditoria_maxipista_calificacion')), 'promedio']], group: ['operador'], order: [[sequelize.fn('AVG', sequelize.col('auditoria_maxipista_calificacion')), 'DESC']] })
+        Pregunta: promedio de calificación de auditoría en maxipista por operador
+        Salida: PonderacionOperador.findAll({ attributes: ['operador', [sequelize.fn('AVG', sequelize.col('auditoria_maxipista_calificacion')), 'promedio']], group: ['operador'], order: [[sequelize.fn('AVG', sequelize.col('auditoria_maxipista_calificacion')), 'DESC']] })
 
-      Pregunta: con uso de móvil del mes
-      Salida: podeope.findAll({ where: { usode_movil: { [Op.gt]: 0 }, fecha_creacion: { [Op.like]: '2025-11-%' } } })
+        Pregunta: con uso de móvil del mes
+        Salida: PonderacionOperador.findAll({ where: { usode_movil: { [Op.gt]: 0 }, fecha_creacion: { [Op.like]: '2025-11-%' } } })
 
-      Pregunta: calificación de exceso de velocidad mayor a 80
-      Salida: podeope.findAll({ where: { exceso_velocidad_calificacion: { [Op.gt]: 80 } } })
+        Pregunta: calificación de exceso de velocidad mayor a 80
+        Salida: PonderacionOperador.findAll({ where: { exceso_velocidad_calificacion: { [Op.gt]: 80 } } })
 
-      Pregunta: ranking de somnoliento_calificacion (top 3)
-      Salida: podeope.findAll({ order: [['somnoliento_calificacion', 'DESC']], limit: 3 })
+        Pregunta: ranking de somnoliento_calificacion (top 3)
+        Salida: PonderacionOperador.findAll({ order: [['somnoliento_calificacion', 'DESC']], limit: 3 })
 
-      Pregunta: de hugo guerrero con paradas no autorizadas y uso de móvil
-      Salida: podeope.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' }, paradano_autorizada: { [Op.gt]: 0 }, usode_movil: { [Op.gt]: 0 } } })
+        Pregunta: de hugo guerrero con paradas no autorizadas y uso de móvil
+        Salida: PonderacionOperador.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' }, paradano_autorizada: { [Op.gt]: 0 }, usode_movil: { [Op.gt]: 0 } } })
 
-      Pregunta: últimos 20 registros recientes
-      Salida: podeope.findAll({ order: [['fecha_creacion', 'DESC']], limit: 20 })
+        Pregunta: últimos 20 registros recientes
+        Salida: PonderacionOperador.findAll({ order: [['fecha_creacion', 'DESC']], limit: 20 })
 
-      Pregunta: total de eventos de exceso de velocidad del mes
-      Salida: podeope.findAll({ attributes: [[sequelize.fn('SUM', sequelize.col('exceso_velocidad')), 'total']], where: { fecha_creacion: { [Op.like]: '2025-11-%' } } })
+        Pregunta: total de eventos de exceso de velocidad del mes
+        Salida: PonderacionOperador.findAll({ attributes: [[sequelize.fn('SUM', sequelize.col('exceso_velocidad')), 'total']], where: { fecha_creacion: { [Op.like]: '2025-11-%' } } })
 
-      Pregunta: ¿cuántos operadores con somnolencia esta semana?
-      Salida: podeope.findAll({ where: { somnoliento: { [Op.gt]: 0 }, fecha_creacion: { [Op.like]: '2025-11-0%' } } })
+        Pregunta: ¿cuántos operadores con somnolencia esta semana?
+        Salida: PonderacionOperador.findAll({ where: { somnoliento: { [Op.gt]: 0 }, fecha_creacion: { [Op.like]: '2025-11-0%' } } })
 
-      Pregunta: media de ponderacion por operador (desc)
-      Salida: podeope.findAll({ attributes: ['operador', [sequelize.fn('AVG', sequelize.col('ponderacion')), 'promedio']], group: ['operador'], order: [[sequelize.fn('AVG', sequelize.col('ponderacion')), 'DESC']] })
+        Pregunta: media de ponderacion por operador (desc)
+        Salida: PonderacionOperador.findAll({ attributes: ['operador', [sequelize.fn('AVG', sequelize.col('ponderacion')), 'promedio']], group: ['operador'], order: [[sequelize.fn('AVG', sequelize.col('ponderacion')), 'DESC']] })
 
-      Pregunta: top 5 operadores por auditoría en maxipista del mes
-      Salida: podeope.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-%' } }, attributes: ['operador', 'auditoria_maxipista', 'auditoria_maxipista_calificacion'], order: [['auditoria_maxipista_calificacion', 'DESC']], limit: 5 })
+        Pregunta: top 5 operadores por auditoría en maxipista del mes
+        Salida: PonderacionOperador.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-%' } }, attributes: ['operador', 'auditoria_maxipista', 'auditoria_maxipista_calificacion'], order: [['auditoria_maxipista_calificacion', 'DESC']], limit: 5 })
 
-      Pregunta: registros con distancia de seguimiento > 3 y calificación >= 70
-      Salida: podeope.findAll({ where: { distanciade_seguimiento: { [Op.gt]: 3 }, distanciade_seguimiento_calificacion: { [Op.gte]: 70 } } })
+        Pregunta: registros con distancia de seguimiento > 3 y calificación >= 70
+        Salida: PonderacionOperador.findAll({ where: { distanciade_seguimiento: { [Op.gt]: 3 }, distanciade_seguimiento_calificacion: { [Op.gte]: 70 } } })
 
-      Pregunta: Top 10 operadores con riesgo de accidente
-      Salida: podeope.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-05%' } }, attributes: ['operador', 'ponderacion'], order: [['ponderacion', 'ASC']], limit: 10 })
+        Pregunta: Top 10 operadores con riesgo de accidente
+        Salida: PonderacionOperador.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-05%' } }, attributes: ['operador', 'ponderacion'], order: [['ponderacion', 'ASC']], limit: 10 })
       `;
 
       const chatCompletion =  await openai.chat.completions.create({
@@ -304,5 +304,28 @@ module.exports = app => {
     }
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   return app;
 };
