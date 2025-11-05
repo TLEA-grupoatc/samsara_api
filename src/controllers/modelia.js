@@ -283,7 +283,7 @@ module.exports = app => {
       }
 
       // Si el código está vacío o es inválido, puede fallar aquí
-      if(!codigo || !codigo.startsWith("Liquidaciones.")) {
+      if(!codigo || !codigo.startsWith("PonderacionOperador.")) {
         if(codigo.includes("Promise.resolve([])")) {
             return res.json({ ok: true, respuesta: [] });
         }
@@ -293,12 +293,12 @@ module.exports = app => {
       }
 
       const fn = new AsyncFunction(
-          'Liquidaciones', 'sequelize', 'Op',
+          'PonderacionOperador', 'sequelize', 'Op',
           `'use strict';\nreturn (async () => { return ${codigo}; })();`
       );
 
       // Asume que 'liquidacion' es tu modelo 'Liquidaciones' importado
-      const datos = await fn(liquidacion, Sequelize, Sequelize.Op);
+      const datos = await fn(podeope, Sequelize, Sequelize.Op);
 
       res.json({ ok: true, respuesta: datos });
     } 
