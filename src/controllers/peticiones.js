@@ -2225,6 +2225,8 @@ module.exports = app => {
 
     cron.schedule('55 23 * * *', () => { cargaPonderacionOperador(); });
 
+    cron.schedule('26 08 * * *', () => { cargaPonderacionOperador(); });
+
     async function cargaPonderacionOperador () {
         var primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         var ultimoDiaMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
@@ -2262,7 +2264,7 @@ module.exports = app => {
 
         const alertas = await alerta.findAll({
             attributes: [
-                [alerta.sequelize.fn('COUNT', alerta.sequelize.col('id_alerta')), 'namas'], // Cambié de SUM a COUNT
+                [alerta.sequelize.fn('COUNT', alerta.sequelize.col('id_alerta')), 'namas'],
                 'operador',
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Advertencia de Colisión Frontal' THEN '' END")), 'eventuno'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Accidente' THEN '' END")), 'eventdos'],
@@ -2270,7 +2272,7 @@ module.exports = app => {
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Frenado brusco' THEN '' END")), 'eventcuatro'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Giro brusco' THEN '' END")), 'eventcinco'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Cámara obstruida' THEN '' END")), 'eventseis'],
-                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Uso del móvil' THEN '' END")), 'eventsiete'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Uso del móvil' THEN '' END")), 'eventsiete'], 
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'GPS Desconectado' THEN '' END")), 'eventocho'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Exceso de Velocidad' THEN '' END")), 'eventnueve'],
                 [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Salida de carril' THEN '' END")), 'eventdiez'],
@@ -2296,17 +2298,16 @@ module.exports = app => {
                     [Op.ne]: ''
                 },
                 eventTime: {
-                    [Op.between]: ['2025-05-01 00:00:00', formatudm + '23:59:59'],
+                    [Op.between]: [formatpdm + ' 00:00:00', formatudm + ' 23:59:59'],
                 }
             },
             group: ['operador'],
             order: [
                 ['operador', 'ASC']
             ],
+            raw: true // Add raw:true to get plain objects
         });
 
-        console.log(alertas);
-        
         for(const op of alertas) {
             var obtenerResultadoAuSe = obtenerValorAuditoriaSeguridad(op.operador);
             var resultadoas = obtenerResultadoAuSe === 'No Aprobo' ? 20 : 0;
@@ -2321,7 +2322,7 @@ module.exports = app => {
 
             let data = new podeope({
                 operador: op.operador, 
-                ponderacion: op.ponderacion, 
+                ponderacion: 100 - Number(toeventtres) - Number(toeventsiete) - Number(toeventnueve) - Number(toeventonce) - Number(toeventdoce) - Number(resultadoas) - Number(obtenerResultadoCu)   , 
                 examen_maxipista: obtenerResultadoCu, 
                 examen_maxipista_calificacion: obtenerResultadoCu, 
                 auditoria_maxipista: resultadoas > 0 ? 1 : 0, 
