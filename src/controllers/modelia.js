@@ -6,7 +6,6 @@ module.exports = app => {
   const Sequelize = require('sequelize');
   const { literal } = require('sequelize');
   const liquidacion = app.database.models.Liquidaciones;
-  const podeope = app.database.models.PonderacionOperador;
   const Op = Sequelize.Op;
 
   app.preguntarLiquidaciones = async (req, res) => {
@@ -148,7 +147,6 @@ module.exports = app => {
   };
 
 
-  
   app.preguntarPonderacionOp = async (req, res) => {
     try {
       const pregunta = req.params.pregunta;
@@ -304,6 +302,6 @@ module.exports = app => {
       res.status(500).json({ error: 'Error interno del servidor', details: error.message });
     }
   };
-  
+
   return app;
 };
