@@ -6,6 +6,7 @@ module.exports = app => {
   const Sequelize = require('sequelize');
   const { literal } = require('sequelize');
   const liquidacion = app.database.models.Liquidaciones;
+  const podeope = app.database.models.PonderacionOperador;
   const Op = Sequelize.Op;
 
   app.preguntarLiquidaciones = async (req, res) => {
