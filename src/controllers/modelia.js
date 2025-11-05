@@ -203,7 +203,10 @@ module.exports = app => {
         11. "promedio"/"media"/"avg" → sequelize.fn('AVG', sequelize.col('...')) (agrupar si aplica).
         12. "suma"/"total" → sequelize.fn('SUM', sequelize.col('...')).
         13. "últimos"/"recientes" → ordenar por fecha_creacion DESC; aplicar limit si lo indica.
-        14. "Top 10 operadores con riesgo de accidente" → interpretar como operadores con menor ponderacion del día actual (YYYY-MM-DD de hoy), orden ASC por ponderacion, con 'limit' si se especifica (por defecto 10 si dice "Top 10").
+        14. "Top 10 operadores con riesgo de accidentes" → interpretar como operadores con menor ponderacion del día actual (YYYY-MM-DD de hoy), orden ASC por ponderacion, con 'limit' si se especifica (por defecto 10 si dice "Top 10").
+        15. "Top 10 operadores con menor riesgo de accidentes" → interpretar como operadores con mayor ponderacion del día actual (YYYY-MM-DD de hoy), orden ASC por ponderacion, con 'limit' si se especifica (por defecto 10 si dice "Top 10").
+        16. "operador con menor riesgo de accidentes" → interpretar como operador con menor ponderacion del día actual (YYYY-MM-DD de hoy), orden ASC por ponderacion, con 'limit' si se especifica (por defecto 1 si dice "Top 10").
+        17. "operador con mayor riesgo de accidentes" → interpretar como operador con mayor ponderacion del día actual (YYYY-MM-DD de hoy), orden ASC por ponderacion, con 'limit' si se especifica (por defecto 1 si dice "Top 10").
 
         REGLAS DE SALIDA:
         - Genera ÚNICAMENTE el código de la consulta.
@@ -216,6 +219,12 @@ module.exports = app => {
 
         Pregunta: operador hugo guerrero
         Salida: PonderacionOperador.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' } } })
+
+        Pregunta: operador con mayor riesgo de accidentes
+        Salida: PonderacionOperador.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' }, ponderacion: { [Op.gt]: 90}, limit: 1 } })
+
+        Pregunta: operador con menor riesgo de accidentes
+        Salida: PonderacionOperador.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' }, ponderacion: { [Op.lt]: 50}, limit: 1 } })
 
         Pregunta: operadores con exceso de velocidad
         Salida: PonderacionOperador.findAll({ where: { exceso_velocidad: { [Op.gt]: 0 } } })
@@ -260,7 +269,10 @@ module.exports = app => {
         Salida: PonderacionOperador.findAll({ where: { distanciade_seguimiento: { [Op.gt]: 3 }, distanciade_seguimiento_calificacion: { [Op.gte]: 70 } } })
 
         Pregunta: Top 10 operadores con riesgo de accidente
-        Salida: PonderacionOperador.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-05%' } }, attributes: ['operador', 'ponderacion'], order: [['ponderacion', 'ASC']], limit: 10 })
+        Salida: PonderacionOperador.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-05%' } }, attributes: ['operador', 'ponderacion', 'fecha_creacion'], order: [['ponderacion', 'ASC']], limit: 10 })
+
+        Pregunta: Top 10 operadores con menor riesgo de accidente
+        Salida: PonderacionOperador.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-05%' } }, attributes: ['operador', 'ponderacion', 'fecha_creacion'], order: [['ponderacion', 'DESC']], limit: 10 })
       `;
 
       const chatCompletion =  await openai.chat.completions.create({
