@@ -186,11 +186,11 @@ module.exports = app => {
 
       VARIABLES DISPONIBLES:
       La función que ejecutará tu código ya te provee las variables:
-      - 'Liquidaciones': El modelo de Sequelize.
+      - 'PonderacionOperador': El modelo de Sequelize.
       - 'sequelize': La instancia de Sequelize (para 'fn' y 'col').
       - 'Op': El objeto 'Op' de Sequelize (para [Op.like], [Op.gte], etc.).
 
-      REGLAS DE TRADUCCIÓN (NLP → Filtros):
+      REGLAS DE TRADUCCIÓN:
       1. "de [nombre]" → { operador: { [Op.like]: '%<nombre>%' } }
       2. "del mes" → { fecha_creacion: { [Op.like]: '2025-11-%' } }  // hoy: 2025-11-05
       3. "de la semana" → { fecha_creacion: { [Op.like]: '2025-11-0%' } }
@@ -204,7 +204,7 @@ module.exports = app => {
       11. "promedio"/"media"/"avg" → sequelize.fn('AVG', sequelize.col('...')) (agrupar si aplica).
       12. "suma"/"total" → sequelize.fn('SUM', sequelize.col('...')).
       13. "últimos"/"recientes" → ordenar por fecha_creacion DESC; aplicar limit si lo indica.
-      14. **"Operadores con Riesgo de Accidente"** → interpretar como operadores con **menor ponderacion** **del día actual** (YYYY-MM-DD de hoy), orden **ASC** por ponderacion, con 'limit' si se especifica (por defecto 10 si dice "Top 10").
+      14. "Top 10 operadores con riesgo de accidente" → interpretar como operadores con menor ponderacion del día actual (YYYY-MM-DD de hoy), orden ASC por ponderacion, con 'limit' si se especifica (por defecto 10 si dice "Top 10").
 
       REGLAS DE SALIDA:
       - Genera ÚNICAMENTE el código de la consulta.
@@ -212,10 +212,10 @@ module.exports = app => {
       - NO uses bloques de código \`\`\`.
       - Tu salida debe ser una expresión de Sequelize que devuelva una promesa, lista para ser insertada en \`return \${codigo};\`.
 
-
-      EJEMPLOS (hoy: 2025-11-05):
-
       Pregunta: registros de hugo guerrero
+      Salida: podeope.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' } } })
+
+      Pregunta: operador hugo guerrero
       Salida: podeope.findAll({ where: { operador: { [Op.like]: '%hugo guerrero%' } } })
 
       Pregunta: operadores con exceso de velocidad
@@ -260,7 +260,7 @@ module.exports = app => {
       Pregunta: registros con distancia de seguimiento > 3 y calificación >= 70
       Salida: podeope.findAll({ where: { distanciade_seguimiento: { [Op.gt]: 3 }, distanciade_seguimiento_calificacion: { [Op.gte]: 70 } } })
 
-      Pregunta: Top 10 Operadores con Riesgo de Accidente
+      Pregunta: Top 10 operadores con riesgo de accidente
       Salida: podeope.findAll({ where: { fecha_creacion: { [Op.like]: '2025-11-05%' } }, attributes: ['operador', 'ponderacion'], order: [['ponderacion', 'ASC']], limit: 10 })
       `;
 
@@ -295,7 +295,6 @@ module.exports = app => {
           `'use strict';\nreturn (async () => { return ${codigo}; })();`
       );
 
-      // Asume que 'liquidacion' es tu modelo 'Liquidaciones' importado
       const datos = await fn(podeope, Sequelize, Sequelize.Op);
 
       res.json({ ok: true, respuesta: datos });
