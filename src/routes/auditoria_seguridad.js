@@ -2,7 +2,7 @@ module.exports = app => {
     const { verificarToken } = app.middlewares.auth;
     const as = app.controllers.auditaria_seguridad;
 
-    app.get('/obtenerAuditoriasSeguridad', verificarToken, as.obtenerAuditoriasSeguridad);
+    app.get('/obtenerAuditoriasSeguridad/:mes', verificarToken, as.obtenerAuditoriasSeguridad);
 
     app.post('/crearAuditoriaSeguridad', verificarToken, as.crearAuditoriaSeguridad);
     
