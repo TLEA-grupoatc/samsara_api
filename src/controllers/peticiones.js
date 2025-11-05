@@ -16,6 +16,11 @@ module.exports = app => {
     const seguimiento = app.database.models.Seguimientos;
     const ope = app.database.models.Operadores;
     const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
+    
+    const curso = app.database.models.Cursos;
+    const auditoria = app.database.models.AuditoriaSeguridad;
+    const podeope = app.database.models.PonderacionOperador;
+
 
     const entradaSalidaGeocerca = app.database.models.EntradaSalidaGeocerca;
 
@@ -2218,6 +2223,189 @@ module.exports = app => {
         });
     }
 
+    cron.schedule('55 23 * * *', () => { cargaPonderacionOperador(); });
+
+    async function cargaPonderacionOperador () {
+        var primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        var ultimoDiaMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+        var formatpdm = moment(primerDiaMes).format('YYYY-MM-DD');
+        var formatudm = moment(ultimoDiaMes).format('YYYY-MM-DD');
+
+        const auditorias = await auditoria.findAll({
+            where: {
+                creado_el: {
+                    [Op.between]: [formatpdm, formatudm],
+                },
+                estatus: {
+                    [Op.ne]: 'I'
+                }
+            },
+            order: [
+                ['creado_el', 'DESC']
+            ],
+        });
+
+        const cursos = await curso.findAll({
+            where: {
+                fecha: {
+                    [Op.between]: [formatpdm, formatudm],
+                },
+                estatus: {
+                    [Op.ne]: 'I'
+                }
+            },
+            order: [
+                ['fecha_creacion', 'DESC']
+            ],
+        });
+
+        const alertas = await alerta.findAll({
+            attributes: [
+                [alerta.sequelize.fn('COUNT', alerta.sequelize.col('id_alerta')), 'namas'], // Cambié de SUM a COUNT
+                'operador',
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Advertencia de Colisión Frontal' THEN '' END")), 'eventuno'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Accidente' THEN '' END")), 'eventdos'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Distancia de seguimiento' THEN '' END")), 'eventtres'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Frenado brusco' THEN '' END")), 'eventcuatro'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Giro brusco' THEN '' END")), 'eventcinco'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Cámara obstruida' THEN '' END")), 'eventseis'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Uso del móvil' THEN '' END")), 'eventsiete'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'GPS Desconectado' THEN '' END")), 'eventocho'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Exceso de Velocidad' THEN '' END")), 'eventnueve'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Salida de carril' THEN '' END")), 'eventdiez'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Somnolencia' THEN '' END")), 'eventonce'],
+                [Sequelize.fn('COUNT', Sequelize.literal("CASE WHEN Alertas.event = 'Parada no Autorizada' THEN '' END")), 'eventdoce'],
+
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Advertencia de Colisión Frontal' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventuno'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Accidente' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventdos'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Distancia de seguimiento' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventtres'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Frenado brusco' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventcuatro'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Giro brusco' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventcinco'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Cámara obstruida' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventseis'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Uso del móvil' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventsiete'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'GPS Desconectado' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventocho'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Exceso de Velocidad' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventnueve'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Salida de carril' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventdiez'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Somnolencia' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventonce'],
+                [Sequelize.fn('SUM', Sequelize.literal("CASE WHEN Alertas.event = 'Parada no Autorizada' THEN Alertas.ponderacion ELSE 0 END")), 'totaleventdoce'],
+
+            ],
+            where: {
+                operador: {
+                    [Op.ne]: ''
+                },
+                eventTime: {
+                    [Op.between]: ['2025-05-01 00:00:00', formatudm + '23:59:59'],
+                }
+            },
+            group: ['operador'],
+            order: [
+                ['operador', 'ASC']
+            ],
+        });
+
+        console.log(alertas);
+        
+        for(const op of alertas) {
+            var obtenerResultadoAuSe = obtenerValorAuditoriaSeguridad(op.operador);
+            var resultadoas = obtenerResultadoAuSe === 'No Aprobo' ? 20 : 0;
+
+            var obtenerResultadoCu = obtenerValorCurso(op.operador);
+
+            var toeventtres = op.eventtres > 5 ? 10 : 0;
+            var toeventsiete = op.eventsiete > 20 ? 10 : 0;
+            var toeventnueve = op.eventnueve > 5 ? 15 : 0;
+            var toeventonce = op.eventonce > 20 ? 10 : 0;
+            var toeventdoce = op.eventdoce > 5 ? 15 : 0;
+
+            let data = new podeope({
+                operador: op.operador, 
+                ponderacion: op.ponderacion, 
+                examen_maxipista: obtenerResultadoCu, 
+                examen_maxipista_calificacion: obtenerResultadoCu, 
+                auditoria_maxipista: resultadoas > 0 ? 1 : 0, 
+                auditoria_maxipista_calificacion: resultadoas, 
+                exceso_velocidad: op.eventnueve, 
+                exceso_velocidad_calificacion: toeventnueve, 
+                paradano_autorizada: op.eventdoce, 
+                paradano_autorizada_calificacion: toeventdoce, 
+                usode_movil: op.eventsiete, 
+                usode_movil_calificacion: toeventsiete, 
+                distanciade_seguimiento: op.eventtres, 
+                distanciade_seguimiento_calificacion: toeventtres, 
+                somnoliento: op.eventonce, 
+                somnoliento_calificacion: toeventonce, 
+                fecha_creacion: moment().format('YYYY-MM-DD')
+            });
+            
+            podeope.create(data.dataValues, {
+                fields: [
+                    'operador', 
+                    'ponderacion', 
+                    'examen_maxipista', 
+                    'examen_maxipista_calificacion', 
+                    'auditoria_maxipista', 
+                    'auditoria_maxipista_calificacion', 
+                    'exceso_velocidad', 
+                    'exceso_velocidad_calificacion', 
+                    'paradano_autorizada', 
+                    'paradano_autorizada_calificacion', 
+                    'usode_movil', 
+                    'usode_movil_calificacion', 
+                    'distanciade_seguimiento', 
+                    'distanciade_seguimiento_calificacion', 
+                    'somnoliento', 
+                    'somnoliento_calificacion', 
+                    'fecha_creacion'
+                ]
+            });
+
+            delay(2000)
+        }
+
+        function obtenerValorAuditoriaSeguridad(operador) {
+            if(operador) {
+                let index = auditorias.findIndex(m => m.operador === operador);
+                var result = index >= 0 ? auditorias[index].aprobo : 0;
+                
+                return result;
+            }
+
+            return null;
+        }
+        
+        function obtenerValorCurso(operador) {
+            if(operador) {
+                let index = cursos.findIndex(m => m.operador === operador);
+                var result = index >= 0 ? cursos[index].ponderacion : 0;
+                
+                return result;
+            }
+
+            return null;
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     app.aplicaNoAplicaAlerta = (req, res) => {
         let body = req.body;
 
@@ -2435,5 +2623,10 @@ module.exports = app => {
         }
     }
 
+
+    
+
     return app;
 }
+
+

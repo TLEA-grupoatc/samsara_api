@@ -2,11 +2,11 @@ module.exports = app => {
     const { verificarToken } = app.middlewares.auth;
     const as = app.controllers.auditaria_seguridad;
 
-    app.get('/obtenerAuditoriasSeguridad', as.obtenerAuditoriasSeguridad);
+    app.get('/obtenerAuditoriasSeguridad', verificarToken, as.obtenerAuditoriasSeguridad);
 
-    app.post('/crearAuditoriaSeguridad', as.crearAuditoriaSeguridad);
+    app.post('/crearAuditoriaSeguridad', verificarToken, as.crearAuditoriaSeguridad);
     
-    app.put('/actualizarAuditoriaSeguridad/:id_as', as.actualizarAuditoriaSeguridad);
+    app.put('/actualizarAuditoriaSeguridad/:id_as', verificarToken, as.actualizarAuditoriaSeguridad);
     
-    app.delete('/eliminarAuditoriaSeguridad/:id_as', as.eliminarAuditoriaSeguridad);
+    app.delete('/eliminarAuditoriaSeguridad/:id_as', verificarToken, as.eliminarAuditoriaSeguridad);
 }

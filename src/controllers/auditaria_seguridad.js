@@ -8,8 +8,8 @@ module.exports = app => {
     const Op = Sequelize.Op;
 
     app.obtenerAuditoriasSeguridad = (req, res) => {
-        var primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        var ultimoDiaMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+        var primerDiaMes = new Date(new Date().getFullYear(), req.params.mes - 1, 1);
+        var ultimoDiaMes = new Date(new Date().getFullYear(), req.params.mes - 1 + 1, 0);
 
         var formatpdm = moment(primerDiaMes).format('YYYY-MM-DD');
         var formatudm = moment(ultimoDiaMes).format('YYYY-MM-DD');
