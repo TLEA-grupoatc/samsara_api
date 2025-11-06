@@ -314,6 +314,9 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING(100),
             allowNull: true
         },
+        firma_supervisor: {
+            type: DataType.STRING(100)
+        },
         creado_el: {
             type: DataType.DATE,
             allowNull: false,

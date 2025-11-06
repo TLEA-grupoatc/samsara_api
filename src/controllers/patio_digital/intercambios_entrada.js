@@ -228,7 +228,7 @@ module.exports = app => {
             }
 
             const unidadEnCaseta = await Pickandup.findOne({
-                attributes: ['estatus', 'fk_entrada', 'fk_intercambios_entrada', 'fk_omision_intercambios_entrada'],
+                attributes: ['estatus', 'fk_entrada', 'fk_intercambios_entrada'],
                 where: {
                     idpickandup: idpickandup
                 }

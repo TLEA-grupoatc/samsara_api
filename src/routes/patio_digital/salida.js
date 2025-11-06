@@ -15,11 +15,11 @@ module.exports = app => {
     app.post('/salida-salida/autorizarsalidaconhallazgo', [verificarToken], Salida.autorizarSalidaConHallazgos);
     app.post('/salida-salida/searchByInputSalida', [verificarToken], Salida.ObtenerBusquedaSalida);
 
+    app.post('/salida-salida/firmasupervisor', [verificarToken], Salida.guardarFirmaSupervisorSalida);
+    
     app.patch('/salida-salida/confirmarunidadencaseta', [verificarToken], Salida.confirmarUnidadEnCasetaSalida);
     app.patch('/salida-salida/cancelarunidadcaseta', [verificarToken], Salida.cancelarUnidadEnCaseta);
     app.patch('/salida-salida/autorizarsalidaconomision', [verificarToken], Salida.autorizarSalidaConOmisiones);
     app.patch('/salida-salida/confirmarsalida', [verificarToken], Salida.confirmarSalida);
-    
     app.patch('/salida-salida/confirmarsalidatemporal', [verificarToken], Salida.confirmarSalidaTemporal);
-
 }

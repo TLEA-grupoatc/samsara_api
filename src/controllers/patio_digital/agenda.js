@@ -583,7 +583,8 @@ module.exports = app => {
             const motivos = await MotivoArribo.findAll({
                 attributes: [
                     ['id_motivo_programacion_arribo', 'value'],
-                    ['motivo', 'label']
+                    ['motivo', 'label'],
+                    'requiere_permiso'
                 ],
             });
 
@@ -1319,6 +1320,9 @@ const programacionesYEstatusDeLaSemana = async (sequelize, base, fechaInicio, fe
             SELECT
                 UA.id_agenda,
                 PAU.unidad,
+                PAU.unidad_negocio,
+                PAU.division,
+                PAU.unidad_negocio,
                 DATE(UA.fecha_programada) AS fecha_programada,
                 UA.horario_arribo,
                 UA.cumplimiento,

@@ -473,7 +473,7 @@ module.exports = app => {
 
         let allResults = [];
 
-        const pstartDate = moment().subtract(3, 'days').format('YYYY-MM-DD');
+        const pstartDate = moment().subtract(15, 'days').format('YYYY-MM-DD');
         const pendDate = moment().format('YYYY-MM-DD');
         const startDate = pstartDate.toString() + 'T00:00:00Z';
         const endDate = pendDate.toString() + 'T23:59:59Z';

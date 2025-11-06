@@ -14,6 +14,26 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(30),
             allowNull: false
         },
+        placas_tracto: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+        rem_1: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+        placas_rem_1: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+        rem_2: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
+        placas_rem_2: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
         operador: {
             type: DataTypes.STRING(100),
             allowNull: false
@@ -77,6 +97,10 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true
         },
         fk_entrada: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        fk_mantenimiento: {
             type: DataTypes.INTEGER,
             allowNull: true
         },
@@ -147,6 +171,7 @@ module.exports = (sequelize, DataTypes) => {
         PdPickAndUp.belongsTo(models.InspeccionEntrada, { foreignKey: 'fk_inspeccion_entrada', sourceKey: 'id_inspeccion_entrada' });
         PdPickAndUp.belongsTo(models.InspeccionSalida, { foreignKey: 'fk_inspeccion_salida', sourceKey: 'id_inspeccion_salida' });
         PdPickAndUp.belongsTo(models.Evidencias, { foreignKey: 'fk_evidencias' });
+        PdPickAndUp.belongsTo(models.Mantenimiento, { foreignKey: 'fk_mantenimiento' });
         PdPickAndUp.belongsTo(models.IntercambiosSalida, { foreignKey: 'fk_intercambios_salida' });
         PdPickAndUp.belongsTo(models.Salida, { foreignKey: 'fk_salida' });
     };

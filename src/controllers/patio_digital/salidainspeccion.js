@@ -24,7 +24,7 @@ module.exports = app => {
 
     const saveBase64File = (base64Data, type, id, sucesivo) => {
         
-          const evidenciaEntregadasPath = path.join(__dirname, '../../../uploads/fotos_inspeccion_salida');
+          const evidenciaEntregadasPath = path.join(__dirname, '../../../uploads/ev_inspeccion_salida');
         
           if (!fs.existsSync(evidenciaEntregadasPath)) {
             fs.mkdirSync(evidenciaEntregadasPath, { recursive: true });
@@ -137,6 +137,8 @@ module.exports = app => {
                     INPS_S.actualizado_el,
                     INPS_S.evidencia_ajuste_parametros_1,
                     INPS_S.evidencia_ajuste_parametros_2,
+                    INPS_S.evidencia_video_frenos,
+                    INPS_S.evidencia_video_unidad,
                     PAU.rem_1
                 FROM 
                     pd_pickandup PAU
@@ -244,14 +246,18 @@ module.exports = app => {
                 SELECT
                     INSP_SAL.id_inspeccion_salida,
                     PAU.idpickandup,
+                    PAU.estatus,
                     PAU.unidad,
                     PAU.rem_1,
                     PAU.rem_2,
-                    PAU.operador,
                     PAU.unidad_negocio,
                     PAU.division,
                     INSP_ENT.creado_el AS fecha_inspeccion_entrada,
-                    INSP_SAL.fecha_preliberacion
+                    INSP_SAL.fecha_preliberacion,
+                    INSP_SAL.evidencia_ajuste_parametros_1,
+                    INSP_SAL.evidencia_ajuste_parametros_2,
+                    INSP_SAL.evidencia_video_frenos,
+                    INSP_SAL.evidencia_video_unidad
                 FROM
                     pd_inspeccion_salida INSP_SAL
                     LEFT JOIN pd_pickandup PAU ON INSP_SAL.id_inspeccion_salida = PAU.fk_inspeccion_salida
@@ -293,6 +299,7 @@ module.exports = app => {
                 SELECT
                     INSP_SAL.id_inspeccion_salida,
                     PAU.idpickandup,
+                    PAU.estatus,
                     PAU.unidad,
                     PAU.rem_1,
                     PAU.rem_2,
@@ -300,7 +307,15 @@ module.exports = app => {
                     PAU.unidad_negocio,
                     PAU.division,
                     INSP_ENT.creado_el AS fecha_inspeccion_entrada,
-                    INSP_SAL.fecha_preliberacion
+                    INSP_SAL.fecha_preliberacion,
+                    INSP_SAL.evidencia_ajuste_parametros_1,
+                    INSP_SAL.evidencia_ajuste_parametros_2,
+                    INSP_SAL.evidencia_video_frenos,
+                    INSP_SAL.evidencia_video_unidad,
+                    INSP_SAL.firma_inspector,
+                    INSP_SAL.firma_operador,
+                    INSP_SAL.comentarios_operador,
+                    INSP_SAL.comentarios_inspector
                 FROM
                     pd_inspeccion_salida INSP_SAL
                     LEFT JOIN pd_pickandup PAU ON INSP_SAL.id_inspeccion_salida = PAU.fk_inspeccion_salida
@@ -479,6 +494,154 @@ module.exports = app => {
         }
     }
 
+    app.cargarEvienciaVideo = async (req, res) => {
+
+        try {
+
+            const documento = req.files[0];
+            const id_inspeccion_salida = req.params.id_inspeccion_salida
+
+            await InspeccionSalida.update(
+                {
+                    [documento.fieldname]: documento.filename
+                },
+                {
+                    where: { id_inspeccion_salida: id_inspeccion_salida }
+                }
+            )
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Video cargado correctamente',
+                result: null
+            });
+
+        } catch (error) {
+            console.error('Error al cargar video:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+     app.confirmarSalidaFosa = async (req, res) => {
+
+        // let t;
+        try {
+            // t = await Sequelize.transaction();
+            const { id_inspeccion_salida } = req.body;
+
+            await InspeccionSalida.update(
+                {
+                    fecha_preliberacion: moment(),
+                },
+                {
+                    where: { id_inspeccion_salida: id_inspeccion_salida },
+                }
+            )
+
+            await Pickandup.update(
+                {
+                    estatus: 'preliberada_inspeccion',
+                },
+                {
+                    where: { fk_inspeccion_salida: id_inspeccion_salida },
+                }
+            );
+
+            io.emit('FOSA_INSPECCION_SALIDA_ACTUALIZADA');
+            io.emit('INSPECCION_SALIDA_FINALIZADA');
+
+            // await t.commit();
+            return res.status(200).json({
+                OK: true,
+                msg: 'Unidad preliberada correctamente',
+                result: null
+            });
+
+        } catch (error) {
+            // if (t) await t.rollback();
+            console.error('Error al preliberar unidad:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.actualizarEvidenciasPreliberada = async (req, res) => {
+        
+        let t;
+        
+        try {
+            t = await Sequelize.transaction();
+            const documentosEvidencias = req.files;
+            const id_inspeccion_salida = req.params.id_inspeccion_salida;
+            const evidenciasPath = path.join(__dirname, '../../../uploads/ev_inspeccion_salida');
+
+            const columnasEvidencias = [
+                'evidencia_ajuste_parametros_1',
+                'evidencia_ajuste_parametros_2',
+                'evidencia_video_frenos',
+                'evidencia_video_unidad',
+            ];
+
+            let evidenciasPorActualizar = {};
+
+            console.log(documentosEvidencias)
+
+            const evidenciasExistentes = await InspeccionSalida.findOne({
+                attributes: columnasEvidencias,
+                where: { id_inspeccion_salida: id_inspeccion_salida },
+                transaction: t,
+            });
+
+            let documentosMap = {};
+            if (Array.isArray(documentosEvidencias)) {
+                for (const doc of documentosEvidencias) {
+                    documentosMap[doc.fieldname] = [doc];
+                }
+            } else {
+                documentosMap = documentosEvidencias || {};
+            }
+
+            for (let evidencia of columnasEvidencias) {
+                const archivoRecibido = documentosMap?.[evidencia]?.[0]?.filename;
+                if (archivoRecibido) {
+                    if (evidenciasExistentes[evidencia]) {
+                        EliminarEvidenciaAnterior(evidenciasExistentes[evidencia], evidenciasPath);
+                    }
+                    evidenciasPorActualizar[evidencia] = archivoRecibido;
+                }
+            }
+
+            await InspeccionSalida.update(
+                evidenciasPorActualizar,
+                {
+                    where: { id_inspeccion_salida: id_inspeccion_salida },
+                    transaction: t,
+                }
+            );
+
+            io.emit('UNIDADES_PRELIBERADAS_ACTUALIZADA');
+            await t.commit();
+
+            return res.json({
+                OK: true,
+                msg: 'Evidencias actualizadas correctamente'
+            });
+
+        } catch (error) {
+            if (t) await t.rollback();
+            console.error('Error en actualizar evidencias:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     app.obtenerUnidadesLiberadas = async (req, res) => {
 
         try {
@@ -617,34 +780,34 @@ module.exports = app => {
                 }
             );
 
-            const unidadInspeccionada = await InspeccionSalida.findOne({
-                attributes: ['evidencia_ajuste_parametros_1'],
-                include: [
-                    {
-                        model: InspeccionesInspSalida,
-                        as: 'InspSal',
-                        attributes: ['id_checklist_insp_sal']
-                    }
-                ],
-                where: { id_inspeccion_salida: id_inspeccion_salida },
-                transaction: t
-            });
+            // const unidadInspeccionada = await InspeccionSalida.findOne({
+            //     attributes: ['evidencia_ajuste_parametros_1'],
+            //     include: [
+            //         {
+            //             model: InspeccionesInspSalida,
+            //             as: 'InspSal',
+            //             attributes: ['id_checklist_insp_sal']
+            //         }
+            //     ],
+            //     where: { id_inspeccion_salida: id_inspeccion_salida },
+            //     transaction: t
+            // });
 
-            if(unidadInspeccionada.evidencia_ajuste_parametros_1 !== null && unidadInspeccionada.InspSal!== null){
-                await Pickandup.update(
-                    {estatus: 'preliberada_inspeccion'},
-                    {
-                        where: { fk_inspeccion_salida: id_inspeccion_salida },
-                        transaction: t
-                    }
-                );
-            }
+            // if(unidadInspeccionada.evidencia_ajuste_parametros_1 !== null && unidadInspeccionada.InspSal!== null){
+            //     await Pickandup.update(
+            //         {estatus: 'preliberada_inspeccion'},
+            //         {
+            //             where: { fk_inspeccion_salida: id_inspeccion_salida },
+            //             transaction: t
+            //         }
+            //     );
+            // }
 
             io.emit('FOSA_INSPECCION_SALIDA_ACTUALIZADA');
             
-            if(unidadInspeccionada.evidencia_ajuste_parametros_1 !== null && unidadInspeccionada.InspSal!== null){
-                io.emit('INSPECCION_SALIDA_FINALIZADA');
-            }
+            // if(unidadInspeccionada.evidencia_ajuste_parametros_1 !== null && unidadInspeccionada.InspSal!== null){
+            //     io.emit('INSPECCION_SALIDA_FINALIZADA');
+            // }
             await t.commit();
             return res.status(200).json({
                 OK: true,
@@ -666,11 +829,11 @@ module.exports = app => {
     return app;
 }
 
-// const EliminarEvidenciaAnterior = (nombreArchivo, filepath) => {
-//   if(nombreArchivo){
-//     const previousFilePath = path.join(filepath, nombreArchivo);
-//     if (fs.existsSync(previousFilePath)) {
-//       fs.unlinkSync(previousFilePath);
-//     }
-//   }
-// }
+const EliminarEvidenciaAnterior = (nombreArchivo, filepath) => {
+  if(nombreArchivo){
+    const previousFilePath = path.join(filepath, nombreArchivo);
+    if (fs.existsSync(previousFilePath)) {
+      fs.unlinkSync(previousFilePath);
+    }
+  }
+}

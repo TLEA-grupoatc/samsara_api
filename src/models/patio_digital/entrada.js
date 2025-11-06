@@ -277,6 +277,9 @@ module.exports = (sequelize, DataType) => {
         firma_operador: {
             type: DataType.STRING(100)
         },
+        firma_supervisor: {
+            type: DataType.STRING(100)
+        },
         creado_el: {
             type: DataType.DATE,
             allowNull: false,

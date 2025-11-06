@@ -6,16 +6,32 @@ module.exports = (sequelize, DataType) => {
             autoIncrement: true,
             allowNull: false
         },
-        fk_insp_salida: {
-            type: DataType.INTEGER,
-            allowNull: true,
-        },
         fecha_preliberacion: {
             type: DataType.DATE,
             allowNull: true,
         },
         fecha_liberacion: {
             type: DataType.DATE,
+            allowNull: true,
+        },
+        evidencia_ajuste_parametros_1: {
+            type: DataType.STRING(100),
+            allowNull: true,
+        },
+        evidencia_ajuste_parametros_2: {
+            type: DataType.STRING(100),
+            allowNull: true,
+        },
+        fecha_carga_ajuste_param: {
+            type: DataType.DATE,
+            allowNull: true,
+        },
+        evidencia_video_frenos: {
+            type: DataType.STRING(100),
+            allowNull: true,
+        },
+        evidencia_video_unidad: {
+            type: DataType.STRING(100),
             allowNull: true,
         },
         comentarios_operador: {
@@ -36,18 +52,6 @@ module.exports = (sequelize, DataType) => {
         },
         firma_operador: {
             type: DataType.STRING(100),
-            allowNull: true,
-        },
-        evidencia_ajuste_parametros_1: {
-            type: DataType.STRING(100),
-            allowNull: true,
-        },
-        evidencia_ajuste_parametros_2: {
-            type: DataType.STRING(100),
-            allowNull: true,
-        },
-        fecha_carga_ajuste_param: {
-            type: DataType.DATE,
             allowNull: true,
         },
         creado_el: {
@@ -75,7 +79,6 @@ module.exports = (sequelize, DataType) => {
 
     InspeccionSalida.associate = (models) => {
         InspeccionSalida.belongsTo(models.PickAndUp, { foreignKey: 'id_inspeccion_salida', targetKey: 'fk_inspeccion_salida' });
-        InspeccionSalida.belongsTo(models.InspeccionesInspSalida, { foreignKey: 'fk_insp_salida', as: 'InspSal' });
         InspeccionSalida.belongsTo(models.Usuarios, { foreignKey: 'fk_usuario_confirmacion_fosa' });
     };
     

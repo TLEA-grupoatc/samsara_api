@@ -127,5 +127,33 @@ module.exports = app => {
 
 
     app.get('/pruebasparaborrar', ca.pruebasparaborrar);
+    
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.get('/obtenerLiquidacionesAdvan', ca.obtenerLiquidacionesAdvan);
 }

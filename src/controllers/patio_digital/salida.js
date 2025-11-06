@@ -371,7 +371,8 @@ module.exports = app => {
             foto_hallazgo,
 
             firma_guardia,
-            firma_operador
+            firma_operador,
+            firma_supervisor
         } = req.body;
 
         // console.log(req.body);
@@ -464,7 +465,8 @@ module.exports = app => {
                 { campo: 'foto_libre_de_plagas', base64: foto_libre_de_plagas },
                 { campo: 'foto_libre_de_semillas_hojas', base64: foto_libre_de_semillas_hojas },
                 { campo: 'firma_guardia', base64: firma_guardia },
-                { campo: 'firma_operador', base64: firma_operador }
+                { campo: 'firma_operador', base64: firma_operador },
+                { campo: 'firma_supervisor', base64: firma_supervisor },
             ];
 
             for (let foto of fotosChecklist) {
@@ -483,7 +485,7 @@ module.exports = app => {
             const salidaCreada = await Salida.create(DatosSalida, { transaction: t });
 
             //comprobar intercambios si ya acabo, si aun no entonces que solo guarde el fk_salida
-            console.log(idpickandup)
+            // console.log(idpickandup)
 
             const unidadEnCaseta = await Pickandup.findOne({
                 attributes: ['estatus', 'fk_entrada', 'fk_intercambios_salida', 'fk_omision_intercambios_salida'],
@@ -529,6 +531,36 @@ module.exports = app => {
             if (t) await t.rollback();
             console.error('Error en crear salida:', error);
             return res.status(500).json({
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.guardarFirmaSupervisorSalida = async (req, res) => {
+
+        try {
+
+            let { firma_supervisor, id_salida } = req.body;
+
+            if (firma_supervisor){
+                firma_supervisor = saveBase64File(firma_supervisor, 'firma_supervisor');
+
+                await Salida.update(
+                    { firma_supervisor: firma_supervisor },
+                    { where: { id_salida: id_salida }}
+                )
+            }
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Firma guardada correctamente',
+                result: null
+            });
+
+        } catch (error) {
+            console.error('Error al guardar firma supervisor:', error);
+            return res.status(500).json({ 
                 OK: false,
                 msg: error,
             });
@@ -707,6 +739,7 @@ module.exports = app => {
                 
                 firma_guardia,
                 firma_operador,
+                firma_supervisor,
             } = req.body;
             
     
@@ -741,6 +774,10 @@ module.exports = app => {
 
             if(firma_operador !== undefined){
                 DatosSalida['firma_operador'] = saveBase64File(firma_operador, 'firma_operador');
+            }
+
+            if(firma_supervisor !== null){
+                DatosSalida['firma_supervisor'] = saveBase64File(firma_supervisor, 'firma_supervisor');
             }
 
             const estatus = 'salida_salida';

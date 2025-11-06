@@ -58,6 +58,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING(200),
             allowNull: true,
         },
+        fecha_hora_inicio: {
+            type: DataType.DATE,
+            allowNull: true,
+        },
+        fecha_hora_fin: {
+            type: DataType.DATE,
+            allowNull: true,
+        },
         creado_el: {
             type: DataType.DATE,
             allowNull: false,

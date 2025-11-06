@@ -865,41 +865,41 @@ module.exports = app => {
 
 
 
-        app.pruebasparaborrar = async (req, res) => {
-        try {
-            let pool = await sql.connect(config);
+    app.pruebasparaborrar = async (req, res) => {
+    try {
+        let pool = await sql.connect(config);
 
-            const today = new Date();
+        const today = new Date();
 // 
-            // let result = await pool.request().query(`SELECT * FROM operador where status = 1 and circuito_clave = 'GRAL'; `);
-            // let result = await pool.request().query(`DELETE FROM orden_concepto WHERE VALE_FOLIO = 33523`);
-            // let result = await pool.request().query(`SELECT Top(20) * FROM bitacoras; `);
-            let result = await pool.request().query(`select TOP(100)*  FROM orden_concepto order by FCH_CREA desc`);
-            // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
-            // let result = await pool.request().query(`select Top(100)*  FROM orden_concepto WHERE BENEFICIARIO = 'GUZMAN CASANOVA MANUEL JESUS' order by FCH_CREA desc`);
-            // let result = await pool.request().query(`SELECT TOP(1000) * FROM orden_concepto order by vale_fecha desc`);
-            // let result = await pool.request().query("SELECT concepto_clave, concepto_descrip from ordenconcepto_cto group by concepto_clave, concepto_descrip ;");
-            // let result = await pool.request()/.query("SELECT TOP(10)* vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos ");
+        // let result = await pool.request().query(`SELECT * FROM operador where status = 1 and circuito_clave = 'GRAL'; `);
+        // let result = await pool.request().query(`DELETE FROM orden_concepto WHERE VALE_FOLIO = 33523`);
+        // let result = await pool.request().query(`SELECT Top(20) * FROM bitacoras; `);
+        let result = await pool.request().query(`select TOP(100)*  FROM orden_concepto order by FCH_CREA desc`);
+        // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
+        // let result = await pool.request().query(`select Top(100)*  FROM orden_concepto WHERE BENEFICIARIO = 'GUZMAN CASANOVA MANUEL JESUS' order by FCH_CREA desc`);
+        // let result = await pool.request().query(`SELECT TOP(1000) * FROM orden_concepto order by vale_fecha desc`);
+        // let result = await pool.request().query("SELECT concepto_clave, concepto_descrip from ordenconcepto_cto group by concepto_clave, concepto_descrip ;");
+        // let result = await pool.request()/.query("SELECT TOP(10)* vos.ordenser_folio, vos.clave_bitacora, vos.terminal_clave, vos.fecha_orden, vos.origen_nom, vos.origen_dom, vos.destinatario_nom, vos.destinatario_dom, vos.operador_nombre, vos.cliente_nombre, vos.unidad FROM vordenser AS vos ");
 
 
 
-            // let result = await pool.request().query(
-            //     `SELECT * FROM bitacoras WHERE folio_bitacora = 14583 AND TERMINAL_BITACORA = 'MTY4' AND STATUS_BITACORA = 0`
-            // );
-            sql.close();
+        // let result = await pool.request().query(
+        //     `SELECT * FROM bitacoras WHERE folio_bitacora = 14583 AND TERMINAL_BITACORA = 'MTY4' AND STATUS_BITACORA = 0`
+        // );
+        sql.close();
 
 
-            res.json({
-                OK: true,
-                total: result['recordsets'][0].length,
-                Registros: result['recordsets'][0]
-            });
-        }
-        catch (err) {
-            console.error('Error al conectar o hacer la consulta:', err);
-            sql.close();
-        }
+        res.json({
+            OK: true,
+            total: result['recordsets'][0].length,
+            Registros: result['recordsets'][0]
+        });
     }
+    catch (err) {
+        console.error('Error al conectar o hacer la consulta:', err);
+        sql.close();
+    }
+}
 
 
 
@@ -1226,6 +1226,129 @@ module.exports = app => {
             sql.close();
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerLiquidacionesAdvan = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            let result = await pool.request().query(
+                `SELECT op.OPERADOR_NOMBRE, tra.TRACTO_NUM_ECO, liq.LIQUIDACION_CLAVE, liq.TERMINAL_CLAVE, liq.LIQUIDACION_FOLIO, liq.MONTO_LIQUIDACION, liq.FCH_LIQUIDACION, liq.USR_CREA FROM liquidacion AS liq
+                INNER JOIN operador AS op ON op.OPERADOR_CLAVE = liq.OPERADOR_CLAVE
+                INNER JOIN tracto AS tra ON tra.TRACTO_CLAVE =  liq.TRACTO_CLAVE
+                WHERE liq.FCH_LIQUIDACION >= '2025-11-06T00:00:00.000Z'`
+            );
+            
+            sql.close();
+
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     return app;
 }

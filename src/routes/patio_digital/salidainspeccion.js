@@ -17,6 +17,10 @@ module.exports = app => {
 
     app.post('/salidainspeccion/liberarunidad', [recibirVideo], salidaInspeccion.guardarLiberacion);
 
+    app.patch('/salidainspeccion/cargarvideo/:id_inspeccion_salida', [recibirVideo], salidaInspeccion.cargarEvienciaVideo);
+    app.patch('/salidainspeccion/salidaFosa', salidaInspeccion.confirmarSalidaFosa);
+
     app.patch('/salidainspeccion/guardarajustesparametros', salidaInspeccion.guardarAjusteParametros);
+    app.post('/salidainspeccion/actualizarevidenciaspreliberadas/:id_inspeccion_salida', [recibirVideo], salidaInspeccion.actualizarEvidenciasPreliberada);
     
 }

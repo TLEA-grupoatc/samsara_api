@@ -17,7 +17,7 @@ module.exports = app => {
 
     const io = app.io;
 
-    app.ObtenerProgramacionAgenda = async (request, response) => {
+    app.obtenerProgramacionAgenda = async (request, response) => {
 
         const base = request.params.base;
 
@@ -67,14 +67,15 @@ module.exports = app => {
         }
     }
 
-    app.ObtenerBusquedaEntrada = async(request, response) => {
+    app.obtenerBusquedaEntrada = async(request, response) => {
         try {
             const { search } = request.body;
             const { page = 1, limit = 100 } = request.query;
             const offset = (page - 1) * limit;
     
             const query = `
-                SELECT 
+                SELECT
+                    PAU.idpickandup,
                     PAU.base,
                     PAU.operador, 
                     E.alcoholimetro, 
@@ -129,7 +130,7 @@ module.exports = app => {
         }
     }
     
-    app.ObtenerEntradas = async (request, response) => {
+    app.obtenerEntradas = async (request, response) => {
 
         const base = request.params.base;
 
@@ -177,7 +178,7 @@ module.exports = app => {
         }
     }
 
-    app.ObtenerDetallesEntrada = async (req, res) => {
+    app.obtenerDetallesEntrada = async (req, res) => {
         
         try {
 
@@ -193,6 +194,9 @@ module.exports = app => {
                     'unidad_negocio',
                     'division',
                     'cargado',
+                    'placas_tracto',
+                    'rem_1',
+                    'rem_2',
                 ],
                 include: [
                     {
@@ -451,7 +455,7 @@ module.exports = app => {
         }
     }
     
-    app.CreateNewInto = async (req, res) => {
+    app.createNewInto = async (req, res) => {
 
         let t;
 
@@ -567,7 +571,8 @@ module.exports = app => {
                 foto_libre_de_semillas_hojas,
 
                 firma_guardia,
-                firma_operador
+                firma_operador,
+                firma_supervisor,
             } = req.body;
 
             // console.log(req.body)
@@ -672,9 +677,9 @@ module.exports = app => {
                 { campo: 'foto_libre_de_plagas', base64: foto_libre_de_plagas },
                 { campo: 'foto_libre_de_semillas_hojas', base64: foto_libre_de_semillas_hojas },
                 { campo: 'firma_guardia', base64: firma_guardia },
-                { campo: 'firma_operador', base64: firma_operador }
+                { campo: 'firma_operador', base64: firma_operador },
+                { campo: 'firma_supervisor', base64: firma_supervisor }
             ];
-
 
             for (let foto of fotosChecklist) {
                 if (foto.base64) {
@@ -741,7 +746,6 @@ module.exports = app => {
                 
                 // console.log({ fecha_programacion, fecha_reprogramacion, fecha_entrada_unidad });
                 // console.log({ checkCumplimientoProgramacion, checkCumplimientoReprogramacion });
-
                 
                 if (reprogramacionAnteriorCheck) {
                     const id_reprogramacion_arribo = reprogramacionAnteriorCheck.id_reprogramacion_arribo;
@@ -805,6 +809,36 @@ module.exports = app => {
         } catch (error) {
             if (t) await t.rollback();
             console.error('Error en crear entrada:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.guardarFirmaSupervisorEntrada = async (req, res) => {
+
+        try {
+
+            let { firma_supervisor, id_entrada } = req.body;
+
+            if (firma_supervisor){
+                firma_supervisor = saveBase64File(firma_supervisor, 'firma_supervisor');
+
+                await Entrada.update(
+                    { firma_supervisor: firma_supervisor },
+                    { where: { id_entrada: id_entrada }}
+                )
+            }
+
+            return res.status(200).json({
+                OK: true,
+                msg: 'Firma guardada correctamente',
+                result: null
+            });
+
+        } catch (error) {
+            console.error('Error al guardar firma supervisor:', error);
             return res.status(500).json({ 
                 OK: false,
                 msg: error,

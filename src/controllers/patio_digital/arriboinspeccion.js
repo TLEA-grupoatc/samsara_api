@@ -20,6 +20,8 @@ module.exports = app => {
     const InspeccionesInspEntrada = app.database.models.InspeccionesInspEntrada;
     const HallazgosInspEntrada = app.database.models.HallazgosInspEntrada;
 
+    const Mantenimiento = app.database.models.Mantenimiento;
+
     const CatalogoFamilia = app.database.models.CatalogoFamilia;
     const CatalogoComponente = app.database.models.CatalogoComponente;
     const Usuarios = app.database.models.Usuarios;
@@ -216,10 +218,6 @@ module.exports = app => {
                         'video_insp_ext_2',
                         'video_insp_fosa',
                         'video_insp_reporte_operador',
-                        'tracto_ot_correctivo',
-                        're1_ot_correctivo',
-                        'dl_ot_correctivo',
-                        're2_ot_correctivo',
                         'creado_el'
                     ],
                     include: [
@@ -232,6 +230,21 @@ module.exports = app => {
                                 'unidad_negocio',
                                 'division'
                             ],
+                            include: [
+                                {
+                                    model: Mantenimiento,
+                                    attributes: [
+                                        'tracto_ot_correctivo',
+                                        're1_ot_correctivo',
+                                        'dl_ot_correctivo',
+                                        're2_ot_correctivo',
+                                        'tracto_ot_preventivo',
+                                        're1_ot_preventivo',
+                                        'dl_ot_preventivo',
+                                        're2_ot_preventivo',
+                                    ]
+                                }
+                            ]
                         },
                         {
                             model: InspeccionesInspEntrada,
@@ -600,7 +613,10 @@ module.exports = app => {
             }
 
             const inspeccionCreada = await InspeccionEntrada.create(
-                {fk_usuario_confirmacion_fosa: id_usuario},
+                {
+                    fk_usuario_confirmacion_fosa: id_usuario,
+                    fecha_hora_inicio: moment()
+                },
                 { transaction: t }
             )
 
@@ -1040,6 +1056,16 @@ module.exports = app => {
                             transaction: t
                         }
                     );
+
+                    await InspeccionEntrada.update(
+                        { fecha_hora_fin: moment() },
+                        {
+                            where: { 
+                                id_inspeccion_entrada: id_inspeccion_entrada
+                            },
+                            transaction: t
+                        }
+                    );
                 }
                 
             } else {
@@ -1049,6 +1075,16 @@ module.exports = app => {
                         {estatus: 'mantenimiento'},
                         {
                             where: { fk_inspeccion_entrada: id_inspeccion_entrada },
+                            transaction: t
+                        }
+                    );
+
+                    await InspeccionEntrada.update(
+                        { fecha_hora_fin: moment() },
+                        {
+                            where: { 
+                                id_inspeccion_entrada: id_inspeccion_entrada
+                            },
                             transaction: t
                         }
                     );
@@ -1080,18 +1116,26 @@ module.exports = app => {
 
     app.actualizarEvidenciasInspeccionEntrada = async (req, res) => {
 
-        const {idpickandup, id_inspeccion_entrada, id_usuario, tracto_ot_correctivo, re1_ot_correctivo, dl_ot_correctivo, re2_ot_correctivo} = req.body;
+        const {
+            idpickandup,
+            id_inspeccion_entrada,
+            id_usuario,
+            tracto_ot_correctivo,
+            re1_ot_correctivo,
+            dl_ot_correctivo,
+            re2_ot_correctivo,
+            tracto_ot_preventivo,
+            re1_ot_preventivo,
+            dl_ot_preventivo,
+            re2_ot_preventivo
+        } = req.body;
+
         const documentosEvidencias = req.files;
         
         const evidenciasPath = path.join(__dirname, '../../../uploads/videos_inspeccion_entrada');
         
         let t;
-        let evidenciasPorActualizar = {
-            tracto_ot_correctivo,
-            re1_ot_correctivo,
-            dl_ot_correctivo,
-            re2_ot_correctivo,
-        };
+        let evidenciasPorActualizar = {};
 
         try {
             t = await Sequelize.transaction();
@@ -1136,7 +1180,58 @@ module.exports = app => {
                 }
             );
 
+            const mantenimiento = await Pickandup.findByPk(
+                idpickandup,
+                {
+                    attributes: ['fk_mantenimiento'],
+                    transaction: t
+                }
+            )
+
+            const check_ots = (
+                tracto_ot_correctivo
+                || re1_ot_correctivo
+                || dl_ot_correctivo
+                || re2_ot_correctivo
+                || tracto_ot_preventivo
+                || re1_ot_preventivo
+                || dl_ot_preventivo
+                || re2_ot_preventivo
+            );
+            
+            const check_mtto = mantenimiento.fk_mantenimiento ? true : false;
+
+            const ots = {
+                tracto_ot_correctivo: tracto_ot_correctivo,
+                re1_ot_correctivo: re1_ot_correctivo,
+                dl_ot_correctivo: dl_ot_correctivo,
+                re2_ot_correctivo: re2_ot_correctivo,
+                tracto_ot_preventivo: tracto_ot_preventivo,
+                re1_ot_preventivo: re1_ot_preventivo,
+                dl_ot_preventivo: dl_ot_preventivo,
+                re2_ot_preventivo: re2_ot_preventivo
+            }
+
+            if( check_mtto && check_ots ) {
+                await Mantenimiento.update(
+                    ots,
+                    {
+                        where: { id_mantenimiento: mantenimiento.fk_mantenimiento },
+                        transaction: t
+                    }
+                )
+            } else if( !check_mtto && check_ots ) {
+                const mantenimientoCreado = await Mantenimiento.create(ots, { transaction: t });
+
+                await Pickandup.update(
+                    { fk_mantenimiento: mantenimientoCreado.id_mantenimiento },
+                    { where: { idpickandup: idpickandup }, transaction: t}
+                )
+            }
+
             await t.commit();
+
+            io.emit('INSPECCION_ENTRADA_EVIDENCIAS_ACTUALIZADAS');
 
             return res.json({
                 OK: true,
