@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const sql = require('mssql');
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 module.exports = app => {
     const operador = app.database.models.Operadores;
@@ -30,7 +31,6 @@ module.exports = app => {
             encrypt: false
         }
     };
-    
 
     app.obtenerPlan = async (req, res) => {
         try {
@@ -519,23 +519,33 @@ module.exports = app => {
             const liquis = [
                 '1 LIQUIDACION DEL OPERADOR',
                 '2 RECIBO DE SALARIOS DEVENGADOS Y PAGADOS',
-                '3 RESUMEN DE LA NOMINA DEL OPERADOR',
-                '4 PRENOMINAS',
-                '5 COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)',
-                '6 REPORTE DE VALES DE COMBUSTIBLE',
-                '7 REPORTE PAGINA ULTRAGAS',
-                '8 REPORTE DEDUCCIONES',
-                '9 REPORTE DE CRUCES DE PASE',
-                '10 VALES DE COMIDA NO REGISTRADAS',
-                '11 VALES DE INCIDENCIA',
-                '12 VALES DE GASTOS EXTRAS',
-                '13 VALES DE TAXIS',
-                '14 CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',
-                '15 REPORTE DE EXCEL MANIOBAS EXTRAS',
-                '16 OTROS DOCUMENTOS',
-                '17 ANTICIPOS NO  MAYORES A 30 DÍAS',
-                '18 BITACORAS ANTERIORES A LA LIQUIDACIÓN',
-                '19 BITACORAS DE VIAJE',
+                '3 REPORTE DE VALES DE COMBUSTIBLE',
+                '4 REPORTE DEDUCCIONES',
+                '5 REPORTE DEDUCCIONES 2',
+                '6 REPORTE DE CRUCES DE PASE',
+                '7 VALES DE GASTOS EXTRAS',
+                '8 OTROS DOCUMENTOS',
+                '9 ANTICIPOS NO MAYORES A 30 DÍAS',
+                '10 BITACORAS ANTERIORES A LA LIQUIDACIÓN'
+
+                // '3 RESUMEN DE LA NOMINA DEL OPERADOR',
+                // '4 PRENOMINAS',
+                // '5 COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)',
+                // '7 REPORTE PAGINA ULTRAGAS',
+                // '10 VALES DE COMIDA NO REGISTRADAS',
+                // '11 VALES DE INCIDENCIA',
+                // '13 VALES DE TAXIS',
+                // '14 CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',
+                // '15 REPORTE DE EXCEL MANIOBAS EXTRAS',
+                // '19 BITACORAS DE VIAJE',
+            ];
+
+            const specialDocuments = [
+                '3 REPORTE DE VALES DE COMBUSTIBLE',
+                '4 REPORTE DEDUCCIONES', 
+                '5 REPORTE DEDUCCIONES 2',
+                '9 ANTICIPOS NO MAYORES A 30 DÍAS',
+                '10 BITACORAS ANTERIORES A LA LIQUIDACIÓN'
             ];
 
             if(camp === 'id_liquidacion') {
@@ -544,6 +554,8 @@ module.exports = app => {
             else {
                 lista = pres;
             }
+
+            
  
             let nombresProcesados = {};
              
@@ -560,15 +572,17 @@ module.exports = app => {
                     else {
                         nombresProcesados[nombreBase] = 1;
                     }
-             
+
+
+
                     listadeitems.push({
                         id_pd: 0,
-                        id_prenomina: null,
+                        id_prenomina: null, 
                         id_liquidacion: null,
                         nombre: nombreFinal,
                         descripcion: 'Sin Archivo',
                         tipo: '',
-                        archivo: null,
+                        archivo: specialDocuments.includes(nombreFinal) ? 'T' : null,
                         comentario: null,
                         comentario_rechazo: null,
                         fecha_creacion: null,
@@ -596,7 +610,7 @@ module.exports = app => {
                             nombre: nombreFinal,
                             descripcion: docu.descripcion || 'Sin Archivo',
                             tipo: docu.tipo || '',
-                            archivo: docu.archivo || null,
+                            archivo: specialDocuments.includes(nombreFinal) ? 'T' : docu.archivo || null,
                             comentario: docu.comentario || null,
                             comentario_rechazo: docu.comentario_rechazo || null,
                             fecha_creacion: docu.fecha_creacion || null,
@@ -1097,7 +1111,6 @@ module.exports = app => {
         });
     }
 
-
     app.ultimaFecha = async (req, res) => {
         var pres = await prenomina.findAll({
             attributes: [
@@ -1259,6 +1272,8 @@ module.exports = app => {
         });
     }
 
+
+    // registro de liquidaciones 
     app.registrarLiquidacion = (req, res) => {
         let body = req.body;
         var directorio = 'documentos/';
@@ -1420,6 +1435,254 @@ module.exports = app => {
             res.status(412).json({ OK: false, msg: error.message });
         });
     }
+
+
+
+
+    app.registrarLiquidacionAutomatica = async (req, res) => {
+        const hoy = new Date();
+        const formato = moment(hoy).format('YYYY-MM-DD HH:mm:ss');
+        let body = [];
+
+        try {
+            const response = await axios.get('https://servidorlocal.ngrok.app/obtenerLiquidacionesAdvan');
+            body = response.data.Registros || [];
+        }
+        catch (err) {
+            console.log(err);  
+        }
+
+        body.map(async op => {
+            var folio = `${op.TERMINAL_CLAVE.trim()}-${op.LIQUIDACION_FOLIO}`;
+
+            let registro = await liquidacion.findOne({ 
+                where: Sequelize.and({
+                    folio: folio
+                })
+            });
+
+            if(registro) {
+                console.log('Ya Existe el folio');
+
+                if(op.FCH_CAN != null) {
+                    let data = new liquidacion({
+                        estado: 'CANCELADO',
+                    });
+
+                    liquidacion.update(data.dataValues, {
+                        where: {
+                            id_liquidacion: registro.id_liquidacion
+                        },
+                        individualHooks: true, 
+                        fields: ['estado']
+                    }).then(result => {
+                        console.log('Cancelado Con Exito');
+                    }).catch(err => {
+                        console.log(err);
+                    });
+                }
+            }  
+            else {
+                if(op.STATUS_LIQ == 0 && op.MONTO_LIQUIDACION > 0 && op.FCH_CAN == null) {
+                    var usuario = '';
+
+                    
+                    // max 002854
+                    // camila 002385
+                    // luis rey 112809_tle
+                    // sandra 103022
+                    // caro 002818
+                    // alba 002889
+                    // carlos 2277
+                    // abi 103049
+                    // ale 1894
+
+                    if(op.USR_CREA === '002854') {
+                        usuario = 'Maximiliano Martinez';
+                    }
+                    else if(op.USR_CREA === '002385') {
+                        usuario = 'Camila Treviño';
+                    }
+                    else if(op.USR_CREA === '112809_tle') {
+                        usuario = 'Luis Martinez';
+                    }
+                    else if(op.USR_CREA === '103022') {
+                        usuario = 'Sandra Ramirez';
+                    }
+                    else if(op.USR_CREA === '002818') {
+                        usuario = 'Ana Espinoza';
+                    }
+                    else if(op.USR_CREA === '002889') {
+                        usuario = 'Alba Contreras';
+                    }
+                    else if(op.USR_CREA === '002277') {
+                        usuario = 'Juan Martinez';
+                    }
+                    else if(op.USR_CREA === '103049') {
+                        usuario = 'Abigail de la Cruz';
+                    }
+                    else if(op.USR_CREA === '001894') {
+                        usuario = 'Alejandra Ramos';
+                    }
+                    else {
+                        usuario = 'Maximiliano Martinez';
+                    }
+
+                    let nuevaLiq = new liquidacion({
+                        operador_clave: op.OPERADOR_CLAVE,
+                        operador: op.OPERADOR_NOMBRE.trim(),
+                        liquidacion_clave: op.LIQUIDACION_CLAVE,
+                        terminal: op.TERMINAL_CLAVE.trim(),
+                        folio: folio,
+                        monto: op.MONTO_LIQUIDACION,
+                        checklist: 0,
+                        firma: 0,
+                        pago: 0,
+                        fecha: formato,
+                        usuario: usuario,
+                        usuarioAdvan: op.USR_CREA,
+                        verificado_por: null,
+                        fecha_verificado: null,
+                        cargo_firma: null,
+                        fecha_firma: null,
+                        cargo_pago: null,
+                        fecha_pago: null,
+                        fecha_enviado_rev: null,
+                        comentarios: '',
+                        diferencia_diesel: 0,
+                        verificado_diesel_por: null,
+                        fecha_verificado_diesel: null,
+                        aplica_cobro_diesel: null,
+                        aplica_cobro_por: null,
+                        diferenciakilometros: null,
+                        estado: 'EN PROCESO'
+                    });
+
+                    liquidacion.create(nuevaLiq.dataValues, {
+                        individualHooks: true,
+                        fields: [
+                            'operador_clave',
+                            'operador',
+                            'liquidacion_clave',
+                            'terminal',
+                            'folio',
+                            'monto',
+                            'checklist',
+                            'firma',
+                            'pago',
+                            'fecha',
+                            'usuario',
+                            'usuarioAdvan',
+                            'verificado_por',
+                            'fecha_verificado',
+                            'cargo_firma',
+                            'fecha_firma',
+                            'cargo_pago',
+                            'fecha_pago',
+                            'fecha_enviado_rev',
+                            'comentarios',
+                            'diferencia_diesel',
+                            'verificado_diesel_por',
+                            'fecha_verificado_diesel',
+                            'aplica_cobro_diesel',
+                            'aplica_cobro_por',
+                            'diferenciakilometros',
+                            'estado'
+                        ]
+                    })
+                    .then(async result => {
+                        // res.json({ OK: true, Liquidacion: result });
+                        console.log(result.dataValues);
+                        const liquidacionId = result.dataValues.id_liquidacion;
+
+                        var listadoc = [
+                            '3 REPORTE DE VALES DE COMBUSTIBLE',
+                            '4 REPORTE DEDUCCIONES', 
+                            '5 REPORTE DEDUCCIONES 2',
+                            '9 ANTICIPOS NO MAYORES A 30 DÍAS',
+                            '10 BITACORAS ANTERIORES A LA LIQUIDACIÓN'
+                        ]
+
+                        for (let index = 0; index < listadoc.length; index++) {
+                            const element = listadoc[index];
+                            
+                            const newDoc = {
+                                id_prenomina: null,
+                                id_liquidacion: liquidacionId,
+                                nombre: element,
+                                descripcion: element,
+                                tipo: null,
+                                archivo: '',
+                                comentario: null,
+                                comentario_rechazo: null,
+                                fecha_creacion: formato,
+                                usuario: usuario,
+                                verificado: 0,
+                                verificado_por: null,
+                                rechazado_por: null
+                            };
+                            
+                            await prenominadocs.create(newDoc, {
+                                fields: Object.keys(newDoc)
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        // res.status(412).json({ OK: false, msg: error.message });
+                        console.log(error.message );
+                    });
+                }
+            }  
+        });
+
+        res.json({ OK: true });
+    }
+
+
+    app.quitarRechazoDocAuto = (req, res) => {
+        let nuevaPre = new prenominadocs({
+            verificado: 0
+        });
+
+        prenominadocs.update(nuevaPre.dataValues, {
+            where: {
+                id_pd: req.params.id_pd
+            },
+            fields: [
+                'verificado'
+            ]
+        })
+        .then(result => {
+            
+             let data = new liquidacion({
+                estado: 'EN PROCESO',
+            });
+
+            liquidacion.update(data.dataValues, {
+                where: {
+                    id_liquidacion: req.params.id_liquidacion
+                },
+                individualHooks: true, 
+                fields: ['estado']
+            }).then(result => {
+                console.log('En proceso Con Exito');
+            }).catch(err => {
+                console.log(err);
+            });
+
+            res.json({
+                OK: true,
+                Documentos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
 
     app.obtenerValesGastosLigados = (req, res) => {
         gasto.findAll({
@@ -2474,25 +2737,19 @@ module.exports = app => {
             const liquis = [
                 '1 LIQUIDACION DEL OPERADOR',
                 '2 RECIBO DE SALARIOS DEVENGADOS Y PAGADOS',
-                '3 RESUMEN DE LA NOMINA DEL OPERADOR',
-                '4 PRENOMINAS',
-                '5 COMBUSTIBLE LIQUIDADO (KM COMPUTADORA)',
-                '6 REPORTE DE VALES DE COMBUSTIBLE',
-                '7 REPORTE PAGINA ULTRAGAS',
-                '8 REPORTE DEDUCCIONES',
-                '9 REPORTE DE CRUCES DE PASE',
-                '10 VALES DE COMIDA NO REGISTRADAS',
-                '11 VALES DE INCIDENCIA',
-                '12 VALES DE GASTOS EXTRAS',
-                '13 VALES DE TAXIS',
-                '14 CARGO PARA COBRO DE LIQUIDACIONES ANTERIORES',
-                '15 REPORTE DE EXCEL MANIOBAS EXTRAS',
-                '16 OTROS DOCUMENTOS',
+                '3 REPORTE DE VALES DE COMBUSTIBLE',
+                '4 REPORTE DEDUCCIONES',
+                '5 REPORTE DEDUCCIONES 2',
+                '6 REPORTE DE CRUCES DE PASE',
+                '7 VALES DE GASTOS EXTRAS',
+                '8 OTROS DOCUMENTOS',
+                '9 ANTICIPOS NO  MAYORES A 30 DÍAS',
+                '10 BITACORAS ANTERIORES A LA LIQUIDACIÓN'
                 // '17 FOTOS DE PRUEBA DE AGUA',
                 // '18 FOTOS DE RELLENO',
                 // '19 FOTOS DE TRACTO',
                 // '20 FOTOS DE INVENTARIO',
-                '21 ALCOHOLIMETRO'
+                // '21 ALCOHOLIMETRO'
             ];
 
             if(camp === 'id_liquidacion') {
@@ -3535,26 +3792,6 @@ module.exports = app => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     app.operadoresCriticosLiquidaciones = (req, res) => {
         liquidacion.findAll({
             attributes: [
@@ -3579,14 +3816,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
 
     app.operadoresPromedioPago = async (req, res) => {
         const anio = req.params.anio || moment().year();

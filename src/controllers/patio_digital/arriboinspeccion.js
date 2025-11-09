@@ -1248,6 +1248,37 @@ module.exports = app => {
         }
     }
 
+    app.obtenerResumenInspeccionesEntrada = async (req, res) => {
+
+        try {
+
+            const query = `
+                SELECT
+                    PAU.base,
+                    PAU.unidad,
+                    PAU.division,
+                    PAU.unidad_negocio,
+                    DATE(INS_ENT.creado_el) as fecha_inspeccion
+                FROM
+                    pd_inspeccion_entrada INS_ENT
+                    LEFT JOIN pd_pickandup PAU ON INS_ENT.id_inspeccion_entrada = PAU.fk_inspeccion_entrada;
+            `;
+
+            const results = await Sequelize.query(query, {
+                type: Sequelize.QueryTypes.SELECT
+            });
+
+            return res.status(200).json(results);
+
+        } catch (error) {
+            console.error('Error al obtener reporte unidades inspeccionadas entrada:', error);
+            return res.status(500).json({
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     return app;
 }
 

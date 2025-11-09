@@ -338,6 +338,46 @@ module.exports = app => {
         }
     }
 
+    app.obtenerIntercambiosReporteAccesorios = async (req, res) => {
+
+        try {
+
+            const query = `
+                SELECT
+                    PAU.idpickandup,
+                    PAU.base,
+                    PAU.unidad,
+                    PAU.division,
+                    PAU.unidad_negocio,
+                    INTER.fecha_hora_inicio,
+                    INTER.fecha_hora_fin,
+                    INTER.cinchos,
+                    INTER.malla,
+                    INTER.antifaz,
+                    INTER.cojin,
+                    INTER.liga,
+                    INTER.llave_lona,
+                    INTER.barra
+                FROM
+                    pd_intercambios_entrada INTER
+                    LEFT JOIN pd_pickandup PAU ON INTER.id_intercambios_entrada = PAU.fk_intercambios_entrada;
+            `;
+
+            const result = await Sequelize.query(query, {
+                type: Sequelize.QueryTypes.SELECT
+            });
+
+            return res.status(200).json(result);
+
+        } catch (error) {
+            console.error('Error al obtener reporte accesorios:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     //  app.plantilla = async (req, res) => {
 
     //     // let t;

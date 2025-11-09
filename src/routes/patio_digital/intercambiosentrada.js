@@ -9,5 +9,6 @@ module.exports = app => {
     app.post('/intercambiosentrada/crear', IntercambiosEntrada.crearIntercambioEntrada);
     app.get('/intercambiosentrada/detallesintercambios/:idpickandup', IntercambiosEntrada.obtenerDetallesIntercambiosEntrada);
 
-    
+    app.get('/intercambiosentrada/reporte/accesorios', IntercambiosEntrada.obtenerIntercambiosReporteAccesorios);
+
 }

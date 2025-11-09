@@ -23,4 +23,5 @@ module.exports = app => {
     app.patch('/salidainspeccion/guardarajustesparametros', salidaInspeccion.guardarAjusteParametros);
     app.post('/salidainspeccion/actualizarevidenciaspreliberadas/:id_inspeccion_salida', [recibirVideo], salidaInspeccion.actualizarEvidenciasPreliberada);
     
+    app.get('/salidainspeccion/reporte/inspecciones', salidaInspeccion.obtenerResumenInspeccionesSalida);
 }

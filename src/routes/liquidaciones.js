@@ -56,6 +56,8 @@ module.exports = app => {
     app.post('/cargaDeExtras', verificarToken, Liq.cargaDeExtras);
     
     app.post('/registrarLiquidacion', [verificarToken, UniqueLiquidacionInsert], Liq.registrarLiquidacion);
+
+    app.get('/registrarLiquidacionAutomatica', Liq.registrarLiquidacionAutomatica);
     
     app.put('/editarLiquidacion/:id_liquidacion', verificarToken, Liq.editarLiquidacion);
     
@@ -106,6 +108,7 @@ module.exports = app => {
 
 
 
+    app.delete('/quitarRechazoDocAuto/:id_pd/:id_liquidacion', verificarToken, Liq.quitarRechazoDocAuto);
 
 
 

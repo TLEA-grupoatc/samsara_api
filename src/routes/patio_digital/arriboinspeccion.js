@@ -17,4 +17,5 @@ module.exports = app => {
 
     app.patch('/arriboinspeccion/actualizarevidencias', [recibirVideosInspeccionEntrada], arriboinspeccion.actualizarEvidenciasInspeccionEntrada);
     
+    app.get('/arriboinspeccion/reporte/inspecciones', arriboinspeccion.obtenerResumenInspeccionesEntrada);
 }

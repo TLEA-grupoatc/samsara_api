@@ -9,48 +9,48 @@ module.exports = app => {
     const Op = Sequelize.Op;
 
     app.getNowPrenominas = () => {
-        var today = new Date();
-        var year = today.getFullYear();
-        var weekNumber = getWeekNumber(today);
-        var weekStartAndEnd1 = getWeekStartAndEnd(year, weekNumber);
+        var hoy = new Date();
+        const actual = moment(hoy).format('YYYY-MM-DD');
+        const dias = moment(hoy).subtract(6, 'days');
 
         prenomina.findAll({
-            // where: {
-            //     fecha: {
-            //         [Op.between]: [weekStartAndEnd1.start.toISOString().split('T')[0] + ' 00:00:00', weekStartAndEnd1.end.toISOString().split('T')[0] + ' 23:59:59'],
-            //     }
-            // },
+            where: {
+                fecha: {
+                    [Op.between]: [dias + ' 00:00:00', actual + ' 23:59:59'],
+                }
+            },
             order: [
                 ['fecha', 'DESC']
             ],
-            limit: 50
+            // limit: 50
         }).then(result => {
             app.io.emit('SHOW_PRENOMINAS', {Prenominas: result});
         })
         .catch(error => {
-        console.log(error);
+            console.log(error);
         });
     };
 
     app.getNowLiquidaciones = () => {
-        const date = new Date();
-        const formato = moment(date).format('YYYY-MM-DD');
+        var hoy = new Date();
+        const actual = moment(hoy).format('YYYY-MM-DD');
+        const dias = moment(hoy).subtract(6, 'days');
 
         liquidacion.findAll({
-            // where: {
-            //     fecha: {
-            //         [Op.between]: [formato + ' 00:00:00', formato + ' 23:59:59']
-            //     }
-            // },
+            where: {
+                fecha: {
+                    [Op.between]: [dias + ' 00:00:00', actual + ' 23:59:59'],
+                }
+            },
             order: [
                 ['fecha', 'DESC']
             ],
-            limit: 90
+            // limit: 90
         }).then(result => {
             app.io.emit('SHOW_LIQUIDACIONES', {Liquidaciones: result});
         })
         .catch(error => {
-        console.log(error);
+            console.log(error);
         });
     };
 

@@ -152,8 +152,15 @@ module.exports = app => {
 
 
 
+    app.get('/obtenerValeCombustibleLiq/:folio', ca.obtenerValeCombustibleLiq);
 
+    app.get('/obtenerDeduccionesDosLiq/:operador', ca.obtenerDeduccionesDosLiq);
 
+    app.get('/obtenerDeduccionesLiq/:liquidacion', ca.obtenerDeduccionesLiq);
 
-    app.get('/obtenerLiquidacionesAdvan', ca.obtenerLiquidacionesAdvan);
+    app.get('/obtenerAnticiposTreitaDiasLiq/:operador', ca.obtenerAnticiposTreitaDiasLiq);
+
+    app.get('/obtenerBitacorasAnteriorLiq/:operador', ca.obtenerBitacorasAnteriorLiq);
+
+    //obtenerRegistrosOperadores
 }

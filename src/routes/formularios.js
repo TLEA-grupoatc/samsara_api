@@ -111,7 +111,9 @@ module.exports = app => {
 
 
     app.get('/obtenerRegistrosOperadores/:columna/:dato', Fo.obtenerRegistrosOperadores);
+
     
+    app.get('/obtenerUltimoDoping/:operador', verificarToken, Fo.obtenerUltimoDoping);
     
     
     app.get('/obtenerCursos/:mes', verificarToken, Fo.obtenerCursos);

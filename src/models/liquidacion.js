@@ -5,9 +5,17 @@ module.exports = (sequelize, DataType) => {
             autoIncrement: true,
             primaryKey: true
         },
+        operador_clave:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
         operador:{
             type: DataType.STRING,
             allowNull: false
+        },
+        liquidacion_clave:{
+            type: DataType.INTEGER,
+            allowNull: true
         },
         terminal:{
             type: DataType.STRING,
@@ -41,6 +49,10 @@ module.exports = (sequelize, DataType) => {
         usuario:{
             type: DataType.STRING,
             allowNull: false
+        },
+        usuarioAdvan:{
+            type: DataType.STRING,
+            allowNull: true
         },
         verificado_por:{
             type: DataType.STRING,

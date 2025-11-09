@@ -78,25 +78,34 @@ cron.schedule('* * * * *', () => {
 });
 
 // cron.schedule('* * * * *', () => { 
-cron.schedule('0 * * * *', () => {   
-  app.itinerarioP({}, {
-    json: (data) => console.log(data),
-    status: (statusCode) => ({
-      json: (data) => console.log(statusCode, data)
-    })
-  }); 
-});
-
-cron.schedule('0 */2 * * *', () => {   
-// cron.schedule('* * * * *', () => {   
-  app.obtenerRecorridoMesActual({}, {
-    json: (data) => console.log(data),
-    status: (statusCode) => ({
-      json: (data) => console.log(statusCode, data)
-    })
-  }); 
-});
-
+  cron.schedule('0 * * * *', () => {   
+    app.itinerarioP({}, {
+      json: (data) => console.log(data),
+      status: (statusCode) => ({
+        json: (data) => console.log(statusCode, data)
+      })
+    }); 
+  });
+  
+  cron.schedule('0 */2 * * *', () => {   
+    // cron.schedule('* * * * *', () => {   
+      app.obtenerRecorridoMesActual({}, {
+        json: (data) => console.log(data),
+        status: (statusCode) => ({
+          json: (data) => console.log(statusCode, data)
+        })
+      }); 
+    });
+    
+  
+  cron.schedule('*/3 * * * *', () => {   
+    app.registrarLiquidacionAutomatica({}, {
+      json: (data) => console.log(data),
+      status: (statusCode) => ({
+        json: (data) => console.log(statusCode, data)
+      })
+    }); 
+  });
 
 
 

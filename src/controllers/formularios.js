@@ -2731,6 +2731,58 @@ module.exports = app => {
 
 
 
+    app.obtenerUltimoDoping = (req, res) => {
+        dopope.findAll({
+            attributes: [
+                'operador',
+                'resultado',
+                'evidencia',
+                'fecha',
+                'fecha_creacion',
+                [Sequelize.literal('DATEDIFF(NOW(), fecha)'), 'dias_transcurridos']
+            ],
+            where: {
+                operador: req.params.operador
+            },
+            order: [['fecha', 'DESC']],
+            limit: 1
+        }).then(result => {
+            res.json({
+                OK: true,
+                Doping: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     app.obtenerRegistrosOperadores = (req, res) => {
         var columna = req.params.columna;

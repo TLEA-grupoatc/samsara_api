@@ -1302,17 +1302,230 @@ module.exports = app => {
 
 
 
-    app.obtenerLiquidacionesAdvan = async (req, res) => {
+    app.obtenerValeCombustibleLiq = async (req, res) => {
         try {
             let pool = await sql.connect(config);
 
             let result = await pool.request().query(
-                `SELECT op.OPERADOR_NOMBRE, tra.TRACTO_NUM_ECO, liq.LIQUIDACION_CLAVE, liq.TERMINAL_CLAVE, liq.LIQUIDACION_FOLIO, liq.MONTO_LIQUIDACION, liq.FCH_LIQUIDACION, liq.USR_CREA FROM liquidacion AS liq
-                INNER JOIN operador AS op ON op.OPERADOR_CLAVE = liq.OPERADOR_CLAVE
-                INNER JOIN tracto AS tra ON tra.TRACTO_CLAVE =  liq.TRACTO_CLAVE
+                `SELECT 
+                    liquidacion,
+                    folio_bitacora,
+                    vale_folio,
+                    CONVERT(date, vale_fecha) AS fecha_vale,
+                    tracto_num_eco,
+                    operador_nombre,
+                    gasolinera_descrip,
+                    precio,
+                    litros,
+                    importe
+                FROM dbo.vvalescomb
+                WHERE liquidacion = '${req.params.folio}' and status_vale = 0`
+            );
+
+            sql.close();
+
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+    app.obtenerDeduccionesDosLiq = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            let result = await pool.request().query(
+                `SELECT OPERADOR_CLAVE, OPERADOR_NOMBRE, OBSERVACIONES, concepto_ded, FCH_CREA, importe_inicial, abono, saldo FROM dbo.vdeducion_opr
+                    WHERE OPERADOR_CLAVE = ${req.params.operador}
+                    AND saldo > 0
+                    AND banCancela = 0
+                ORDER BY FCH_CREA DESC;`
+            );
+
+            sql.close();
+
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+    app.obtenerDeduccionesLiq = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            let result = await pool.request().query(
+                `SELECT
+                    liquidacion_clave,
+                    concepto_clave,
+                    CONCAT_WS('-', REPLACE(terminal_clave, ' ', ''), CAST(liquidacion_folio AS varchar(50))) AS Combinada,
+                    operador_nombre,
+                    tracto_num_eco,
+                    concepto_descrip,
+                    importe
+                FROM vLiq_ExportaPerDed
+                WHERE liquidacion_clave = ${req.params.liquidacion};`
+            );
+
+            sql.close();
+
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+    app.obtenerAnticiposTreitaDiasLiq = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            let result = await pool.request().query(
+                `SELECT
+                    v.VALE_TERMINAL,
+                    v.LIQUIDACION_CLAVE,
+                    v.VALE_FOLIO,
+                    CASE 
+                        WHEN v.VALE_FECHA IS NULL THEN NULL
+                        ELSE DATEDIFF(DAY, CONVERT(date, v.VALE_FECHA), CONVERT(date, GETDATE()))
+                    END                           AS [DíassinLiquidar],
+                    CONVERT(date, v.VALE_FECHA)   AS [Fecha],
+                    v.REFERENCIA                  AS [Concepto],
+                    v.OBSERV_VALE                 AS [Observaciones],
+                    v.PAGADO                      AS [Pagado],
+                    v.BENEFICIARIO                AS [Operador],
+                    v.TRACTO_NUM_ECO_PROV         AS [Unidad],
+                    v.CLAVE_BITACORA,
+                    b.TERMINAL_BITACORA,
+                    b.FOLIO_BITACORA
+                FROM vorden_concepto000 AS v
+                LEFT JOIN BITACORAS     AS b
+                    ON b.CLAVE_BITACORA = v.CLAVE_BITACORA
+                WHERE
+                    v.STATUS_VALE = 0
+                AND v.BENEFICIARIO = '${req.params.operador}'
+                AND v.LIQUIDACION_CLAVE IS NULL;`
+            );
+
+            sql.close();
+
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+    app.obtenerBitacorasAnteriorLiq = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            let result = await pool.request().query(
+                `SELECT
+                    b.TERMINAL_BITACORA                     AS [TERMINAL],
+                    b.FOLIO_BITACORA                        AS [FOLIO],
+                    CONVERT(date, b.FECHA_BITACORA)         AS [FECHA],
+                    o.OPERADOR_NOMBRE                       AS [OPERADOR],
+                    b.TRACTO_NUM_ECO                         AS [UNIDAD],
+                    CASE b.STATUS_BITACORA
+                        WHEN 1 THEN N'CERRADA'
+                        WHEN 0 THEN N'ABIERTA'
+                        ELSE CONCAT(N'ESTATUS_', b.STATUS_BITACORA)
+                    END                                      AS [ESTATUS],
+                    b.LIQUIDACION_CLAVE                      AS [LIQUIDACIÓN]
+                FROM ADVANPRO_TLE.dbo.BITACORAS AS b
+                LEFT JOIN ADVANPRO_TLE.dbo.OPERADOR AS o
+                    ON o.OPERADOR_CLAVE = b.OPERADOR_CLAVE
+                WHERE
+                    b.STATUS_BITACORA <> 2
+                AND o.OPERADOR_NOMBRE = '${req.params.operador}'
+                AND b.LIQUIDACION_CLAVE IS NULL
+                ORDER BY
+                    CONVERT(date, b.FECHA_BITACORA) DESC;`
+                );
+
+            sql.close();
+
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.obtenerLiquidacionesAdvan = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            // let result = await pool.request().query(
+            //     `SELECT op.OPERADOR_NOMBRE, tra.TRACTO_NUM_ECO, liq.LIQUIDACION_CLAVE, liq.TERMINAL_CLAVE, liq.LIQUIDACION_FOLIO, liq.MONTO_LIQUIDACION, FORMAT(liq.FCH_LIQUIDACION,'yyyy-MM-dd HH:mm:ss') as FCH_LIQUIDACION, liq.USR_CREA FROM liquidacion AS liq
+            //     INNER JOIN operador AS op ON op.OPERADOR_CLAVE = liq.OPERADOR_CLAVE
+            //     INNER JOIN tracto AS tra ON tra.TRACTO_CLAVE =  liq.TRACTO_CLAVE
+            //     WHERE liq.FCH_LIQUIDACION >= '2025-11-06T00:00:00.000Z'`
+            // );
+
+            let result = await pool.request().query(
+                `SELECT * FROM liquidacion AS liq
                 WHERE liq.FCH_LIQUIDACION >= '2025-11-06T00:00:00.000Z'`
             );
-            
+
             sql.close();
 
             res.json({
