@@ -360,7 +360,11 @@ module.exports = app => {
                     INTER.barra
                 FROM
                     pd_intercambios_entrada INTER
-                    LEFT JOIN pd_pickandup PAU ON INTER.id_intercambios_entrada = PAU.fk_intercambios_entrada;
+                    LEFT JOIN pd_pickandup PAU ON INTER.id_intercambios_entrada = PAU.fk_intercambios_entrada
+                WHERE 
+                    PAU.unidad IS NOT NULL
+                    AND INTER.fecha_hora_inicio IS NOT NULL
+                    ORDER BY fecha_hora_inicio;
             `;
 
             const result = await Sequelize.query(query, {

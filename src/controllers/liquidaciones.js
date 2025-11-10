@@ -1503,7 +1503,7 @@ module.exports = app => {
                     else if(op.USR_CREA === '002385') {
                         usuario = 'Camila Treviño';
                     }
-                    else if(op.USR_CREA === '112809_tle') {
+                    else if(op.USR_CREA === '112809_TLEA') {
                         usuario = 'Luis Martinez';
                     }
                     else if(op.USR_CREA === '103022') {

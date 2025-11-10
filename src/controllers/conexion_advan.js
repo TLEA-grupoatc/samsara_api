@@ -1402,11 +1402,12 @@ module.exports = app => {
                     v.VALE_TERMINAL,
                     v.LIQUIDACION_CLAVE,
                     v.VALE_FOLIO,
+                    v.IMPORTE,
                     CASE 
                         WHEN v.VALE_FECHA IS NULL THEN NULL
                         ELSE DATEDIFF(DAY, CONVERT(date, v.VALE_FECHA), CONVERT(date, GETDATE()))
-                    END                           AS [DíassinLiquidar],
-                    CONVERT(date, v.VALE_FECHA)   AS [Fecha],
+                    END                           AS [DiassinLiquidar],
+                    v.VALE_FECHA                  AS [Fecha],
                     v.REFERENCIA                  AS [Concepto],
                     v.OBSERV_VALE                 AS [Observaciones],
                     v.PAGADO                      AS [Pagado],
@@ -1422,6 +1423,51 @@ module.exports = app => {
                     v.STATUS_VALE = 0
                 AND v.BENEFICIARIO = '${req.params.operador}'
                 AND v.LIQUIDACION_CLAVE IS NULL;`
+            );
+
+            sql.close();
+
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+    app.obtenerAnticiposTreitaDiasLiqCom = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            let result = await pool.request().query(
+                `SELECT
+                    v.VALE_TERMINAL,
+                    v.LIQUIDACION_CLAVE,
+                    v.VALE_FOLIO,
+                    CASE 
+                        WHEN v.VALE_FECHA IS NULL THEN NULL
+                        ELSE DATEDIFF(DAY, CONVERT(date, v.VALE_FECHA), CONVERT(date, GETDATE()))
+                    END                           AS [DíassinLiquidar],
+                    v.VALE_FECHA                  AS [Fecha],
+                    v.REFERENCIA                  AS [Concepto],
+                    v.OBSERV_VALE                 AS [Observaciones],
+                    v.PAGADO                      AS [Pagado],
+                    v.BENEFICIARIO                AS [Operador],
+                    v.TRACTO_NUM_ECO_PROV         AS [Unidad],
+                    v.CLAVE_BITACORA,
+                    b.TERMINAL_BITACORA,
+                    b.FOLIO_BITACORA
+                FROM vorden_concepto000 AS v
+                LEFT JOIN BITACORAS     AS b
+                    ON b.CLAVE_BITACORA = v.CLAVE_BITACORA
+                WHERE
+                    v.STATUS_VALE = 0
+                AND v.BENEFICIARIO = '${req.params.operador}'
+                AND v.LIQUIDACION_CLAVE = ${req.params.liquidacion_clave};`
             );
 
             sql.close();
@@ -1462,6 +1508,48 @@ module.exports = app => {
                     b.STATUS_BITACORA <> 2
                 AND o.OPERADOR_NOMBRE = '${req.params.operador}'
                 AND b.LIQUIDACION_CLAVE IS NULL
+                ORDER BY
+                    CONVERT(date, b.FECHA_BITACORA) DESC;`
+                );
+
+            sql.close();
+
+            res.json({
+                OK: true,
+                total: result['recordsets'][0].length,
+                Registros: result['recordsets'][0]
+            });
+        }
+        catch (err) {
+            console.error('Error al conectar o hacer la consulta:', err);
+            sql.close();
+        }
+    }
+
+    app.obtenerBitacorasAnteriorLiqCom = async (req, res) => {
+        try {
+            let pool = await sql.connect(config);
+
+            let result = await pool.request().query(
+                `SELECT
+                    b.TERMINAL_BITACORA                     AS [TERMINAL],
+                    b.FOLIO_BITACORA                        AS [FOLIO],
+                    CONVERT(date, b.FECHA_BITACORA)         AS [FECHA],
+                    o.OPERADOR_NOMBRE                       AS [OPERADOR],
+                    b.TRACTO_NUM_ECO                         AS [UNIDAD],
+                    CASE b.STATUS_BITACORA
+                        WHEN 1 THEN N'CERRADA'
+                        WHEN 0 THEN N'ABIERTA'
+                        ELSE CONCAT(N'ESTATUS_', b.STATUS_BITACORA)
+                    END                                      AS [ESTATUS],
+                    b.LIQUIDACION_CLAVE                      AS [LIQUIDACIÓN]
+                FROM ADVANPRO_TLE.dbo.BITACORAS AS b
+                LEFT JOIN ADVANPRO_TLE.dbo.OPERADOR AS o
+                    ON o.OPERADOR_CLAVE = b.OPERADOR_CLAVE
+                WHERE
+                    b.STATUS_BITACORA <> 2
+                AND o.OPERADOR_NOMBRE = '${req.params.operador}'
+                AND b.LIQUIDACION_CLAVE = ${req.params.liquidacion_clave}
                 ORDER BY
                     CONVERT(date, b.FECHA_BITACORA) DESC;`
                 );

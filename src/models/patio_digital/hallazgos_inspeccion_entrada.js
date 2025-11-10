@@ -18,10 +18,6 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
-        descripcion_check: {
-            type: DataType.STRING(300),
-            allowNull: true
-        },
         critico: {
             type: DataType.BOOLEAN,
             allowNull: true

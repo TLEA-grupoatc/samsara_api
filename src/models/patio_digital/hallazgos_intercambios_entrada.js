@@ -22,6 +22,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        descripcion_check: {
+            type: DataType.STRING(300),
+            allowNull: true
+        },
         observaciones: {
             type: DataType.STRING(300),
             allowNull: true
