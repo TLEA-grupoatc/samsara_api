@@ -2519,6 +2519,29 @@ module.exports = app => {
         });
     }
 
+
+
+    app.obtenerDocumentosConcien = (req, res) => {
+        docoperador.findAll({
+            where: {
+                operador: req.params.operador,
+                descripcion: 'Evidencia de Concientización'
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Cartas: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+            msg: error.message
+            });
+        });
+    }
+
+
+
     app.obtenerCatalogoCursos = (req, res) => {
         catacursos.findAll({
             where: {

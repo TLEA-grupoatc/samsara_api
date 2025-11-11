@@ -874,7 +874,7 @@ module.exports = app => {
         // let result = await pool.request().query(`SELECT * FROM operador where status = 1 and circuito_clave = 'GRAL'; `);
         // let result = await pool.request().query(`DELETE FROM orden_concepto WHERE VALE_FOLIO = 33523`);
         // let result = await pool.request().query(`SELECT Top(20) * FROM bitacoras; `);
-        let result = await pool.request().query(`select TOP(100)*  FROM vBitacora_ruta_sld`);
+        let result = await pool.request().query(`select TOP(100)*  FROM LIQUIDACION_PERDED`);
         // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
         // let result = await pool.request().query(`select Top(100)*  FROM orden_concepto WHERE BENEFICIARIO = 'GUZMAN CASANOVA MANUEL JESUS' order by FCH_CREA desc`);
         // let result = await pool.request().query(`SELECT TOP(1000) * FROM orden_concepto order by vale_fecha desc`);
@@ -1366,22 +1366,34 @@ module.exports = app => {
         try {
             let pool = await sql.connect(config);
 
-            let result = await pool.request().query(
-                `SELECT
+            let result = await pool.request().query(`
+                SELECT
                     vlepd.liquidacion_clave,
                     vlepd.concepto_clave,
                     CONCAT_WS('-', REPLACE(vlepd.terminal_clave, ' ', ''), CAST(vlepd.liquidacion_folio AS varchar(50))) AS Combinada,
                     vlepd.operador_nombre,
                     vlepd.tracto_num_eco,
                     vlepd.concepto_descrip,
-                    vlepd.importe,
-                    SUM(lp.saldo) AS saldo
+                    lp.importe,
+                    (
+                        SELECT SUM(v2.saldo)
+                        FROM LIQUIDACION_PERDED v2
+                        WHERE v2.CONCEPTO_CLAVE = vlepd.CONCEPTO_CLAVE AND v2.LIQUIDACION_CLAVE = vlepd.liquidacion_clave
+                    ) AS saldo
                 FROM vLiq_ExportaPerDed AS vlepd
-                    INNER JOIN LIQUIDACION_PERDED AS lp ON lp.liquidacion_clave = vlepd.liquidacion_clave
-                    WHERE vlepd.liquidacion_clave = ${req.params.liquidacion} 
-                    GROUP BY vlepd.liquidacion_clave, vlepd.concepto_clave, vlepd.operador_nombre, vlepd.tracto_num_eco, vlepd.concepto_descrip, vlepd.importe, vlepd.terminal_clave, vlepd.liquidacion_folio`
-            );
-            
+                INNER JOIN LIQUIDACION_PERDED AS lp ON lp.liquidacion_clave = vlepd.liquidacion_clave
+                WHERE vlepd.liquidacion_clave = ${req.params.liquidacion}
+                GROUP BY
+                    vlepd.liquidacion_clave,
+                    vlepd.concepto_clave,
+                    vlepd.operador_nombre,
+                    vlepd.tracto_num_eco,
+                    vlepd.concepto_descrip,
+                    lp.importe,
+                    vlepd.terminal_clave,
+                    vlepd.liquidacion_folio
+            `);
+    
             sql.close();
 
             res.json({
