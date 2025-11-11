@@ -874,7 +874,7 @@ module.exports = app => {
         // let result = await pool.request().query(`SELECT * FROM operador where status = 1 and circuito_clave = 'GRAL'; `);
         // let result = await pool.request().query(`DELETE FROM orden_concepto WHERE VALE_FOLIO = 33523`);
         // let result = await pool.request().query(`SELECT Top(20) * FROM bitacoras; `);
-        let result = await pool.request().query(`select TOP(100)*  FROM orden_concepto order by FCH_CREA desc`);
+        let result = await pool.request().query(`select TOP(100)*  FROM vBitacora_ruta_sld`);
         // let result = await pool.request().query(`select *  FROM orden_concepto WHERE BENEFICIARIO = 'HERNANDEZ HERNANDEZ ABEL' AND VALE_FOLIO = 33599`);
         // let result = await pool.request().query(`select Top(100)*  FROM orden_concepto WHERE BENEFICIARIO = 'GUZMAN CASANOVA MANUEL JESUS' order by FCH_CREA desc`);
         // let result = await pool.request().query(`SELECT TOP(1000) * FROM orden_concepto order by vale_fecha desc`);
@@ -1368,17 +1368,20 @@ module.exports = app => {
 
             let result = await pool.request().query(
                 `SELECT
-                    liquidacion_clave,
-                    concepto_clave,
-                    CONCAT_WS('-', REPLACE(terminal_clave, ' ', ''), CAST(liquidacion_folio AS varchar(50))) AS Combinada,
-                    operador_nombre,
-                    tracto_num_eco,
-                    concepto_descrip,
-                    importe
-                FROM vLiq_ExportaPerDed
-                WHERE liquidacion_clave = ${req.params.liquidacion};`
+                    vlepd.liquidacion_clave,
+                    vlepd.concepto_clave,
+                    CONCAT_WS('-', REPLACE(vlepd.terminal_clave, ' ', ''), CAST(vlepd.liquidacion_folio AS varchar(50))) AS Combinada,
+                    vlepd.operador_nombre,
+                    vlepd.tracto_num_eco,
+                    vlepd.concepto_descrip,
+                    vlepd.importe,
+                    SUM(lp.saldo) AS saldo
+                FROM vLiq_ExportaPerDed AS vlepd
+                    INNER JOIN LIQUIDACION_PERDED AS lp ON lp.liquidacion_clave = vlepd.liquidacion_clave
+                    WHERE vlepd.liquidacion_clave = ${req.params.liquidacion} 
+                    GROUP BY vlepd.liquidacion_clave, vlepd.concepto_clave, vlepd.operador_nombre, vlepd.tracto_num_eco, vlepd.concepto_descrip, vlepd.importe, vlepd.terminal_clave, vlepd.liquidacion_folio`
             );
-
+            
             sql.close();
 
             res.json({
@@ -1422,52 +1425,8 @@ module.exports = app => {
                 WHERE
                     v.STATUS_VALE = 0
                 AND v.BENEFICIARIO = '${req.params.operador}'
-                AND v.LIQUIDACION_CLAVE IS NULL;`
-            );
-
-            sql.close();
-
-            res.json({
-                OK: true,
-                total: result['recordsets'][0].length,
-                Registros: result['recordsets'][0]
-            });
-        }
-        catch (err) {
-            console.error('Error al conectar o hacer la consulta:', err);
-            sql.close();
-        }
-    }
-
-    app.obtenerAnticiposTreitaDiasLiqCom = async (req, res) => {
-        try {
-            let pool = await sql.connect(config);
-
-            let result = await pool.request().query(
-                `SELECT
-                    v.VALE_TERMINAL,
-                    v.LIQUIDACION_CLAVE,
-                    v.VALE_FOLIO,
-                    CASE 
-                        WHEN v.VALE_FECHA IS NULL THEN NULL
-                        ELSE DATEDIFF(DAY, CONVERT(date, v.VALE_FECHA), CONVERT(date, GETDATE()))
-                    END                           AS [DíassinLiquidar],
-                    v.VALE_FECHA                  AS [Fecha],
-                    v.REFERENCIA                  AS [Concepto],
-                    v.OBSERV_VALE                 AS [Observaciones],
-                    v.PAGADO                      AS [Pagado],
-                    v.BENEFICIARIO                AS [Operador],
-                    v.TRACTO_NUM_ECO_PROV         AS [Unidad],
-                    v.CLAVE_BITACORA,
-                    b.TERMINAL_BITACORA,
-                    b.FOLIO_BITACORA
-                FROM vorden_concepto000 AS v
-                LEFT JOIN BITACORAS     AS b
-                    ON b.CLAVE_BITACORA = v.CLAVE_BITACORA
-                WHERE
-                    v.STATUS_VALE = 0
-                AND v.BENEFICIARIO = '${req.params.operador}'
-                AND v.LIQUIDACION_CLAVE = ${req.params.liquidacion_clave};`
+                AND v.LIQUIDACION_CLAVE IS NULL
+                ORDER BY v.VALE_FECHA DESC;`
             );
 
             sql.close();
@@ -1500,17 +1459,19 @@ module.exports = app => {
                         WHEN 0 THEN N'ABIERTA'
                         ELSE CONCAT(N'ESTATUS_', b.STATUS_BITACORA)
                     END                                      AS [ESTATUS],
-                    b.LIQUIDACION_CLAVE                      AS [LIQUIDACIÓN]
-                FROM ADVANPRO_TLE.dbo.BITACORAS AS b
-                LEFT JOIN ADVANPRO_TLE.dbo.OPERADOR AS o
-                    ON o.OPERADOR_CLAVE = b.OPERADOR_CLAVE
-                WHERE
-                    b.STATUS_BITACORA <> 2
+                    b.LIQUIDACION_CLAVE                      AS [LIQUIDACIÓN],
+                    SUM(vbr.km)                              AS [KM],
+                    br.rutas                             AS [RUTAS]
+                FROM BITACORAS AS b
+                LEFT JOIN OPERADOR AS o ON o.OPERADOR_CLAVE = b.OPERADOR_CLAVE
+                LEFT JOIN vBitacora_ruta_sld AS vbr ON vbr.CLAVE_BITACORA = b.CLAVE_BITACORA
+                INNER JOIN bitacora_recorridos AS br ON br.clave_bitacora = b.CLAVE_BITACORA
+                WHERE b.STATUS_BITACORA <> 2
                 AND o.OPERADOR_NOMBRE = '${req.params.operador}'
                 AND b.LIQUIDACION_CLAVE IS NULL
-                ORDER BY
-                    CONVERT(date, b.FECHA_BITACORA) DESC;`
-                );
+                GROUP BY b.TERMINAL_BITACORA, b.FOLIO_BITACORA, b.FECHA_BITACORA, o.OPERADOR_NOMBRE, b.TRACTO_NUM_ECO, b.STATUS_BITACORA, b.LIQUIDACION_CLAVE, br.rutas
+                ORDER BY b.FECHA_BITACORA DESC;`
+            );
 
             sql.close();
 
@@ -1526,47 +1487,6 @@ module.exports = app => {
         }
     }
 
-    app.obtenerBitacorasAnteriorLiqCom = async (req, res) => {
-        try {
-            let pool = await sql.connect(config);
-
-            let result = await pool.request().query(
-                `SELECT
-                    b.TERMINAL_BITACORA                     AS [TERMINAL],
-                    b.FOLIO_BITACORA                        AS [FOLIO],
-                    CONVERT(date, b.FECHA_BITACORA)         AS [FECHA],
-                    o.OPERADOR_NOMBRE                       AS [OPERADOR],
-                    b.TRACTO_NUM_ECO                         AS [UNIDAD],
-                    CASE b.STATUS_BITACORA
-                        WHEN 1 THEN N'CERRADA'
-                        WHEN 0 THEN N'ABIERTA'
-                        ELSE CONCAT(N'ESTATUS_', b.STATUS_BITACORA)
-                    END                                      AS [ESTATUS],
-                    b.LIQUIDACION_CLAVE                      AS [LIQUIDACIÓN]
-                FROM ADVANPRO_TLE.dbo.BITACORAS AS b
-                LEFT JOIN ADVANPRO_TLE.dbo.OPERADOR AS o
-                    ON o.OPERADOR_CLAVE = b.OPERADOR_CLAVE
-                WHERE
-                    b.STATUS_BITACORA <> 2
-                AND o.OPERADOR_NOMBRE = '${req.params.operador}'
-                AND b.LIQUIDACION_CLAVE = ${req.params.liquidacion_clave}
-                ORDER BY
-                    CONVERT(date, b.FECHA_BITACORA) DESC;`
-                );
-
-            sql.close();
-
-            res.json({
-                OK: true,
-                total: result['recordsets'][0].length,
-                Registros: result['recordsets'][0]
-            });
-        }
-        catch (err) {
-            console.error('Error al conectar o hacer la consulta:', err);
-            sql.close();
-        }
-    }
 
 
 

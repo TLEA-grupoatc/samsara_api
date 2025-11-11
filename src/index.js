@@ -98,7 +98,7 @@ cron.schedule('* * * * *', () => {
     });
     
   
-  cron.schedule('*/3 * * * *', () => {   
+  cron.schedule('*/5 * * * *', () => {   
     app.registrarLiquidacionAutomatica({}, {
       json: (data) => console.log(data),
       status: (statusCode) => ({
