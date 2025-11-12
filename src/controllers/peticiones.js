@@ -2479,10 +2479,18 @@ const rows = await podeope.findAll({
 
     // Promedios
     [fn('AVG', col('ponderacion')), 'avg_ponderacion'],
-    [fn('AVG', col('examen_maxipista')), 'avg_examen_maxipista'],
-    [fn('AVG', col('examen_maxipista_calificacion')), 'avg_examen_maxipista_calif'],
-    [fn('AVG', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
-    [fn('AVG', col('auditoria_maxipista_calificacion')), 'avg_auditoria_maxipista_calif'],
+
+
+    [fn('MAX', col('examen_maxipista')), 'avg_examen_maxipista'],
+    [literal("CASE WHEN examen_maxipista = 1 THEN 20 ELSE 0 END"), 'avg_examen_maxipista_calif'],
+    
+    [fn('MAX', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
+    [literal("CASE WHEN auditoria_maxipista = 1 THEN 20 ELSE 0 END"), 'avg_auditoria_maxipista_calif'],
+    
+    // [fn('AVG', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
+    // [fn('AVG', col('auditoria_maxipista_calificacion')), 'avg_auditoria_maxipista_calif'],
+
+
     [fn('AVG', col('exceso_velocidad')), 'avg_exceso_velocidad'],
     [fn('AVG', col('exceso_velocidad_calificacion')), 'avg_exceso_velocidad_calif'],
     [fn('AVG', col('paradano_autorizada')), 'avg_paradano_autorizada'],
