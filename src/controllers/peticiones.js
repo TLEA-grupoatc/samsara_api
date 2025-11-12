@@ -2410,6 +2410,8 @@ app.obtenerSemanaPonderacionOpe = async (req, res) => {
         [literal("DATE_FORMAT(DATE_ADD(STR_TO_DATE(CONCAT(SUBSTRING(YEARWEEK(fecha_creacion, 3),1,4),' ', SUBSTRING(YEARWEEK(fecha_creacion,3),5,2),' Monday'), '%X %V %W'), INTERVAL 6 DAY), '%Y-%m-%d')"), 'sunday'],
 
         [fn('COUNT', literal('*')), 'registros'],
+        
+        [fn('COUNT', literal('fecha_creacion')), 'registros'],
 
         // Promedios de calificaciones
         [fn('AVG', col('ponderacion')), 'avg_ponderacion'],
