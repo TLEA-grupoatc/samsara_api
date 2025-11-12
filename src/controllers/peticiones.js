@@ -2494,7 +2494,7 @@ const rows = await podeope.findAll({
 
 [
   literal(`
-    SUM(
+    MAX(
       CASE 
         WHEN examen_maxipista = 1 THEN 20
         ELSE 0
@@ -2506,7 +2506,7 @@ const rows = await podeope.findAll({
 
 [
   literal(`
-    SUM(
+    MAX(
       CASE 
         WHEN auditoria_maxipista = 1 THEN 20
         ELSE 0
