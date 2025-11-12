@@ -2481,10 +2481,10 @@ const rows = await podeope.findAll({
     [fn('AVG', col('ponderacion')), 'avg_ponderacion'],
 
 
-    [fn('MAX', col('examen_maxipista')), 'avg_examen_maxipista'],
+    // [fn('MAX', col('examen_maxipista')), 'avg_examen_maxipista'],
     [literal("CASE WHEN examen_maxipista = 1 THEN 20 ELSE 0 END"), 'avg_examen_maxipista_calif'],
     
-    [fn('MAX', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
+    // [fn('MAX', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
     [literal("CASE WHEN auditoria_maxipista = 1 THEN 20 ELSE 0 END"), 'avg_auditoria_maxipista_calif'],
     
     // [fn('AVG', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
