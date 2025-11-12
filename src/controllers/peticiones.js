@@ -2482,13 +2482,50 @@ const rows = await podeope.findAll({
 
 
 
-        [fn('SUM', col('examen_maxipista')), 'sumaexamax'],
-        [fn('SUM', col('auditoria_maxipista')), 'sumaaumax'],
-    // [fn('MAX', col('examen_maxipista')), 'avg_examen_maxipista'],
-    [literal("CASE WHEN examen_maxipista = 1 THEN 20 ELSE 0 END"), 'avg_examen_maxipista_calif'],
-    
+        // [fn('SUM', col('examen_maxipista')), 'sumaexamax'],
+        // [fn('SUM', col('auditoria_maxipista')), 'sumaaumax'],
+        // [literal("CASE WHEN examen_maxipista = 1 THEN 20 ELSE 0 END"), 'avg_examen_maxipista_calif'],
+        
+        // [literal("CASE WHEN auditoria_maxipista = 1 THEN 20 ELSE 0 END"), 'avg_auditoria_maxipista_calif'],
+
+
+[fn('MAX', col('examen_maxipista')), 'avg_examen_maxipista'],
+[fn('MAX', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
+
+[
+  literal(`
+    SUM(
+      CASE 
+        WHEN examen_maxipista = 1 THEN 20
+        ELSE 0
+      END
+    )
+  `),
+  'avg_examen_maxipista_calif'
+],
+
+[
+  literal(`
+    SUM(
+      CASE 
+        WHEN auditoria_maxipista = 1 THEN 20
+        ELSE 0
+      END
+    )
+  `),
+  'avg_auditoria_maxipista_calif'
+],
+
+
+
+
+
+
+
+
+
+        // [fn('MAX', col('examen_maxipista')), 'avg_examen_maxipista'],
     // [fn('MAX', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
-    [literal("CASE WHEN auditoria_maxipista = 1 THEN 20 ELSE 0 END"), 'avg_auditoria_maxipista_calif'],
     
     // [fn('AVG', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
     // [fn('AVG', col('auditoria_maxipista_calificacion')), 'avg_auditoria_maxipista_calif'],
