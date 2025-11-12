@@ -2411,7 +2411,7 @@ app.obtenerSemanaPonderacionOpe = async (req, res) => {
 
         [fn('COUNT', literal('*')), 'registros'],
         
-        [fn('COUNT', literal('fecha_creacion')), 'registros'],
+        [fn('COUNT', literal('fecha_creacion')), 'fh'],
 
         // Promedios de calificaciones
         [fn('AVG', col('ponderacion')), 'avg_ponderacion'],
