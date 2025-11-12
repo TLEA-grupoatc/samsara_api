@@ -112,14 +112,15 @@ module.exports = app => {
     app.get('/verHisorialGobernas/:unidad', verificarToken, Peticion.verHisorialGobernas);
 
     app.put('/aplicaNoAplicaAlerta/:id_alerta', verificarToken, Peticion.aplicaNoAplicaAlerta);
-
-
+    
+    
     app.get('/obtenerTiempoDeRespuesta/:division/:fechainicio/:fechafin', verificarToken, Peticion.obtenerTiempoDeRespuesta);
     
     
     
     
     
+    app.get('/obtenerSemanaPonderacionOpe', Peticion.obtenerSemanaPonderacionOpe);
     
     
     
