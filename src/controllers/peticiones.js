@@ -2481,6 +2481,9 @@ const rows = await podeope.findAll({
     [fn('AVG', col('ponderacion')), 'avg_ponderacion'],
 
 
+
+        [fn('SUM', col('examen_maxipista')), 'sumaexamax'],
+        [fn('SUM', col('auditoria_maxipista')), 'sumaaumax'],
     // [fn('MAX', col('examen_maxipista')), 'avg_examen_maxipista'],
     [literal("CASE WHEN examen_maxipista = 1 THEN 20 ELSE 0 END"), 'avg_examen_maxipista_calif'],
     
