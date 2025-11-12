@@ -2398,51 +2398,120 @@ app.obtenerSemanaPonderacionOpe = async (req, res) => {
   try {
     const isoWeek = literal("YEARWEEK(fecha_creacion, 3)"); // p.ej. 202545 (ISO)
 
-    const rows = await podeope.findAll({
-      attributes: [
-        'operador',
-        [isoWeek, 'iso_week'],
-        // Rango de la semana (lunes a domingo) basado en MIN(fecha) de ese grupo
-        [literal("MIN(fecha_creacion)"), "week_first_seen"],
-        [literal("MAX(fecha_creacion)"), "week_last_seen"],
-        // Si quieres lunes y domingo de esa semana:
-        [literal("DATE_FORMAT(STR_TO_DATE(CONCAT(SUBSTRING(YEARWEEK(fecha_creacion, 3),1,4),' ', SUBSTRING(YEARWEEK(fecha_creacion,3),5,2),' Monday'), '%X %V %W'), '%Y-%m-%d')"), 'monday'],
-        [literal("DATE_FORMAT(DATE_ADD(STR_TO_DATE(CONCAT(SUBSTRING(YEARWEEK(fecha_creacion, 3),1,4),' ', SUBSTRING(YEARWEEK(fecha_creacion,3),5,2),' Monday'), '%X %V %W'), INTERVAL 6 DAY), '%Y-%m-%d')"), 'sunday'],
+    // const rows = await podeope.findAll({
+    //   attributes: [
+    //     'operador',
+    //     [isoWeek, 'iso_week'],
+    //     // Rango de la semana (lunes a domingo) basado en MIN(fecha) de ese grupo
+    //     [literal("MIN(fecha_creacion)"), "week_first_seen"],
+    //     [literal("MAX(fecha_creacion)"), "week_last_seen"],
+    //     // Si quieres lunes y domingo de esa semana:
+    //     [literal("DATE_FORMAT(STR_TO_DATE(CONCAT(SUBSTRING(YEARWEEK(fecha_creacion, 3),1,4),' ', SUBSTRING(YEARWEEK(fecha_creacion,3),5,2),' Monday'), '%X %V %W'), '%Y-%m-%d')"), 'monday'],
+    //     [literal("DATE_FORMAT(DATE_ADD(STR_TO_DATE(CONCAT(SUBSTRING(YEARWEEK(fecha_creacion, 3),1,4),' ', SUBSTRING(YEARWEEK(fecha_creacion,3),5,2),' Monday'), '%X %V %W'), INTERVAL 6 DAY), '%Y-%m-%d')"), 'sunday'],
 
-        [fn('COUNT', literal('*')), 'registros'],
+    //     [fn('COUNT', literal('*')), 'registros'],
         
-        [fn('COUNT', literal('fecha_creacion')), 'fh'],
 
-        // Promedios de calificaciones
-        [fn('AVG', col('ponderacion')), 'avg_ponderacion'],
-        [fn('AVG', col('examen_maxipista')), 'avg_examen_maxipista'],
-        [fn('AVG', col('examen_maxipista_calificacion')), 'avg_examen_maxipista_calif'],
-        [fn('AVG', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
-        [fn('AVG', col('auditoria_maxipista_calificacion')), 'avg_auditoria_maxipista_calif'],
-        [fn('AVG', col('exceso_velocidad')), 'avg_exceso_velocidad'],
-        [fn('AVG', col('exceso_velocidad_calificacion')), 'avg_exceso_velocidad_calif'],
-        [fn('AVG', col('paradano_autorizada')), 'avg_paradano_autorizada'],
-        [fn('AVG', col('paradano_autorizada_calificacion')), 'avg_paradano_autorizada_calif'],
-        [fn('AVG', col('usode_movil')), 'avg_usode_movil'],
-        [fn('AVG', col('usode_movil_calificacion')), 'avg_usode_movil_calif'],
-        [fn('AVG', col('distanciade_seguimiento')), 'avg_distanciade_seguimiento'],
-        [fn('AVG', col('distanciade_seguimiento_calificacion')), 'avg_distanciade_seguimiento_calif'],
-        [fn('AVG', col('somnoliento')), 'avg_somnoliento'],
-        [fn('AVG', col('somnoliento_calificacion')), 'avg_somnoliento_calif'],
 
-        // Sumas por si tus métricas base son 0/1 y quieres contar eventos
-        [fn('SUM', col('exceso_velocidad')), 'sum_exceso_velocidad'],
-        [fn('SUM', col('paradano_autorizada')), 'sum_paradano_autorizada'],
-        [fn('SUM', col('usode_movil')), 'sum_usode_movil'],
-        [fn('SUM', col('distanciade_seguimiento')), 'sum_distanciade_seguimiento'],
-        [fn('SUM', col('somnoliento')), 'sum_somnoliento'],
-      ],
-      where: {
-        fecha_creacion: { [Op.gte]: literal('DATE_SUB(CURDATE(), INTERVAL 3 MONTH)') }
-      },
-      group: ['operador', isoWeek],
-      order: [[literal('monday'), 'ASC'], ['operador', 'ASC']]
-    });
+    //     // Promedios de calificaciones
+    //     [fn('AVG', col('ponderacion')), 'avg_ponderacion'],
+    //     [fn('AVG', col('examen_maxipista')), 'avg_examen_maxipista'],
+    //     [fn('AVG', col('examen_maxipista_calificacion')), 'avg_examen_maxipista_calif'],
+    //     [fn('AVG', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
+    //     [fn('AVG', col('auditoria_maxipista_calificacion')), 'avg_auditoria_maxipista_calif'],
+    //     [fn('AVG', col('exceso_velocidad')), 'avg_exceso_velocidad'],
+    //     [fn('AVG', col('exceso_velocidad_calificacion')), 'avg_exceso_velocidad_calif'],
+    //     [fn('AVG', col('paradano_autorizada')), 'avg_paradano_autorizada'],
+    //     [fn('AVG', col('paradano_autorizada_calificacion')), 'avg_paradano_autorizada_calif'],
+    //     [fn('AVG', col('usode_movil')), 'avg_usode_movil'],
+    //     [fn('AVG', col('usode_movil_calificacion')), 'avg_usode_movil_calif'],
+    //     [fn('AVG', col('distanciade_seguimiento')), 'avg_distanciade_seguimiento'],
+    //     [fn('AVG', col('distanciade_seguimiento_calificacion')), 'avg_distanciade_seguimiento_calif'],
+    //     [fn('AVG', col('somnoliento')), 'avg_somnoliento'],
+    //     [fn('AVG', col('somnoliento_calificacion')), 'avg_somnoliento_calif'],
+
+    //     // Sumas por si tus métricas base son 0/1 y quieres contar eventos
+    //     [fn('SUM', col('exceso_velocidad')), 'sum_exceso_velocidad'],
+    //     [fn('SUM', col('paradano_autorizada')), 'sum_paradano_autorizada'],
+    //     [fn('SUM', col('usode_movil')), 'sum_usode_movil'],
+    //     [fn('SUM', col('distanciade_seguimiento')), 'sum_distanciade_seguimiento'],
+    //     [fn('SUM', col('somnoliento')), 'sum_somnoliento'],
+    //   ],
+    //   where: {
+    //     fecha_creacion: { [Op.gte]: literal('DATE_SUB(CURDATE(), INTERVAL 3 MONTH)') }
+    //   },
+    //   group: ['operador', isoWeek],
+    //   order: [[literal('monday'), 'ASC'], ['operador', 'ASC']]
+    // });
+
+
+
+const rows = await podeope.findAll({
+  attributes: [
+    'operador',
+    [isoWeek, 'iso_week'],
+
+    // límites de la semana basados en el grupo
+    [literal("MIN(fecha_creacion)"), "week_first_seen"],
+    [literal("MAX(fecha_creacion)"), "week_last_seen"],
+
+    // Lunes de la semana (basado en MIN(fecha_creacion) del grupo)
+    [literal(`
+      DATE_FORMAT(
+        DATE_SUB(DATE(MIN(fecha_creacion)), INTERVAL WEEKDAY(MIN(fecha_creacion)) DAY),
+        '%Y-%m-%d'
+      )
+    `), 'monday'],
+
+    // Domingo de la semana
+    [literal(`
+      DATE_FORMAT(
+        DATE_ADD(
+          DATE_SUB(DATE(MIN(fecha_creacion)), INTERVAL WEEKDAY(MIN(fecha_creacion)) DAY),
+          INTERVAL 6 DAY
+        ),
+        '%Y-%m-%d'
+      )
+    `), 'sunday'],
+
+    // Conteo
+    [fn('COUNT', literal('*')), 'registros'],
+
+    // Promedios
+    [fn('AVG', col('ponderacion')), 'avg_ponderacion'],
+    [fn('AVG', col('examen_maxipista')), 'avg_examen_maxipista'],
+    [fn('AVG', col('examen_maxipista_calificacion')), 'avg_examen_maxipista_calif'],
+    [fn('AVG', col('auditoria_maxipista')), 'avg_auditoria_maxipista'],
+    [fn('AVG', col('auditoria_maxipista_calificacion')), 'avg_auditoria_maxipista_calif'],
+    [fn('AVG', col('exceso_velocidad')), 'avg_exceso_velocidad'],
+    [fn('AVG', col('exceso_velocidad_calificacion')), 'avg_exceso_velocidad_calif'],
+    [fn('AVG', col('paradano_autorizada')), 'avg_paradano_autorizada'],
+    [fn('AVG', col('paradano_autorizada_calificacion')), 'avg_paradano_autorizada_calif'],
+    [fn('AVG', col('usode_movil')), 'avg_usode_movil'],
+    [fn('AVG', col('usode_movil_calificacion')), 'avg_usode_movil_calif'],
+    [fn('AVG', col('distanciade_seguimiento')), 'avg_distanciade_seguimiento'],
+    [fn('AVG', col('distanciade_seguimiento_calificacion')), 'avg_distanciade_seguimiento_calif'],
+    [fn('AVG', col('somnoliento')), 'avg_somnoliento'],
+    [fn('AVG', col('somnoliento_calificacion')), 'avg_somnoliento_calif'],
+
+    // Sumas de eventos (si son 0/1)
+    [fn('SUM', col('exceso_velocidad')), 'sum_exceso_velocidad'],
+    [fn('SUM', col('paradano_autorizada')), 'sum_paradano_autorizada'],
+    [fn('SUM', col('usode_movil')), 'sum_usode_movil'],
+    [fn('SUM', col('distanciade_seguimiento')), 'sum_distanciade_seguimiento'],
+    [fn('SUM', col('somnoliento')), 'sum_somnoliento'],
+  ],
+  where: {
+    fecha_creacion: { [Op.gte]: literal('DATE_SUB(CURDATE(), INTERVAL 3 MONTH)') }
+  },
+  group: [
+    'operador',
+    literal('YEARWEEK(fecha_creacion, 3)')
+  ],
+  // Puedes ordenar por el alias 'monday' en MySQL
+  order: [[literal('monday'), 'ASC'], ['operador', 'ASC']],
+  raw: true
+});
 
     res.json({ OK: true, Resumen: rows });
   } catch (error) {
