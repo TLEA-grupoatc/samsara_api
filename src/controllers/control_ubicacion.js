@@ -69,7 +69,7 @@ module.exports = app => {
 
     app.getUbicacionPorEconomico = (req, res) => {
         const today = moment().startOf('day');
-        const sevenDaysAgo = moment().subtract(5, 'days').startOf('day');
+        const sevenDaysAgo = moment().subtract(7, 'days').startOf('day');
 
         var fortoday = today.toDate().toISOString().split('T')[0];
         var fortosevenday = sevenDaysAgo.toDate().toISOString().split('T')[0];
