@@ -80,5 +80,13 @@ module.exports = (sequelize, DataType) => {
         timestamps: false
     });
 
+    PonderacionOperador.associate = (models) => {
+        PonderacionOperador.belongsTo(models.OperadoresAConcientizar, {
+            foreignKey: 'operador',
+            targetKey: 'operador',
+            as: 'operadoresaConcientizar'
+        });
+    };
+
     return PonderacionOperador;
 }

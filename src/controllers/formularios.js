@@ -2564,7 +2564,7 @@ module.exports = app => {
             ocupa: body.ocupa,
             fecha: body.fecha,
             fecha_creacion: body.fecha_creacion,
-            usuario_creacion: body.usuario_creacion,
+            usuario_creacion: body.usuario_creacion
         });
 
         operadoresac.create(nuevoRegistro.dataValues, {
