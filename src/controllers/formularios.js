@@ -2563,7 +2563,7 @@ module.exports = app => {
             operador: body.operador,
             ocupa: body.ocupa,
             fecha: body.fecha,
-            fecha_creacion: body.fecha_creacion,
+            fechadecreacion: body.fechadecreacion,
             usuario_creacion: body.usuario_creacion
         });
 
@@ -2572,7 +2572,7 @@ module.exports = app => {
                 'operador', 
                 'ocupa', 
                 'fecha', 
-                'fecha_creacion', 
+                'fechadecreacion', 
                 'usuario_creacion'
             ]
         })
