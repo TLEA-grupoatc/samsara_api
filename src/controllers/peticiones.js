@@ -2559,7 +2559,13 @@ module.exports = app => {
             }],
             group: [
                 'operador',
-                literal('YEARWEEK(fecha_creacion, 3)')
+                literal('YEARWEEK(fecha_creacion, 3)'),
+                'operadoresaConcientizar.id_oac',
+                'operadoresaConcientizar.operador',
+                'operadoresaConcientizar.ocupa',
+                'operadoresaConcientizar.fecha',
+                'operadoresaConcientizar.fechadecreacion',
+                'operadoresaConcientizar.usuario_creacion',
             ],
             // Puedes ordenar por el alias 'monday' en MySQL
             order: [[literal('monday'), 'ASC'], ['operador', 'ASC']],
