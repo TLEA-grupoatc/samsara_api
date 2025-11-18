@@ -1068,6 +1068,7 @@ module.exports = app => {
             var year = today.getFullYear();
             var mes = today.getMonth() + 1;
             var lastDay = new Date(year, mes, 0);
+
             var conceptos = [
                 {
 
@@ -1190,7 +1191,6 @@ module.exports = app => {
                 }
             ];
 
-            
             const pool = await sql.connect(config);
             let result = await pool.request().query(`SELECT * FROM bitacoras WHERE folio_bitacora = ${body.CLAVE_BITACORA} AND TERMINAL_BITACORA = '${body.VALE_TERMINAL}' AND STATUS_BITACORA = 0`);
             
@@ -1241,6 +1241,9 @@ module.exports = app => {
 
 
 
+
+
+    
 
 
 
@@ -1367,31 +1370,22 @@ module.exports = app => {
             let pool = await sql.connect(config);
 
             let result = await pool.request().query(`
-                SELECT
-                    vlepd.liquidacion_clave,
-                    vlepd.concepto_clave,
-                    CONCAT_WS('-', REPLACE(vlepd.terminal_clave, ' ', ''), CAST(vlepd.liquidacion_folio AS varchar(50))) AS Combinada,
-                    vlepd.operador_nombre,
-                    vlepd.tracto_num_eco,
-                    vlepd.concepto_descrip,
-                    lp.importe,
+                SELECT 
+                    vlrdp.operador_nombre,
+                    vlrdp.concepto_clave,
+                    vlrdp.concepto_descrip,
+                    vlrdp.abono,
+                    vlrdp.deduce_descrip,
+                    liq.liquidacion_clave,
                     (
-                        SELECT SUM(v2.saldo)
-                        FROM LIQUIDACION_PERDED v2
-                        WHERE v2.CONCEPTO_CLAVE = vlepd.CONCEPTO_CLAVE AND v2.LIQUIDACION_CLAVE = vlepd.liquidacion_clave
+                    SELECT SUM(v2.saldo) FROM LIQUIDACION_PERDED v2
+                        WHERE v2.CONCEPTO_CLAVE = vlrdp.CONCEPTO_CLAVE AND v2.liquidacion_clave = liq.liquidacion_clave
                     ) AS saldo
-                FROM vLiq_ExportaPerDed AS vlepd
-                INNER JOIN LIQUIDACION_PERDED AS lp ON lp.liquidacion_clave = vlepd.liquidacion_clave
-                WHERE vlepd.liquidacion_clave = ${req.params.liquidacion}
-                GROUP BY
-                    vlepd.liquidacion_clave,
-                    vlepd.concepto_clave,
-                    vlepd.operador_nombre,
-                    vlepd.tracto_num_eco,
-                    vlepd.concepto_descrip,
-                    lp.importe,
-                    vlepd.terminal_clave,
-                    vlepd.liquidacion_folio
+                FROM vLiq_RepSaldoDedProg AS vlrdp
+                INNER JOIN vdeducciones_prog_cto AS vdpc ON vdpc.DEDUCCION_CLAVE = vlrdp.DEDUCCION_CLAVE
+                INNER JOIN LIQUIDACION AS liq ON CONCAT_WS('-', REPLACE(liq.terminal_clave, ' ', ''), CAST(liq.LIQUIDACION_FOLIO AS varchar(50))) = vlrdp.liq
+                WHERE liq.liquidacion_clave = ${req.params.liquidacion}
+                GROUP BY vlrdp.operador_nombre, vlrdp.operador_clave, vlrdp.concepto_clave, vlrdp.concepto_descrip, vlrdp.abono, vlrdp.deduce_descrip, liq.liquidacion_clave;
             `);
     
             sql.close();
@@ -1533,23 +1527,22 @@ module.exports = app => {
     app.obtenerLiquidacionesAdvan = async (req, res) => {
         try {
             let pool = await sql.connect(config);
-
-            // let result = await pool.request().query(
-            //     `SELECT op.OPERADOR_NOMBRE, tra.TRACTO_NUM_ECO, liq.LIQUIDACION_CLAVE, liq.TERMINAL_CLAVE, liq.LIQUIDACION_FOLIO, liq.MONTO_LIQUIDACION, FORMAT(liq.FCH_LIQUIDACION,'yyyy-MM-dd HH:mm:ss') as FCH_LIQUIDACION, liq.USR_CREA FROM liquidacion AS liq
-            //     INNER JOIN operador AS op ON op.OPERADOR_CLAVE = liq.OPERADOR_CLAVE
-            //     INNER JOIN tracto AS tra ON tra.TRACTO_CLAVE =  liq.TRACTO_CLAVE
-            //     WHERE liq.FCH_LIQUIDACION >= '2025-11-06T00:00:00.000Z'`
-            // );
+            const today = new Date();
+            today.setDate(today.getDate() - 3);
 
             let result = await pool.request().query(
-                `SELECT * FROM liquidacion AS liq
-                WHERE liq.FCH_LIQUIDACION >= '2025-11-06T00:00:00.000Z'`
+                "SELECT op.OPERADOR_CLAVE, op.OPERADOR_NOMBRE, tra.TRACTO_NUM_ECO, liq.STATUS_LIQ, liq.FCH_CAN, liq.LIQUIDACION_CLAVE, liq.TERMINAL_CLAVE, liq.LIQUIDACION_FOLIO, liq.MONTO_LIQUIDACION, FORMAT(liq.FCH_LIQUIDACION,'yyyy-MM-dd HH:mm:ss') as FCH_LIQUIDACION, liq.USR_CREA FROM liquidacion AS liq \
+                INNER JOIN operador AS op ON op.OPERADOR_CLAVE = liq.OPERADOR_CLAVE \
+                INNER JOIN tracto AS tra ON tra.TRACTO_CLAVE =  liq.TRACTO_CLAVE \
+                WHERE liq.FCH_LIQUIDACION >= '" +  moment(today).format('YYYY-MM-DD') + "T00:00:00.000Z';"
             );
-
+                // WHERE liq.FCH_LIQUIDACION >= '" + "2025-11-07T00:00:00.000Z';"
+                
             sql.close();
 
             res.json({
                 OK: true,
+                fecha: moment(today).format('YYYY-MM-DD') + "T00:00:00.000Z';",
                 total: result['recordsets'][0].length,
                 Registros: result['recordsets'][0]
             });

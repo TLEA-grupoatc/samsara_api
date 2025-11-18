@@ -131,6 +131,14 @@ module.exports = app => {
     app.post('/crearCatalogoCurso', verificarToken, Fo.crearCatalogoCurso);
     
     app.put('/actualizarCatalogoCurso/:id_catalogo_curso', verificarToken, Fo.actualizarCatalogoCurso);
+
+
+
+    app.post('/operadorParaConcientizar', verificarToken, Fo.operadorParaConcientizar);
+    
+    app.put('/actualizarOperadorParaConcientizar/:id_oac', verificarToken, Fo.actualizarOperadorParaConcientizar);
+
+
     
     app.get('/obtenerCatalogoCursos', verificarToken, Fo.obtenerCatalogoCursos);
 

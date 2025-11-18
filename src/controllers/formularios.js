@@ -29,6 +29,7 @@ module.exports = app => {
     const curso = app.database.models.Cursos;
     const catacursos = app.database.models.CatalogoCursos;
     const catainstructores = app.database.models.CatalogoInstructores;
+    const operadoresac = app.database.models.OperadoresAConcientizar;
 
     app.obtenerOperadoresConHistorico = async (req, res) => {
         const year = parseInt(req.query.year) || moment().year();
@@ -2539,6 +2540,105 @@ module.exports = app => {
             });
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    app.operadorParaConcientizar = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new operadoresac({
+            operador: body.operador,
+            ocupa: body.ocupa,
+            fecha: body.fecha,
+            fecha_creacion: body.fecha_creacion,
+            usuario_creacion: body.usuario_creacion,
+        });
+
+        operadoresac.create(nuevoRegistro.dataValues, {
+            fields: [
+                'operador', 
+                'ocupa', 
+                'fecha', 
+                'fecha_creacion', 
+                'usuario_creacion'
+            ]
+        })
+        .then(result => {
+            res.json({
+                OK: true,
+                Operador: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+    app.actualizarOperadorParaConcientizar = (req, res) => {
+        let body = req.body;
+
+        let nuevoRegistro = new operadoresac({
+            ocupa: body.ocupa, 
+            fecha: body.fecha
+        });
+
+        operadoresac.update(nuevoRegistro.dataValues, {
+            where: {
+                id_oac: req.params.id_oac
+            },
+            fields: [
+                'ocupa', 
+                'fecha'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Operador: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

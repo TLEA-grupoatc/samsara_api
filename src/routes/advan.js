@@ -36,6 +36,7 @@ module.exports = app => {
 
     app.get('/listadoOperadores', ca.listadoOperadores);
     
+    app.get('/obtenerLiquidacionesAdvan', ca.obtenerLiquidacionesAdvan);
     
     
     
