@@ -2595,7 +2595,8 @@ module.exports = app => {
 
         let nuevoRegistro = new operadoresac({
             ocupa: body.ocupa, 
-            fecha: body.fecha
+            fecha: body.fecha,
+            usuario_creacion: body.usuario_creacion
         });
 
         operadoresac.update(nuevoRegistro.dataValues, {
@@ -2604,7 +2605,8 @@ module.exports = app => {
             },
             fields: [
                 'ocupa', 
-                'fecha'
+                'fecha',
+                'usuario_creacion'
             ]
         })
         .then(async result => {
