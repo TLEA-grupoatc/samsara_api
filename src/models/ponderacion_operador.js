@@ -81,7 +81,7 @@ module.exports = (sequelize, DataType) => {
     });
 
     PonderacionOperador.associate = (models) => {
-        PonderacionOperador.hasMany(models.OperadoresAConcientizar, {
+        PonderacionOperador.belongsTo(models.OperadoresAConcientizar, {
             foreignKey: 'operador',
             targetKey: 'operador',
             as: 'operadoresaConcientizar'
