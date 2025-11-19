@@ -42,8 +42,8 @@ module.exports = app => {
         const [, base64Content] = body.evidencia.split(',');
         var big1 = Buffer.from(base64Content, 'base64');
 
-        fs.writeFileSync(directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcionE, big1); 
-        doc = directorio + body.usuario + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcionE;
+        fs.writeFileSync(directorio + body.usuario_creacion + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcionE, big1); 
+        doc = directorio + body.usuario_creacion + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcionE;
 
         let nuevoRegistro = new accidente({
             operador: body.operador, 

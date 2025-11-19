@@ -2,7 +2,7 @@ module.exports = app => {
     const { verificarToken } = app.middlewares.auth;
     const acc = app.controllers.accidentes;
 
-    app.get('/obtenerAccidentes', acc.obtenerAccidentes);
+    app.get('/obtenerAccidentes', verificarToken, acc.obtenerAccidentes);
     
     app.post('/crearRegistroAccidente', verificarToken, acc.crearRegistroAccidente);
     
