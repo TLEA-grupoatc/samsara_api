@@ -1229,6 +1229,55 @@ module.exports = app => {
                 )
             }
 
+            if(check_mtto){
+                const checkMantenimiento = await Pickandup.findByPk(
+                    idpickandup,
+                    {
+                        attributes: ['fk_mantenimiento'],
+                        include: [
+                            {
+                                model: Mantenimiento
+                            }
+                        ],
+                        transaction: t
+                    }
+                );
+
+                const mtto = checkMantenimiento.Mantenimiento;
+
+                const checkPreventivo = (
+                    mtto.tracto_ot_preventivo
+                    || mtto.re1_ot_preventivo
+                    || dl_ot_preventivo
+                    || re2_ot_preventivo
+                );
+
+                const checkCorrectivo = (
+                    mtto.tracto_ot_correctivo
+                    || mtto.re1_ot_correctivo
+                    || mtto.dl_ot_correctivo
+                    || mtto.re2_ot_correctivo
+                );
+
+                let tipo_mantenimiento;
+                
+                if(checkCorrectivo && checkPreventivo) {
+                    tipo_mantenimiento = 'Corr/Prev'
+                } else if (checkCorrectivo) {
+                    tipo_mantenimiento = 'Correctivo'
+                } else if (checkPreventivo) {
+                    tipo_mantenimiento = 'Preventivo'
+                }
+
+                await Mantenimiento.update(
+                    { tipo_mtto: tipo_mantenimiento },
+                    {
+                        where: { id_mantenimiento: mtto.id_mantenimiento },
+                        transaction: t
+                    }
+                );
+            }
+
             await t.commit();
 
             io.emit('INSPECCION_ENTRADA_EVIDENCIAS_ACTUALIZADAS');

@@ -1,4 +1,4 @@
-const dotenv = require('dotenv').config();
+    const dotenv = require('dotenv').config();
 const cron = require('node-cron');
 const moment = require('moment');
 const _ = require('lodash');
@@ -2554,7 +2554,9 @@ module.exports = app => {
             },
             include: [{
                 model: operadoresac,
-                as: 'operadoresaConcientizar', // asegúrate que el alias coincida con la relación
+                as: 'operadoresaConcientizar',
+                // order: [['fecha', 'DESC']],
+                // limit: 1,
                 // required: true
             }],
             group: [

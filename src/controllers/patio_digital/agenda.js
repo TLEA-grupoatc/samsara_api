@@ -723,8 +723,13 @@ module.exports = app => {
             let evidencia_nombre = null;
 
             if(arribo.evidencia_agenda){
-                evidencia_nombre = saveBase64File(arribo.evidencia_agenda, 'evidencia_agenda');
-            }
+                const matches = arribo.evidencia_agenda.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+                if (!matches || matches.length !== 3) {
+                    
+                } else {
+                    evidencia_nombre = saveBase64File(arribo.evidencia_agenda, 'evidencia_agenda');
+                }
+            }   
 
             const programacion = {
                 base: arribo.base,

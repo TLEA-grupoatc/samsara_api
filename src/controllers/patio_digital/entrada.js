@@ -205,10 +205,25 @@ module.exports = app => {
                     },
                 ],
             });
+
+            const query = `
+                SELECT
+                    estructura
+                FROM 
+                    unidad
+                WHERE
+                    name = :unidad
+            `;
+
+            const [estructura] = await sequelize.query(query, {
+                replacements: { unidad: detalles.unidad },
+                type: QueryTypes.SELECT
+            });
             
             return res.json({
                 OK: true, 
-                result: detalles
+                result: detalles,
+                estructura: estructura
             });
         } catch (err) {
             console.error('Error en obtener detalles de entrada:', err);
@@ -1022,3 +1037,4 @@ const agendaDiaActual = async (sequelize, base) => {
 }
 
 //#endregion
+    

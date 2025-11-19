@@ -199,15 +199,32 @@ module.exports = app => {
                 include: [
                     {
                         model: Salida,
-                        include: { model: Usuarios, attributes: ['id_usuario', 'nombre_empleado']},
-                        include: { model: Usuarios, as: 'UsuarioAutoSalidaHallazgo', attributes: ['id_usuario', 'nombre_empleado']}
+                        include: [
+                          { model: Usuarios, attributes: ['id_usuario', 'nombre_empleado']},
+                          { model: Usuarios, as: 'UsuarioAutoSalidaHallazgo', attributes: ['id_usuario', 'nombre_empleado']}  
+                        ]
                     },
                 ]
+            });
+
+            const query = `
+                SELECT
+                    estructura
+                FROM 
+                    unidad
+                WHERE
+                    name = :unidad
+            `;
+
+            const [estructura] = await sequelize.query(query, {
+                replacements: { unidad: detalles.unidad },
+                type: QueryTypes.SELECT
             });
             
             return res.json({
                 OK: true, 
-                result: detalles
+                result: detalles,
+                estructura: estructura
             });
         } catch (err) {
             console.error('Error en obtener detalles de entrada:', err);

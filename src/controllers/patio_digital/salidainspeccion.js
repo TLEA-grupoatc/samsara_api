@@ -748,7 +748,7 @@ module.exports = app => {
         }
     }
 
-     app.guardarAjusteParametros = async (req, res) => {
+    app.guardarAjusteParametros = async (req, res) => {
 
         let t;
 
