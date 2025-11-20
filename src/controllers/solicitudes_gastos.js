@@ -756,6 +756,7 @@ module.exports = app => {
         let body = req.body;
         var today = new Date();
         const hora = moment(today).format('HH:mm');
+        const fechajuge = moment(today).format('YYYY-MM-DD HH:mm:ss');
 
         let nuevoRegistro = new gasto({
             fecha_solicitud: body.fecha_solicitud, 
@@ -772,9 +773,11 @@ module.exports = app => {
             monto: body.monto, 
             comentarios: body.comentarios, 
             conceptos_agrupados: body.conceptos_agrupados, 
-            pendientedeaprobar: 0,
+            pendientedeaprobar: body.pendientedeaprobar,
             aprobado_por: body.aprobado_por,
+            fecha_jun: body.aprobado_por_gerente === 'Eduardo Rubio' ? fechajuge : null,
             aprobado_por_gerente: body.aprobado_por_gerente,
+            fecha_gerente: body.aprobado_por_gerente === 'Eduardo Rubio' ? fechajuge : null,
             estatus: body.estatus,
             fecha_creacion: body.fecha_creacion,
             horario: obtenerHorarioID(hora)
@@ -811,7 +814,9 @@ module.exports = app => {
                 'conceptos_agrupados', 
                 'pendientedeaprobar', 
                 'aprobado_por', 
+                'fecha_jun', 
                 'aprobado_por_gerente', 
+                'fecha_gerente', 
                 'estatus',
                 'fecha_creacion',
                 'horario'
