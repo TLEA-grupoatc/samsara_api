@@ -457,7 +457,6 @@ module.exports = app => {
         });
     }
 
-    
     app.obtenerSolicitudesDeGastosDepositados = (req, res) => {  
         var today = new Date();
         const hoy = moment(today).format('YYYY-MM-DD');
@@ -482,7 +481,6 @@ module.exports = app => {
         });
     }
 
-
     app.obtenerSolicitudesDeGastosXEstatusPorAprobar = (req, res) => {  
         gasto.findAll({
             where: {
@@ -501,14 +499,6 @@ module.exports = app => {
             });
         });
     }
-
-
-
-
-
-
-
-
 
     app.obtenerSolicitudesDeGastosXAuxiliar = (req, res) => {  
         gasto.findAll({
@@ -603,7 +593,6 @@ module.exports = app => {
         });
     }
 
-
     app.verificarExistenciaGasto = (req, res) => {
         gasto.findAll({
             where: {
@@ -631,6 +620,7 @@ module.exports = app => {
         var archi = body.docs;
         var today = new Date();
         const hora = moment(today).format('HH:mm');
+        const fechajuge = moment(today).format('YYYY-MM-DD HH:mm:ss');
         
         for(let inf of body.info) {
             let nuevoRegistro = new gasto({
@@ -651,7 +641,9 @@ module.exports = app => {
                 conceptos_agrupados: inf.conceptos_agrupados, 
                 pendientedeaprobar: inf.pendientedeaprobar,
                 aprobado_por: inf.aprobado_por,
+                fecha_jun: inf.aprobado_por_gerente === 'Eduardo Rubio' ? fechajuge : null,
                 aprobado_por_gerente: inf.aprobado_por_gerente,
+                fecha_gerente: inf.aprobado_por_gerente === 'Eduardo Rubio' ? fechajuge : null,
                 estatus: inf.estatus,
                 fecha_creacion: inf.fecha_creacion,
                 horario: obtenerHorarioID(hora)
@@ -690,7 +682,9 @@ module.exports = app => {
                     'conceptos_agrupados', 
                     'pendientedeaprobar',
                     'aprobado_por', 
+                    'fecha_jun', 
                     'aprobado_por_gerente', 
+                    'fecha_gerente', 
                     'estatus',
                     'fecha_creacion',
                     'horario'
