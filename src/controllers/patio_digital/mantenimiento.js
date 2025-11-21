@@ -16,8 +16,8 @@ module.exports = app => {
     const Sequelize = app.database.sequelize;
     const io = app.io;
 
-    const sql = require('mssql');
-    const sqlConfig = require('../../libs/configMSSQL');
+    // const sql = require('mssql');
+    // const sqlConfig = require('../../libs/configMSSQL');
 
     const saveBase64File = (base64Data, type) => {
         
@@ -50,42 +50,42 @@ module.exports = app => {
     }
 
     // Advan
-    app.obtenerRefaccionesOT = async (req, res) => {
-        try {
+    // app.obtenerRefaccionesOT = async (req, res) => {
+    //     try {
 
-            const ots = req.body;
+    //         const ots = req.body;
 
-            console.log(ots)
+    //         console.log(ots)
 
-            await sql.connect(sqlConfig);
+    //         await sql.connect(sqlConfig);
 
-            const query = `
-                SELECT
-                    folio AS ot,
-                    TRIM(num_eco) AS unidad,
-                    TRIM(producto_clave) AS producto_clave,
-                    TRIM(unidad_clave) AS unidad_clave,
-                    TRIM(producto_descrip) AS producto_descrip,
-                    cantidad,
-                    cantidad_rec
-                FROM
-                    vConsInsumosPendientes
-                WHERE
-                    folio IN (${ots});
-            `
-            const result = await sql.query(query);
+    //         const query = `
+    //             SELECT
+    //                 folio AS ot,
+    //                 TRIM(num_eco) AS unidad,
+    //                 TRIM(producto_clave) AS producto_clave,
+    //                 TRIM(unidad_clave) AS unidad_clave,
+    //                 TRIM(producto_descrip) AS producto_descrip,
+    //                 cantidad,
+    //                 cantidad_rec
+    //             FROM
+    //                 vConsInsumosPendientes
+    //             WHERE
+    //                 folio IN (${ots});
+    //         `
+    //         const result = await sql.query(query);
 
-            return res.status(200).json({
-                OK: true,
-                msg: 'Refacciones obtenidas correctamente',
-                result: result.recordset
-            });
-        } catch (error) {
-            res.status(500).send('Error al Obtener los registros: ' + error.message);
-        } finally {
-            sql.close();
-        }
-    }
+    //         return res.status(200).json({
+    //             OK: true,
+    //             msg: 'Refacciones obtenidas correctamente',
+    //             result: result.recordset
+    //         });
+    //     } catch (error) {
+    //         res.status(500).send('Error al Obtener los registros: ' + error.message);
+    //     } finally {
+    //         sql.close();
+    //     }
+    // }
 
     app.obtenerUnidadesCarrilesEspejo = async (req, res) => {
         try {
