@@ -14,6 +14,8 @@ module.exports = app => {
     const InspeccionesInspSalida = app.database.models.InspeccionesInspSalida;
     const HallazgosInspSalida = app.database.models.HallazgosInspEntrada;
 
+    const Mantenimiento = app.database.models.Mantenimiento;
+
     const CatalogoFamilia = app.database.models.CatalogoFamilia;
     const CatalogoComponente = app.database.models.CatalogoComponente;
     const Usuarios = app.database.models.Usuarios;
@@ -385,9 +387,48 @@ module.exports = app => {
                     transaction: t
                 }
             );
+
+            const [carrilCheck] = await Sequelize.query(
+                `
+                    SELECT MAN.carril, MAN.id_mantenimiento
+                    FROM
+                        pd_pickandup PAU
+                        INNER JOIN pd_mantenimiento MAN ON PAU.fk_mantenimiento = MAN.id_mantenimiento
+                    WHERE PAU.idpickandup = :idpickandup;
+                `,
+                {
+                    replacements: { idpickandup: idpickandup, },
+                    type: Sequelize.QueryTypes.SELECT,
+                    transaction: t
+                }
+            );
+
+            if(carrilCheck){
+                await Mantenimiento.update(
+                    { carril: null },
+                    {
+                        where: { id_mantenimiento: carrilCheck.id_mantenimiento },
+                        transaction: t
+                    }
+                );
+            }
             
             await t.commit();
             io.emit('FOSA_INSPECCION_SALIDA_ACTUALIZADA');
+            io.emit('INGRESO_FOSA_INSPECCION_SALIDA');
+
+            if(carrilCheck.carril?.includes('e-')){
+                io.emit('MANTENIMIENTO_CARRILES_ESPEJO_ACTUALIZADOS')
+            }
+            
+            if(carrilCheck.carril?.includes('t-') || carrilCheck.carril?.includes('llan')  || carrilCheck.carril?.includes('ima')){
+                io.emit('MANTENIMIENTO_CARRILES_TALLER_ACTUALIZADOS')
+            }
+
+            if(carrilCheck.carril?.includes('cua')){
+                io.emit('MANTENIMIENTO_CUARENTENA_ACTUALIZADA')
+            }
+            
             return res.status(200).json({
                 OK: true,
                 msg: 'Confirmado correctamente',

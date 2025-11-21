@@ -155,9 +155,9 @@ module.exports = app => {
 
             if(EntradaIngresoMtto){
                 ingreso_mtto = true;
-                estatus = 'evidencias'
+                // estatus = 'evidencias'
             } else {
-                estatus = 'resguardo'
+                // estatus = 'resguardo'
             }
 
             const nuevaEvidencia = await Evidencias.create(

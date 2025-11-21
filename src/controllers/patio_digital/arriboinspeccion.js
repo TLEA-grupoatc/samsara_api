@@ -635,6 +635,7 @@ module.exports = app => {
             
             await t.commit();
             io.emit('FOSA_INSPECCION_ENTRADA_ACTUALIZADA');
+            io.emit('INGRESO_FOSA_INSPECCION_ENTRADA');
             return res.status(200).json({
                 OK: true,
                 msg: 'Confirmado correctamente',
@@ -1066,6 +1067,9 @@ module.exports = app => {
                             transaction: t
                         }
                     );
+
+                    io.emit('INSPECCION_ENTRADA_FINALIZADA');
+
                 }
                 
             } else {
@@ -1088,6 +1092,8 @@ module.exports = app => {
                             transaction: t
                         }
                     );
+
+                    io.emit('INSPECCION_ENTRADA_FINALIZADA');
                 }
 
             }
@@ -1096,7 +1102,6 @@ module.exports = app => {
             await t.commit();
 
             io.emit('FOSA_INSPECCION_ENTRADA_ACTUALIZADA');
-            io.emit('INSPECCION_ENTRADA_FINALIZADA');
 
             return res.status(200).json({
                 OK: true,
@@ -1248,8 +1253,8 @@ module.exports = app => {
                 const checkPreventivo = (
                     mtto.tracto_ot_preventivo
                     || mtto.re1_ot_preventivo
-                    || dl_ot_preventivo
-                    || re2_ot_preventivo
+                    || mtto.dl_ot_preventivo
+                    || mtto.re2_ot_preventivo
                 );
 
                 const checkCorrectivo = (

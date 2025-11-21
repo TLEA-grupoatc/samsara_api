@@ -46,6 +46,26 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING(100),
             allowNull: true
         },
+        estatus: {
+            type: DataType.STRING(100),
+            allowNull: true
+        },
+        eta_1: {
+            type: DataType.DATE,
+            allowNull: true
+        },
+        eta_2: {
+            type: DataType.DATE,
+            allowNull: true
+        },
+        fecha_ingreso_carril: {
+            type: DataType.DATE,
+            allowNull: true
+        },
+        comentarios: {
+            type: DataType.STRING(300),
+            allowNull: true
+        },
         creado_el: {
             type: DataType.DATE,
             allowNull: false,
