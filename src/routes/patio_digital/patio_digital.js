@@ -6,6 +6,8 @@ module.exports = app => {
     app.get('/patiodigital/agendaingresos', PatioDigital.agendaIngresos);
     app.get('/patiodigital/ingresosmotivos', PatioDigital.ingresosPorMotivo);
 
+    app.get('/patiodigital/reporte/salidas', PatioDigital.obtenerReporteAllSalidas);
+
 
     app.get('/patiodigital/resumeningresoshoy/:base', PatioDigital.PDIngresosDiaActual);
     

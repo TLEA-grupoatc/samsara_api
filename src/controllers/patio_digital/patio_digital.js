@@ -220,6 +220,40 @@ module.exports = app => {
         }
     }
 
+    app.obtenerReporteAllSalidas = async (req, res) => {
+        try {
+
+            const salidas = await Sequelize.query(
+            `
+                SELECT
+                    CASE PAU.base
+                        WHEN 1 THEN 'Salinas' 
+                        WHEN 2 THEN 'Salamanca' 
+                        END AS base,
+                    PAU.unidad,
+                    PAU.unidad_negocio,
+                    PAU.division,
+                    DATE(SAL.fecha_salida) AS fecha_salida
+                FROM
+                    pd_salida SAL
+                    LEFT JOIN pd_pickandup PAU ON SAL.id_salida = PAU.fk_salida
+                WHERE PAU.unidad IS NOT NULL
+                ORDER BY SAL.id_salida;
+            `,
+            { type: Sequelize.QueryTypes.SELECT }
+            );
+
+            return res.status(200).json(salidas);
+
+        } catch (error) {
+            console.error('Error al obtener reporte salidas:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     //#endregion
 
     //#region Omisiones proceso

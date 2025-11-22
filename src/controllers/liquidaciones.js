@@ -1524,6 +1524,9 @@ module.exports = app => {
                     else if(op.USR_CREA === '001894') {
                         usuario = 'Alejandra Ramos';
                     }
+                    else if(op.USR_CREA === 'DCAROLIN') {
+                        usuario = 'Carolina Delgado';
+                    }
                     else {
                         usuario = 'Maximiliano Martinez';
                     }

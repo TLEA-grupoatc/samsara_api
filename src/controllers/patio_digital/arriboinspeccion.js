@@ -1206,15 +1206,23 @@ module.exports = app => {
             
             const check_mtto = mantenimiento.fk_mantenimiento ? true : false;
 
+            const checkNulls = (value) => {
+                if (value === undefined || value === null || value === '' || String(value).toLowerCase() === 'null') {
+                    return null;
+                }
+                const parsedValue = parseInt(value, 10);
+                return isNaN(parsedValue) ? null : parsedValue;
+            };
+
             const ots = {
-                tracto_ot_correctivo: tracto_ot_correctivo,
-                re1_ot_correctivo: re1_ot_correctivo,
-                dl_ot_correctivo: dl_ot_correctivo,
-                re2_ot_correctivo: re2_ot_correctivo,
-                tracto_ot_preventivo: tracto_ot_preventivo,
-                re1_ot_preventivo: re1_ot_preventivo,
-                dl_ot_preventivo: dl_ot_preventivo,
-                re2_ot_preventivo: re2_ot_preventivo
+                tracto_ot_correctivo: checkNulls(tracto_ot_correctivo),
+                re1_ot_correctivo: checkNulls(re1_ot_correctivo),
+                dl_ot_correctivo: checkNulls(dl_ot_correctivo),
+                re2_ot_correctivo: checkNulls(re2_ot_correctivo),
+                tracto_ot_preventivo: checkNulls(tracto_ot_preventivo),
+                re1_ot_preventivo: checkNulls(re1_ot_preventivo),
+                dl_ot_preventivo: checkNulls(dl_ot_preventivo),
+                re2_ot_preventivo: checkNulls(re2_ot_preventivo)
             }
 
             if( check_mtto && check_ots ) {
@@ -1234,14 +1242,25 @@ module.exports = app => {
                 )
             }
 
-            if(check_mtto){
+            if(check_mtto){ 
                 const checkMantenimiento = await Pickandup.findByPk(
                     idpickandup,
                     {
                         attributes: ['fk_mantenimiento'],
                         include: [
                             {
-                                model: Mantenimiento
+                                model: Mantenimiento,
+                                attributes: [
+                                    'id_mantenimiento',
+                                    'tracto_ot_correctivo',
+                                    're1_ot_correctivo',
+                                    'dl_ot_correctivo',
+                                    're2_ot_correctivo',
+                                    'tracto_ot_preventivo',
+                                    're1_ot_preventivo',
+                                    'dl_ot_preventivo',
+                                    're2_ot_preventivo'
+                                ]
                             }
                         ],
                         transaction: t
