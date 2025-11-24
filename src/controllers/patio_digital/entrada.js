@@ -76,18 +76,12 @@ module.exports = app => {
             const query = `
                 SELECT
                     PAU.idpickandup,
-                    PAU.base,
+                    E.id_entrada,
                     PAU.operador, 
                     E.alcoholimetro, 
                     PAU.unidad,
-                    E.placas,
-                    E.rem_1,
-                    E.rem_2,
-                    E.kilometraje,
-                    E.tarjeta_iave,
-                    E.foto_tarjeta_iave,
-                    E.tarjeta_ug,
-                    E.foto_tarjeta_ug,
+                    PAU.rem_1,
+                    PAU.rem_2,
                     PAU.cargado,
                     PAU.division,
                     E.comentarios,
@@ -141,17 +135,11 @@ module.exports = app => {
                     E.id_entrada,
                     PAU.base,
                     PAU.operador,
-                    PAU.cargado,
                     PAU.division,
                     PAU.unidad,
                     E.alcoholimetro,
-                    E.placas,
-                    E.rem_1,
-                    E.rem_2,
-                    E.kilometraje,
-                    E.tarjeta_iave,
-                    E.tarjeta_ug,
-                    E.comentarios,
+                    PAU.rem_1,
+                    PAU.rem_2,
                     E.fecha_entrada,
                     E.fk_usuario
                 FROM 
@@ -1037,4 +1025,3 @@ const agendaDiaActual = async (sequelize, base) => {
 }
 
 //#endregion
-    

@@ -141,10 +141,12 @@ module.exports = app => {
                     INPS_S.evidencia_ajuste_parametros_2,
                     INPS_S.evidencia_video_frenos,
                     INPS_S.evidencia_video_unidad,
-                    PAU.rem_1
+                    PAU.rem_1,
+                    MAN.id_mantenimiento
                 FROM 
                     pd_pickandup PAU
                     LEFT JOIN pd_inspeccion_salida INPS_S ON PAU.fk_inspeccion_salida = INPS_S.id_inspeccion_salida
+                    LEFT JOIN pd_mantenimiento MAN ON PAU.fk_mantenimiento = MAN.id_mantenimiento
                 WHERE
                     PAU.estatus = 'en_fosa_inspeccion_salida'
                     AND PAU.base = :base
@@ -566,16 +568,17 @@ module.exports = app => {
         }
     }
 
-     app.confirmarSalidaFosa = async (req, res) => {
+    app.confirmarSalidaFosa = async (req, res) => {
 
         // let t;
         try {
             // t = await Sequelize.transaction();
-            const { id_inspeccion_salida } = req.body;
+            const { id_usuario, id_inspeccion_salida, id_mantenimiento } = req.body;
 
             await InspeccionSalida.update(
                 {
                     fecha_preliberacion: moment(),
+                    fk_usuario_salida_fosa: id_usuario
                 },
                 {
                     where: { id_inspeccion_salida: id_inspeccion_salida },
@@ -590,6 +593,13 @@ module.exports = app => {
                     where: { fk_inspeccion_salida: id_inspeccion_salida },
                 }
             );
+
+            await Mantenimiento.update(
+                { estatus: 'liberada' },
+                {
+                    where: { id_mantenimiento: id_mantenimiento }
+                }
+            )
 
             io.emit('FOSA_INSPECCION_SALIDA_ACTUALIZADA');
             io.emit('INSPECCION_SALIDA_FINALIZADA');
@@ -630,7 +640,7 @@ module.exports = app => {
 
             let evidenciasPorActualizar = {};
 
-            console.log(documentosEvidencias)
+            // console.log(documentosEvidencias)
 
             const evidenciasExistentes = await InspeccionSalida.findOne({
                 attributes: columnasEvidencias,
@@ -732,7 +742,7 @@ module.exports = app => {
         }
     }
 
-     app.guardarLiberacion = async (req, res) => {
+    app.guardarLiberacion = async (req, res) => {
 
         let t;
         
@@ -896,7 +906,6 @@ module.exports = app => {
             });
         }
     }
-
 
     return app;
 }

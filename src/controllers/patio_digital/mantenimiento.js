@@ -12,6 +12,7 @@ module.exports = app => {
     const InspeccionEntrada = app.database.models.InspeccionEntrada;
     const Entrada = app.database.models.Entrada;
     const Mantenimiento = app.database.models.Mantenimiento;
+    const MovimientosCarriles = app.database.models.MovimientosCarriles;
 
     const Sequelize = app.database.sequelize;
     const io = app.io;
@@ -100,7 +101,8 @@ module.exports = app => {
                     PAU.division,
                     PAU.unidad_negocio,
                     ENT.fecha_entrada AS fecha_ingreso_base,
-                    INSP_ENT.fecha_hora_fin AS 	fecha_ingreso_taller,
+                    INSP_ENT.fecha_hora_fin AS fecha_ingreso_taller,
+                    INSP_ENT.id_inspeccion_entrada,
                     DATEDIFF(CURDATE(), DATE(INSP_ENT.fecha_hora_fin)) AS dias_taller,
                     MAN.carril,
                     MAN.estatus,
@@ -186,6 +188,7 @@ module.exports = app => {
                     PAU.unidad_negocio,
                     ENT.fecha_entrada AS fecha_ingreso_base,
                     INSP_ENT.fecha_hora_fin AS 	fecha_ingreso_taller,
+                    INSP_ENT.id_inspeccion_entrada,
                     DATEDIFF(CURDATE(), DATE(INSP_ENT.fecha_hora_fin)) AS dias_taller,
                     MAN.carril,
                     MAN.estatus,
@@ -321,15 +324,15 @@ module.exports = app => {
                 carril_origen,
                 id_mantenimiento_destino,
                 carril_destino,
-                socketID
+                id_usuario
             } = req.body;
 
             // console.log(req.body)
 
-            await actualizarCarril(id_mantenimiento_origen, carril_origen, t);
+            await actualizarCarril(id_mantenimiento_origen, carril_origen, id_usuario, t);
 
             if(id_mantenimiento_destino){
-                await actualizarCarril(id_mantenimiento_destino, carril_destino, t);
+                await actualizarCarril(id_mantenimiento_destino, carril_destino, id_usuario, t);
             }
 
             await t.commit();
@@ -662,6 +665,67 @@ module.exports = app => {
         }
     }
 
+    app.obtenerHistoricoMantenimiento = async (req, res) => {
+
+        try {
+            
+            const { base } = req.params;
+
+            let opcionBase;
+
+            switch(base) {
+            case '0':
+                opcionBase = ``;
+            break;
+            default:
+                opcionBase = `WHERE PAU.base = ${base}`;
+            break;
+        }
+
+            const historico = await Sequelize.query(
+                `
+                    SELECT
+                        PAU.idpickandup,
+                        PAU.unidad,
+                        PAU.unidad_negocio,
+                        PAU.division,
+                        MAN.id_mantenimiento,
+                        MAN.tipo_mtto,
+                        ENT.fecha_entrada,
+                        INS_ENT.fecha_hora_fin AS fecha_ingreso_taller,
+                        INS_SAL.fecha_preliberacion,
+                        MAN.estatus
+                    FROM
+                        pd_mantenimiento MAN
+                        LEFT JOIN pd_pickandup PAU ON MAN.id_mantenimiento = PAU.fk_mantenimiento
+                        LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
+                        LEFT JOIN pd_inspeccion_entrada INS_ENT ON PAU.fk_inspeccion_entrada = INS_ENT.id_inspeccion_entrada
+                        LEFT JOIN pd_inspeccion_salida INS_SAL ON PAU.fk_inspeccion_salida = INS_SAL.id_inspeccion_salida
+                    ${opcionBase}
+                    ORDER BY
+                        DATE(INS_ENT.fecha_hora_fin)
+                    LIMIT 100;
+                `,
+                {
+                    type: Sequelize.QueryTypes.SELECT
+                }
+            );
+            
+            return res.status(200).json({
+                OK: true,
+                msg: 'Historico obtenido correctamente',
+                result: historico
+            });
+
+        } catch (error) {
+            console.error('Error al obtener historico mantenimiento:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     // Advan (Pruebas local)
     // const obtenerAccionesDeOTs = async (ots, conMecanico) => {
 
@@ -837,7 +901,7 @@ module.exports = app => {
         }
     }
 
-    const actualizarCarril = async (id_mantenimiento, carril, t) => {
+    const actualizarCarril = async (id_mantenimiento, carril, id_usuario, t) => {
 
         try {
 
@@ -846,7 +910,7 @@ module.exports = app => {
             if(carril === 'cuarentena'){
                 carril = null;
                 estatus = 'en_espera'
-            }else {
+            } else {
                 estatus = 'en_proceso'
             }
 
@@ -857,6 +921,18 @@ module.exports = app => {
                     transaction: t
                 }
             );
+
+            if(id_mantenimiento){
+                await MovimientosCarriles.create(
+                    {
+                        fk_mantenimiento: id_mantenimiento,
+                        carril: carril,
+                        fecha_cambio: moment(),
+                        fk_usuario: id_usuario
+                    },
+                    { transaction: t }
+                )
+            }
 
             return;
 
