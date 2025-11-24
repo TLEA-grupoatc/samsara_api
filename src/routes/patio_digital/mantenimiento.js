@@ -9,6 +9,7 @@ module.exports = app => {
     app.get('/mantenimiento/detalles/:idpickandup', Mantenimiento.obtenerDetallesMantenimiento);
 
     app.get('/mantenimiento/historico/:base', Mantenimiento.obtenerHistoricoMantenimiento);
+    app.get('/mantenimiento/busquedahistorico/:searchWord', Mantenimiento.obtenerBusquedaHistoricoMantenimiento);
 
     app.get('/mantenimiento/ingresos/:base', Mantenimiento.obtenerIngresosAMantenimiento);
     app.get('/mantenimiento/liberaciones/:base', Mantenimiento.obtenerLiberacionesMantenimiento);

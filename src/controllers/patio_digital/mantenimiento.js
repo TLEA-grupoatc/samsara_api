@@ -726,6 +726,58 @@ module.exports = app => {
         }
     }
 
+    app.obtenerBusquedaHistoricoMantenimiento = async (req, res) => {
+
+        try {
+            
+            const { searchWord } = req.params;
+
+            const historico = await Sequelize.query(
+                `
+                    SELECT
+                        PAU.idpickandup,
+                        PAU.unidad,
+                        PAU.unidad_negocio,
+                        PAU.division,
+                        MAN.id_mantenimiento,
+                        MAN.tipo_mtto,
+                        ENT.fecha_entrada,
+                        INS_ENT.fecha_hora_fin AS fecha_ingreso_taller,
+                        INS_SAL.fecha_preliberacion,
+                        MAN.estatus
+                    FROM
+                        pd_mantenimiento MAN
+                        LEFT JOIN pd_pickandup PAU ON MAN.id_mantenimiento = PAU.fk_mantenimiento
+                        LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
+                        LEFT JOIN pd_inspeccion_entrada INS_ENT ON PAU.fk_inspeccion_entrada = INS_ENT.id_inspeccion_entrada
+                        LEFT JOIN pd_inspeccion_salida INS_SAL ON PAU.fk_inspeccion_salida = INS_SAL.id_inspeccion_salida
+                    WHERE
+                        PAU.unidad LIKE :searchWord
+                    ORDER BY
+                        DATE(INS_ENT.fecha_hora_fin)
+                    LIMIT 100;
+                `,
+                {
+                    type: Sequelize.QueryTypes.SELECT,
+                    replacements: { searchWord: `%${searchWord}%` },
+                }
+            );
+            
+            return res.status(200).json({
+                OK: true,
+                msg: 'Historico obtenido correctamente',
+                result: historico
+            });
+
+        } catch (error) {
+            console.error('Error al obtener historico mantenimiento:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     // Advan (Pruebas local)
     // const obtenerAccionesDeOTs = async (ots, conMecanico) => {
 
