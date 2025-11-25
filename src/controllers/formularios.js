@@ -116,7 +116,7 @@ module.exports = app => {
             res.json({ OK: true, Operadores: operadoresConActividades });
         }
         catch (err) {
-            res.status(500).json({ OK: false, msg: err.message });
+            res.status(412).json({ OK: false, msg: err.message });
         }
     };
 
@@ -1365,7 +1365,7 @@ module.exports = app => {
             res.json({ OK: true, Operadores: datos });
         }
         catch (err) {
-            res.status(500).json({ OK: false, msg: err.message });
+            res.status(412).json({ OK: false, msg: err.message });
         }
     }
 

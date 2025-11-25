@@ -1293,7 +1293,8 @@ const programacionesYEstatusDeLaSemana = async (sequelize, base, fechaInicio, fe
                 RA.fecha_arribo_reprogramado AS fecha_programada,
                 RA.cumplimiento_arribo_reprogramacion AS cumplimiento,
                 RA.horario_arribo_reprogramado AS horario_arribo,
-                MA.motivo AS motivo
+                MA.motivo AS motivo,
+                RA.causa_reprogramacion
             FROM
                 pd_reprogramaciones_arribos RA
                 LEFT JOIN pd_agenda CA ON RA.fk_agenda = CA.id_agenda
@@ -1308,7 +1309,8 @@ const programacionesYEstatusDeLaSemana = async (sequelize, base, fechaInicio, fe
                 CA.fecha_arribo_programado AS fecha_programada,
                 CA.cumplimiento_arribo AS cumplimiento,
                 CA.horario_arribo_programado AS horario_arribo,
-                MA.motivo
+                MA.motivo,
+                NULL AS causa_reprogramacion
             FROM
                 pd_agenda CA
                 LEFT JOIN pd_motivo_programacion_arribo MA ON CA.fk_motivo_programacion_arribo = MA.id_motivo_programacion_arribo
@@ -1332,9 +1334,12 @@ const programacionesYEstatusDeLaSemana = async (sequelize, base, fechaInicio, fe
                 UA.horario_arribo,
                 UA.cumplimiento,
                 DATE(EN.fecha_entrada) AS fecha_entrada,
-                UA.motivo
+                UA.motivo,
+                AGE.comentarios,
+                UA.causa_reprogramacion
             FROM
                 union_arribos UA
+                LEFT JOIN pd_agenda AGE ON UA.id_agenda = AGE.id_agenda
                 LEFT JOIN pd_pickandup PAU ON UA.id_agenda = PAU.fk_agenda
                 LEFT JOIN pd_entrada EN ON PAU.fk_entrada = EN.id_entrada;
         `,
