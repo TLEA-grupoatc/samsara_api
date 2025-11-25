@@ -289,7 +289,7 @@ module.exports = app => {
                         AND PAU.estatus = :estatus
                         AND MAN.carril IS NULL
                     ORDER BY
-                        INSP_ENT.fecha_hora_fin DESC;
+                        INSP_ENT.fecha_hora_fin ASC;
                 `,
                 {
                     replacements: { base: base, estatus: 'mantenimiento' },
@@ -433,23 +433,25 @@ module.exports = app => {
 
             const mantenimiento = unidadParsed.Mantenimiento;
 
-            if (mantenimiento?.tracto_ot_correctivo) ots.push(mantenimiento.tracto_ot_correctivo);
-            if (mantenimiento?.re1_ot_correctivo) ots.push(mantenimiento.re1_ot_correctivo);
-            if (mantenimiento?.dl_ot_correctivo) ots.push(mantenimiento.dl_ot_correctivo);
-            if (mantenimiento?.re2_ot_correctivo) ots.push(mantenimiento.re2_ot_correctivo);
-            if (mantenimiento?.tracto_ot_preventivo) ots.push(mantenimiento.tracto_ot_preventivo);
-            if (mantenimiento?.re1_ot_preventivo) ots.push(mantenimiento.re1_ot_preventivo);
-            if (mantenimiento?.dl_ot_preventivo) ots.push(mantenimiento.dl_ot_preventivo);
-            if (mantenimiento?.re2_ot_preventivo) ots.push(mantenimiento.re2_ot_preventivo);
+            if (mantenimiento?.tracto_ot_correctivo) ots.push(mantenimiento.tracto_ot_correctivo + 1);
+            if (mantenimiento?.re1_ot_correctivo) ots.push(mantenimiento.re1_ot_correctivo + 1);
+            if (mantenimiento?.dl_ot_correctivo) ots.push(mantenimiento.dl_ot_correctivo + 1);
+            if (mantenimiento?.re2_ot_correctivo) ots.push(mantenimiento.re2_ot_correctivo + 1);
+            if (mantenimiento?.tracto_ot_preventivo) ots.push(mantenimiento.tracto_ot_preventivo + 1);
+            if (mantenimiento?.re1_ot_preventivo) ots.push(mantenimiento.re1_ot_preventivo + 1);
+            if (mantenimiento?.dl_ot_preventivo) ots.push(mantenimiento.dl_ot_preventivo + 1);
+            if (mantenimiento?.re2_ot_preventivo) ots.push(mantenimiento.re2_ot_preventivo + 1);
             
             const accionesOT = await obtenerAccionesDeOTs(ots, true);
 
             const otsMap = accionesOT.reduce((acc, item) => {
-                const otKey = item.ORDEN_CLAVE;
+                const adjustedOrden = Number(item.ORDEN_CLAVE) - 1;
+                const newItem = { ...item, ORDEN_CLAVE: adjustedOrden };
+                const otKey = adjustedOrden;
                 if (acc[otKey]) {
-                    acc[otKey].push(item);
+                    acc[otKey].push(newItem);
                 } else {
-                    acc[otKey] = [item];
+                    acc[otKey] = [newItem];
                 }
                 return acc;
             }, {});
@@ -865,24 +867,26 @@ module.exports = app => {
             let ots = [];
 
             carriles.map(carril => {
-                if (carril.tracto_ot_correctivo) ots.push(carril.tracto_ot_correctivo);
-                if (carril.re1_ot_correctivo) ots.push(carril.re1_ot_correctivo);
-                if (carril.dl_ot_correctivo) ots.push(carril.dl_ot_correctivo);
-                if (carril.re2_ot_correctivo) ots.push(carril.re2_ot_correctivo);
-                if (carril.tracto_ot_preventivo) ots.push(carril.tracto_ot_preventivo);
-                if (carril.re1_ot_preventivo) ots.push(carril.re1_ot_preventivo);
-                if (carril.dl_ot_preventivo) ots.push(carril.dl_ot_preventivo);
-                if (carril.re2_ot_preventivo) ots.push(carril.re2_ot_preventivo);                
+                if (carril.tracto_ot_correctivo) ots.push(carril.tracto_ot_correctivo + 1);
+                if (carril.re1_ot_correctivo) ots.push(carril.re1_ot_correctivo + 1);
+                if (carril.dl_ot_correctivo) ots.push(carril.dl_ot_correctivo + 1);
+                if (carril.re2_ot_correctivo) ots.push(carril.re2_ot_correctivo + 1);
+                if (carril.tracto_ot_preventivo) ots.push(carril.tracto_ot_preventivo + 1);
+                if (carril.re1_ot_preventivo) ots.push(carril.re1_ot_preventivo + 1);
+                if (carril.dl_ot_preventivo) ots.push(carril.dl_ot_preventivo + 1);
+                if (carril.re2_ot_preventivo) ots.push(carril.re2_ot_preventivo + 1);                
             });
 
             const accionesOT = await obtenerAccionesDeOTs(ots, false);
 
             const otsMap = accionesOT.reduce((acc, item) => {
-                const otKey = item.ORDEN_CLAVE;
+                const adjustedOrden = Number(item.ORDEN_CLAVE) - 1;
+                const newItem = { ...item, ORDEN_CLAVE: adjustedOrden };
+                const otKey = adjustedOrden;
                 if (acc[otKey]) {
-                    acc[otKey].push(item);
+                    acc[otKey].push(newItem);
                 } else {
-                    acc[otKey] = [item];
+                    acc[otKey] = [newItem];
                 }
                 return acc;
             }, {});
