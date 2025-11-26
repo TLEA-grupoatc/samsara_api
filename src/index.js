@@ -85,6 +85,13 @@ cron.schedule('* * * * *', () => {
         json: (data) => console.log(statusCode, data)
       })
     }); 
+
+    app.obtenerResultadosInmovilizadores({}, {
+      json: (data) => console.log(data),
+      status: (statusCode) => ({
+        json: (data) => console.log(statusCode, data)
+      })
+    }); 
   });
   
   cron.schedule('0 */2 * * *', () => {   

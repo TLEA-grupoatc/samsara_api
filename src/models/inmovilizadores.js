@@ -12,12 +12,16 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: false
         },
+        estaconectado: {
+            type: DataType.BOOLEAN,
+            allowNull: false
+        },
         relay_uno: {
-            type: DataType.INTEGER,
+            type: DataType.BOOLEAN,
             allowNull: false
         },
         relay_dos: {
-            type: DataType.INTEGER,
+            type: DataType.BOOLEAN,
             allowNull: false
         },
         geocerca: {

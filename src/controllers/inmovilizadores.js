@@ -2,6 +2,8 @@ const dotenv = require('dotenv').config();
 const moment = require('moment');
 
 module.exports = app => {
+    const axios = require('axios');
+    
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
@@ -11,7 +13,7 @@ module.exports = app => {
 
     const reporte = app.database.models.ReporteInmovilizadores;
 
-    app.obtenerReporteInmovilizadores = (req, res) => {
+    app.obtenerReporteInmovilizadoresxEco = (req, res) => {
         reporte.findAll({
             where: {
                 economico: req.params.economico
@@ -33,7 +35,25 @@ module.exports = app => {
         });
     }
 
-    app.obtenerResultadosInmovilizadores = (req, res) => {
+    app.obtenerReporteInmovilizadores = (req, res) => {
+        reporte.findAll({
+            order: [
+                ['fecha', 'DESC']
+            ],
+        }).then(result => {
+            res.json({
+                OK: true,
+                Inmovilizadores: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+    app.obtenerResultadosInmovilizadores = async (req, res) => {
         var economicos = [
             "281474983153054",
             "281474983153055",
@@ -358,26 +378,27 @@ module.exports = app => {
         const ho = moment(hoy).format('HH');
         const mi = moment(hoy).format('mm');
         const se = moment(hoy).format('ss');
-
-        console.log(`${fe}T${(ho - 1)}:${mi}:${se}Z`);
-        console.log(`${fe}T${(ho - 1).toString().padStart(2, '0')}:${mi}:${se}Z`);
-        
         
         const chunkSize = 5;
         const startHour = ((parseInt(ho, 10) - 1 + 24) % 24).toString().padStart(2, '0');
         const endHour = parseInt(ho, 10).toString().padStart(2, '0');
 
-        // dividir economicos en lotes de 5
+        const listdeubicaciones = await axios.get('https://apisamsara.tlea.online/obtenerReporteUltimaLocacion');
+        const ubicaciones = listdeubicaciones.data.Reporte || [];
+        
         const batches = [];
+
+        
         for (let i = 0; i < economicos.length; i += chunkSize) {
             batches.push(economicos.slice(i, i + chunkSize));
         }
-
-        // crear una promesa por cada lote; los lotes se disparan escalonadamente para evitar sobrecarga
+        
         const promises = batches.map((batch, bIdx) => {
             return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                Promise.all(batch.map(economicoStr => {
+                setTimeout(() => {
+                    Promise.all(batch.map(economicoStr => {
+                    const ubicacionesMap = Object.fromEntries(ubicaciones.map(l => [l.id_unidad, l]));
+                    const ubicacion = ubicacionesMap[economicoStr] || {};
                 const unidades = [economicoStr];
                 return Samsara.getEngineImmobilizerStates({
                     vehicleIds: unidades,
@@ -385,22 +406,32 @@ module.exports = app => {
                     endTime: `${fe}T${endHour}:${mi}:${se}Z`
                 }).then(result => {
                     const items = (result && result.data && result.data.data) || [];
-                    items.forEach(item => {
-                    const nuevoReporte = {
-                        id_samsara: item.vehicleId,
-                        economico: item.name,
-                        estaconectado: item.isConnectedToVehicle,
-                        relay_uno: item.relayStates && item.relayStates[0] ? item.relayStates[0].isOpen : null,
-                        relay_dos: item.relayStates && item.relayStates[1] ? item.relayStates[1].isOpen : null,
-                        geocerca: '',
-                        direccion: '',
-                        fecha: moment(item.happenedAtTime).format('YYYY-MM-DD HH:mm:ss')
-                    };
-                    registros.push(nuevoReporte);
+                    items.forEach( async item => {
+                        await reporte.create({
+                            id_samsara: item.vehicleId,
+                            economico: ubicacion.unidad || '',
+                            estaconectado: item.isConnectedToVehicle,
+                            relay_uno: item.relayStates && item.relayStates[0] ? item.relayStates[0].isOpen : null,
+                            relay_dos: item.relayStates && item.relayStates[1] ? item.relayStates[1].isOpen : null,
+                            geocerca: ubicacion.geocerca || '',
+                            direccion: ubicacion.location || '',
+                            fecha: moment(item.happenedAtTime).add(6, 'hours').format('YYYY-MM-DD HH:mm:ss')
+                        }, {
+                            fields: [
+                                'id_samsara', 
+                                'economico', 
+                                'estaconectado', 
+                                'relay_uno', 
+                                'relay_dos', 
+                                'geocerca', 
+                                'direccion', 
+                                'fecha'
+                            ]
+                        });
                     });
                 });
                 })).then(() => resolve()).catch(reject);
-            }, bIdx * 5000); // escalonar 5 segundos entre lotes
+            }, bIdx * 5000);
             });
         });
 
