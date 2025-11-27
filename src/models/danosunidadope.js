@@ -37,6 +37,32 @@ module.exports = (sequelize, DataType) => {
             type: DataType.INTEGER,
             allowNull: true
         },
+        
+        aceptaoperador:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        faltante:{
+            type: DataType.INTEGER,
+            allowNull: true
+        },
+        folio_cargo:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        causa:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        componentes:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        familia:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+
         estado:{
             type: DataType.STRING,
             allowNull: false

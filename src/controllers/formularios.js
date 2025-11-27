@@ -1180,6 +1180,14 @@ module.exports = app => {
             monto: body.monto, 
             responsable: body.responsable, 
             aplica: body.aplica, 
+
+            aceptaoperador: body.aceptaoperador,
+            faltante: body.faltante,
+            folio_cargo: null,
+            causa: body.causa,
+            componentes: body.componentes,
+            familia: body.familia,
+
             estado: body.estado, 
             aprobo: body.aprobo, 
             fecha_aprobo: body.fecha_aprobo, 
@@ -1197,6 +1205,14 @@ module.exports = app => {
                 'monto',
                 'responsable',
                 'aplica',
+
+                'aceptaoperador',
+                'faltante',
+                'folio_cargo',
+                'causa',
+                'componentes',
+                'familia',
+                
                 'estado',
                 'aprobo',
                 'fecha_aprobo',

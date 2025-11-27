@@ -40,6 +40,67 @@ module.exports = app => {
         return filename;
     }
 
+    
+    app.obtenerSoloFamilias = async (req, res) => {
+
+        try {
+
+            const familias = await Sequelize.query(
+                `
+                    SELECT
+                        id_familia,
+                        nombre_familia
+                    FROM
+                        pd_catalogo_familia
+                    WHERE
+                        nombre_familia NOT IN ('INTERCAMBIOS', 'Pendiente');
+                `,
+                {
+                    type: Sequelize.QueryTypes.SELECT
+                }
+            );
+
+            return res.status(200).json(familias);
+
+        } catch (error) {
+            console.error('Error al obtener solo familias:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
+    app.obtenerSoloComponentes = async (req, res) => {
+
+        try {
+
+            const componentes = await Sequelize.query(
+                `
+                    SELECT
+                        id_componente,
+                        nombre_componente
+                    FROM
+                        pd_catalogo_componente
+                    WHERE
+                        nombre_componente NOT IN ('INTERCAMBIOS', 'Pendiente');
+                `,
+                {
+                    type: Sequelize.QueryTypes.SELECT
+                }
+            );
+
+            return res.status(200).json(componentes);
+
+        } catch (error) {
+            console.error('Error al obtener solo componentes:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     app.obtenerFamilias = async (req, res) => {
 
         try {

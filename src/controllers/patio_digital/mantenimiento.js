@@ -147,6 +147,9 @@ module.exports = app => {
                 'e-11': null,
                 'e-12': null,
                 'e-13': null,
+                'e-llan-1': null,
+                'e-llan-2': null,
+                'e-llan-3': null,
                 // 'e-14': null,
                 // 'e-15': null,
             };
@@ -210,7 +213,7 @@ module.exports = app => {
                     LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
                     LEFT JOIN pd_inspeccion_entrada INSP_ENT ON PAU.fk_inspeccion_entrada = INSP_ENT.id_inspeccion_entrada
                 WHERE
-                    ( MAN.carril LIKE 't-%' OR MAN.carril = 'llan' OR MAN.carril = 'imagen' )
+                    ( MAN.carril LIKE 't-%' OR MAN.carril = 'llan-1' OR MAN.carril = 'llan-2' OR MAN.carril = 'imagen' )
                     AND PAU.base = :base;
                 `,
                 {
@@ -232,7 +235,8 @@ module.exports = app => {
                 't-9': null,
                 't-10': null,
                 'imagen': null,
-                'llan': null,
+                'llan-1': null,
+                'llan-2': null,
             };
 
             if(carrilesTaller.length > 0){
@@ -791,38 +795,83 @@ module.exports = app => {
 
     //         await sql.connect(sqlConfig);
 
-    //         const query = `
-    //             SELECT
-    //                 OM.ORDEN_CLAVE,
-    //                 FORMAT(OM.ORDEN_FECHA,'dd/MM/yyyy') as FECHA_ORDEN,
-    //                 CASE OM.ORDEN_STATUS
-    //                     WHEN 0 THEN 'Abierta'
-    //                     WHEN 1 THEN 'Terminada'
-    //                     WHEN 2 THEN 'Cancelada'
-    //                     WHEN 3 THEN 'Interrumpida'
-    //                 END as estatus_ot,
-    //                 OMA.CONSEC_ORDEN_ACCION,
-    //                 AM.ACCION_DESCRIP,
-    //                 (AM.ACCION_DIAS * 24) + AM.ACCION_HORAS AS ACCION_HORAS,
-    //                 CASE OMA.STATUS_ACCION
-    //                     WHEN 0 THEN 'Abierta'
-    //                     WHEN 1 THEN 'Terminada'
-    //                     WHEN 2 THEN 'Cancelada'
-    //                     WHEN 3 THEN 'Interrumpida'
-    //                     END as estatus_accion
-    //                 ${conMecanico ? '' : '-- '} , MC.MECANICO_DESCRIP
-    //             FROM
-    //                 ORDEN_MANTTO as OM
-    //                 LEFT JOIN ORDEN_MANTTO_ACCION as OMA ON OMA.ORDEN_CLAVE = OM.ORDEN_CLAVE
-    //                 LEFT JOIN ACCION_MANTTO as AM ON AM.ACCION_CLAVE = OMA.ACCION_CLAVE
-    //                 ${conMecanico ? '' : '-- '} LEFT JOIN ORDEN_MANTTO_MECANICO AS OMM ON (OMM.ORDEN_CLAVE = OM.ORDEN_CLAVE AND OMM.ACCION_CLAVE = OMA.ACCION_CLAVE)
-    //                 ${conMecanico ? '' : '-- '} LEFT JOIN MECANICO AS MC ON MC.MECANICO_CLAVE = OMM.MECANICO_CLAVE
-    //             WHERE
-    //                 OM.ORDEN_STATUS != 2
-    //                 AND OM.ORDEN_CLAVE IN (${ots})
-    //             ORDER BY
-    //                 OM.ORDEN_CLAVE desc, OMA.CONSEC_ORDEN_ACCION;
-    //         `
+    //         let query;
+
+    //         if(conMecanico){
+    //             query = `
+    //                 SELECT
+    //                     OM.ORDEN_CLAVE,
+    //                     FORMAT(OM.ORDEN_FECHA,'dd/MM/yyyy') as FECHA_ORDEN,
+    //                     CASE OM.ORDEN_STATUS
+    //                         WHEN 0 THEN 'Abierta'
+    //                         WHEN 1 THEN 'Terminada'
+    //                         WHEN 2 THEN 'Cancelada'
+    //                         WHEN 3 THEN 'Interrumpida'
+    //                     END as estatus_ot,
+    //                     OMA.CONSEC_ORDEN_ACCION,
+    //                     AM.ACCION_DESCRIP,
+    //                     (AM.ACCION_DIAS * 24) + AM.ACCION_HORAS AS ACCION_HORAS,
+    //                     CASE OMA.STATUS_ACCION
+    //                         WHEN 0 THEN 'Abierta'
+    //                         WHEN 1 THEN 'Terminada'
+    //                         WHEN 2 THEN 'Cancelada'
+    //                         WHEN 3 THEN 'Interrumpida'
+    //                     END as estatus_accion,
+    //                     STRING_AGG(MC.MECANICO_DESCRIP, ', ') WITHIN GROUP (ORDER BY MC.MECANICO_DESCRIP) AS MECANICO_DESCRIP
+    //                 FROM
+    //                     ORDEN_MANTTO as OM
+    //                     LEFT JOIN ORDEN_MANTTO_ACCION as OMA ON OMA.ORDEN_CLAVE = OM.ORDEN_CLAVE
+    //                     LEFT JOIN ACCION_MANTTO as AM ON AM.ACCION_CLAVE = OMA.ACCION_CLAVE
+    //                     LEFT JOIN ORDEN_MANTTO_MECANICO AS OMM ON (OMM.ORDEN_CLAVE = OM.ORDEN_CLAVE AND OMM.ACCION_CLAVE = OMA.ACCION_CLAVE)
+    //                     LEFT JOIN MECANICO AS MC ON MC.MECANICO_CLAVE = OMM.MECANICO_CLAVE
+    //                 WHERE
+    //                     OM.ORDEN_STATUS != 2
+    //                     AND OM.ORDEN_CLAVE IN (${ots})
+    //                 GROUP BY
+    //                     OM.ORDEN_CLAVE,
+    //                     OM.ORDEN_FECHA,
+    //                     OM.ORDEN_STATUS,
+    //                     OMA.CONSEC_ORDEN_ACCION,
+    //                     AM.ACCION_DESCRIP,
+    //                     AM.ACCION_DIAS,
+    //                     AM.ACCION_HORAS,
+    //                     OMA.STATUS_ACCION
+    //                 ORDER BY
+    //                     OM.ORDEN_CLAVE desc, OMA.CONSEC_ORDEN_ACCION;
+    //             `
+    //         } else {
+    //             query = `
+    //                 SELECT
+    //                     OM.ORDEN_CLAVE,
+    //                     FORMAT(OM.ORDEN_FECHA,'dd/MM/yyyy') as FECHA_ORDEN,
+    //                     CASE OM.ORDEN_STATUS
+    //                         WHEN 0 THEN 'Abierta'
+    //                         WHEN 1 THEN 'Terminada'
+    //                         WHEN 2 THEN 'Cancelada'
+    //                         WHEN 3 THEN 'Interrumpida'
+    //                     END as estatus_ot,
+    //                     OMA.CONSEC_ORDEN_ACCION,
+    //                     AM.ACCION_DESCRIP,
+    //                     (AM.ACCION_DIAS * 24) + AM.ACCION_HORAS AS ACCION_HORAS,
+    //                     CASE OMA.STATUS_ACCION
+    //                         WHEN 0 THEN 'Abierta'
+    //                         WHEN 1 THEN 'Terminada'
+    //                         WHEN 2 THEN 'Cancelada'
+    //                         WHEN 3 THEN 'Interrumpida'
+    //                         END as estatus_accion
+    //                 FROM
+    //                     ORDEN_MANTTO as OM
+    //                     LEFT JOIN ORDEN_MANTTO_ACCION as OMA ON OMA.ORDEN_CLAVE = OM.ORDEN_CLAVE
+    //                     LEFT JOIN ACCION_MANTTO as AM ON AM.ACCION_CLAVE = OMA.ACCION_CLAVE
+    //                     LEFT JOIN ORDEN_MANTTO_MECANICO AS OMM ON (OMM.ORDEN_CLAVE = OM.ORDEN_CLAVE AND OMM.ACCION_CLAVE = OMA.ACCION_CLAVE)
+    //                 WHERE
+    //                     OM.ORDEN_STATUS != 2
+    //                     AND OM.ORDEN_CLAVE IN (${ots})
+    //                 ORDER BY
+    //                     OM.ORDEN_CLAVE desc, OMA.CONSEC_ORDEN_ACCION;
+    //             `
+    //         }
+            
     //         const result = await sql.query(query);
 
     //         return result.recordset;
