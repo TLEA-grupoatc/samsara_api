@@ -18,6 +18,9 @@ module.exports = app => {
 
     const gasto = app.database.models.SolicitudGastos;
 
+
+    const docparapres = app.database.models.DocumentoParaPrenomina;
+
     const Sequelize = require('sequelize');
     const { literal } = require('sequelize');
     const Op = Sequelize.Op;
@@ -1272,7 +1275,6 @@ module.exports = app => {
         });
     }
 
-
     // registro de liquidaciones 
     app.registrarLiquidacion = (req, res) => {
         let body = req.body;
@@ -1435,9 +1437,6 @@ module.exports = app => {
             res.status(412).json({ OK: false, msg: error.message });
         });
     }
-
-
-
 
     app.registrarLiquidacionAutomatica = async (req, res) => {
         const hoy = new Date();
@@ -1641,7 +1640,6 @@ module.exports = app => {
         res.json({ OK: true });
     }
 
-
     app.quitarRechazoDocAuto = (req, res) => {
         let nuevaPre = new prenominadocs({
             verificado: 0
@@ -1783,7 +1781,6 @@ module.exports = app => {
             });
         }
     }
-
 
     //obtener Usuarios Liquidacion
     app.obtenerUsuariosLiquidacion = (req, res) => {
@@ -3151,9 +3148,6 @@ module.exports = app => {
         });
     }
 
-
-
-
     // especiales
     app.eliminarPermanentePrenominas = (req, res) => {
         prenomina.findByPk(req.params.id_prenomina).then(result => {
@@ -3643,11 +3637,6 @@ module.exports = app => {
         });
     }
 
-
-
-
-
-
     // RECHAZOS
     app.crearRechazoLiquidacion = (req, res) => {
         var body = req.body;
@@ -3793,8 +3782,6 @@ module.exports = app => {
         });
     }
 
-
-
     app.operadoresCriticosLiquidaciones = (req, res) => {
         liquidacion.findAll({
             attributes: [
@@ -3874,16 +3861,192 @@ module.exports = app => {
 
 
 
+    //DOCUMENTOS PARA PRENOMINAS
+    
+    
 
 
 
 
+    app.obtenerDocumentosPrenominaTitulo = (req, res) => {
+        docparapres.findAll({
+            where: {
+                titulo: req.params.titulo
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Documentos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
+    app.obtenerDocumentosPrenomina = (req, res) => {
+        docparapres.findAll({
+            where: {
+                estatus: 0,
+                id_prenomina: req.params.id_prenomina
+            }
+        }).then(result => {
+            res.json({
+                OK: true,
+                Documentos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
+    app.crearDocumentoPrenomina = (req, res) => {
+        let body = req.body;
 
+        let nuevoRegistro = new docparapres({
+            operador: body.operador, 
+            economico: body.economico, 
+            monto: body.monto, 
+            fecha: body.fecha, 
+            titulo: body.titulo, 
+            evidencia: body.evidencia, 
+            estatus: body.estatus, 
+            fecha_creacion: body.fecha_creacion, 
+            usuario_creacion: body.usuario_creacion, 
+            fecha_modificacion: body.fecha_modificacion, 
+            usuario_modificacion: body.usuario_modificacion
+        });
 
+        docparapres.create(nuevoRegistro.dataValues, {
+            fields: [
+                'operador', 
+                'economico', 
+                'monto', 
+                'fecha', 
+                'titulo', 
+                'evidencia', 
+                'estatus', 
+                'fecha_creacion', 
+                'usuario_creacion', 
+                'fecha_modificacion', 
+                'usuario_modificacion'
+            ]
+        })
+        .then(async result => {
+            res.json({
+                OK: true,
+                Documento: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                OK: false,
+                msg: error.message
+            });
+        });
+    }
 
+    app.actualizarDocumentosPrenomina = (req, res) => {
+        let body = req.body;
 
+        let actualizarRegistro = new docparapres({
+            operador: body.operador, 
+            economico: body.economico, 
+            monto: body.monto, 
+            fecha: body.fecha, 
+            titulo: body.titulo, 
+            evidencia: body.evidencia, 
+            estatus: body.estatus,
+            fecha_modificacion: body.fecha_modificacion, 
+            usuario_modificacion: body.usuario_modificacion
+        });
+
+        docparapres.update(actualizarRegistro.dataValues, {
+            where: {
+                id_dpp: req.params.id_dpp
+            },
+            fields: [
+                'operador', 
+                'economico', 
+                'monto', 
+                'fecha', 
+                'titulo', 
+                'evidencia', 
+                'estatus', 
+                'fecha_creacion', 
+                'usuario_creacion', 
+                'fecha_modificacion', 
+                'usuario_modificacion'
+            ]
+        }).then(result => {            
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.ligarDocumentoPrenominaaPre = (req, res) => {
+        let id = req.params.id_dpp;
+        let body = req.body;
+
+        let updateRegistro = new docparapres({
+            estatus: 1,
+            id_prenomina: body.id_prenomina
+        });
+
+        docparapres.update(updateRegistro.dataValues, {
+            where: {
+                id_dpp: id
+            },
+            fields: ['estatus', 'id_prenomina']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+    app.eliminarDocumentoPrenomina = (req, res) => {
+        let id = req.params.id_dpp;
+
+        let deleteRegistro = new docparapres({
+            estatus: 2
+        });
+
+        docparapres.update(deleteRegistro.dataValues, {
+            where: {
+                id_dpp: id
+            },
+            fields: ['estatus']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
 
 
 

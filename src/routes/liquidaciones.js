@@ -261,17 +261,24 @@ module.exports = app => {
     
     
     app.get('/operadoresPromedioPago', Liq.operadoresPromedioPago);
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    
     // Backups
     
     
     app.get('/obtenerPrenominaDocumentosBackup', Liq.obtenerPrenominaDocumentosBackup);
+    
+    
+    //
 
-
-
+    app.get('/obtenerDocumentosPrenominaTitulo/:titulo', verificarToken, Liq.obtenerDocumentosPrenominaTitulo);
+    app.get('/obtenerDocumentosPrenomina/:id_prenomina', verificarToken, Liq.obtenerDocumentosPrenomina);
+    app.post('/crearDocumentoPrenomina', verificarToken, Liq.crearDocumentoPrenomina);
+    app.put('/actualizarDocumentosPrenomina/:id_dpp', verificarToken, Liq.actualizarDocumentosPrenomina);
+    app.put('/ligarDocumentoPrenominaaPre/:id_dpp', verificarToken, Liq.ligarDocumentoPrenominaaPre);
+    app.delete('/eliminarDocumentoPrenomina/:id_dpp', verificarToken, Liq.eliminarDocumentoPrenomina);
 }
