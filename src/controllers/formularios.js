@@ -1262,6 +1262,47 @@ module.exports = app => {
         });
     }
 
+
+
+
+
+
+
+
+
+    app.cargarFolioDanoOperador = (req, res) => {
+        let data = new danosunidadoperador({
+            folio_cargo: req.params.folio_cargo
+        });
+
+        danosunidadoperador.update(data.dataValues, {
+            where: {
+                id_danosunidad: req.params.id_danosunidad
+            },
+            fields: ['folio_cargo']
+        }).then(result => {
+            res.json({
+                OK: true,
+                rows_affected: result[0]
+            });
+        }).catch(err => {
+            res.status(412).json({
+                OK: false,
+                msg: err
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
     app.resumenCantidadActividadeOperador = async (req, res) => {
         const year = parseInt(req.params.year);
         const month = parseInt(req.params.month);

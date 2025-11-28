@@ -93,13 +93,14 @@ module.exports = app => {
     app.post('/crearQuejaOperador', verificarToken, Fo.crearQuejaOperador);
     
     app.put('/cerrarQueja/:id_queja', verificarToken, Fo.cerrarQueja);
-
+    
     app.get('/obtenerAtencionesXOperador/:operador', verificarToken, Fo.obtenerAtencionesXOperador);
     
     app.post('/crearAtencionOperador', verificarToken, Fo.crearAtencionOperador);
-
+    
     app.get('/obtenerScoreCardOperador/:operador/:mes', verificarToken, Fo.obtenerScoreCardOperador);
-
+    
+    app.delete('/cargarFolioDanoOperador/:id_danosunidad/:folio_cargo', verificarToken, Fo.cargarFolioDanoOperador);
     
     
     app.get('/obtenerUltimaActividadOperador', Fo.obtenerUltimaActividadOperador);
