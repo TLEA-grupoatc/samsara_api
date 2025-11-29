@@ -236,7 +236,6 @@ cron.schedule('*/30 * * * *', () => {
         .then(({ data }) => {
           const resumen = buildVehicleSummary(data.data[0]);
 
-          // resumen.forEach(record => { 
             let nuevaAlerta = new reseteoSamsara({
               id_samsara: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id'],
               economico: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['name'],
@@ -257,15 +256,8 @@ cron.schedule('*/30 * * * *', () => {
                 'fecha_creacion'
               ]
             });
-
-
-          // });
-          
         }).catch(err => console.error(err));
-
-
       }
-
     }
     catch (error) {
       console.error('Error al obtener catalogo circuitos:', error);
@@ -275,7 +267,6 @@ cron.schedule('*/30 * * * *', () => {
       });
     }
 
-    // Helper para sacar delta de una serie de tiempo { time, value }
     function getDeltaFromTimeSeries(series = []) {
       if (!Array.isArray(series) || series.length < 2) {
         return null;
@@ -295,7 +286,6 @@ cron.schedule('*/30 * * * *', () => {
       };
     }
 
-    // Construye el resumen de un vehículo
     function buildVehicleSummary(vehicle) {
       const fuel = getDeltaFromTimeSeries(vehicle.fuelConsumedMilliliters);
       const odo  = getDeltaFromTimeSeries(vehicle.gpsOdometerMeters); // usamos odómetro GPS
@@ -305,10 +295,7 @@ cron.schedule('*/30 * * * *', () => {
       const distMeters = odo  ? odo.delta  : null;
       const distKm     = odo  ? odo.delta  / 1000 : null;        // m → km
 
-      const kmPerLiter =
-        fuelLiters && fuelLiters > 0 && distKm != null
-          ? distKm / fuelLiters
-          : null;
+      const kmPerLiter = fuelLiters && fuelLiters > 0 && distKm != null ? distKm / fuelLiters : null;
 
       return {
         id: vehicle.id,
