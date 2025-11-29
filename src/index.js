@@ -236,12 +236,12 @@ cron.schedule('*/30 * * * *', () => {
         .then(({ data }) => {
           const resumen = buildVehicleSummary(data.data[0]);
 
-          resumen.forEach(record => { 
+          // resumen.forEach(record => { 
             let nuevaAlerta = new reseteoSamsara({
               id_samsara: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id'],
               economico: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['name'],
-              diesel: record.fuelLiters,
-              km: record.distanceKm,
+              diesel: resumen.fuelLiters,
+              km: resumen.distanceKm,
               fecha_inicio: moment(payload.data.conditions[0]['details']['suddenFuelLevelRise']['changeStartTime']).format('YYYY-MM-DD HH:mm:ss'),
               fecha_fin: moment(payload.data.conditions[0]['details']['suddenFuelLevelRise']['changeEndTime']).format('YYYY-MM-DD HH:mm:ss'),
               fecha_creacion: formato
@@ -259,7 +259,7 @@ cron.schedule('*/30 * * * *', () => {
             });
 
 
-          });
+          // });
           
         }).catch(err => console.error(err));
 
