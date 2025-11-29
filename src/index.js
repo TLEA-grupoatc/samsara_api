@@ -229,7 +229,7 @@ cron.schedule('*/30 * * * *', () => {
       if(registro.length > 0) {
         Samsara.getVehicleStatsHistory({
           startTime: registro[0].fecha_fin.replace(' ', 'T') + 'Z',
-          endTime: payload.data.eventTime,
+          endTime: payload.eventTime,
           vehicleIds: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id'],
           types: 'fuelConsumedMilliliters,gpsDistanceMeters,gpsOdometerMeters'
         })

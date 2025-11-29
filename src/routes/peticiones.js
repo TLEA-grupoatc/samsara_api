@@ -129,11 +129,13 @@ module.exports = app => {
     
     
     app.get('/resumenAlertasOperadores/:fechainicio/:fechafin', Peticion.resumenAlertasOperadores);
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    app.get('/obtenerReseteoXEco/:id_samsara', Peticion.obtenerReseteoXEco);
+    
+    app.get('/obtenerReseteoSamsara', Peticion.obtenerReseteoSamsara);
 
 }

@@ -16,6 +16,8 @@ module.exports = app => {
     const seguimiento = app.database.models.Seguimientos;
     const ope = app.database.models.Operadores;
     const ubiporeco = app.database.models.UBICACIONESPORECONOMICO;
+
+    const reseteoSamsara = app.database.models.ReseteoSamsara;
     
     const curso = app.database.models.Cursos;
     const auditoria = app.database.models.AuditoriaSeguridad;
@@ -2706,6 +2708,85 @@ module.exports = app => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   app.obtenerReseteoXEco = (req, res) => {
+        reseteoSamsara.findAll({
+            where: { 
+            id_samsara: req.params.id_samsara
+            },
+            order: [['fecha_fin', 'DESC']],
+            limit: 1
+        }).then(result => {
+            res.json({
+                OK: true,
+                Reseteo: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
+
+   app.obtenerReseteoSamsara = (req, res) => {
+        reseteoSamsara.findAll({
+            order: [['fecha_fin', 'DESC']]
+        }).then(result => {
+            res.json({
+                OK: true,
+                Reseteos: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 
