@@ -17,27 +17,11 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 
 const socketIO = require('socket.io')(http, {
   cors: {
-    origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "http://apisamsara.tlea.online", "https://apisamsara.tlea.online"],
-    // credentials: false,
-    // methods: ["GET", "POST"]
+    origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "https://apisamsara.tlea.online", "http://apisamsara.tlea.online", "https://as-app-suite-tlea-prod.azurewebsites.net"],
+    credentials: true,
+    methods: ["GET", "POST"]
   }
 });
-
-const allowedOrigin = 'https://as-app-suite-tlea-prod.azurewebsites.net';
-
-
-app.use(cors({
-  origin: allowedOrigin,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true  // solo si vas a usar cookies/autorización cruzada
-}));
-
-app.options('*', cors()); // habilita preflight para todos
-
-// app.use(cors({
-//   origin: '*'
-// }));
 
 app.use(express.static('./public'));
 app.set('port', 3010);
@@ -46,8 +30,8 @@ app.use('/documentos', express.static('documentos'));
 
 // #region PD carpeta statica
 app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "http://apisamsara.tlea.online"]);
-  res.header('Access-Control-Allow-Credentials', 'false');
+  res.header('Access-Control-Allow-Origin', ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "https://apisamsara.tlea.online", "http://apisamsara.tlea.online", "https://as-app-suite-tlea-prod.azurewebsites.net"]);
+  res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   if (req.method === 'OPTIONS') {
