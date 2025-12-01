@@ -17,7 +17,7 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 
 const socketIO = require('socket.io')(http, {
   cors: {
-    origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "https://apisamsara.tlea.online", "http://apisamsara.tlea.online"],
+    origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "http://apisamsara.tlea.online"],
     credentials: true,
     methods: ["GET", "POST"]
   }
@@ -30,7 +30,7 @@ app.use('/documentos', express.static('documentos'));
 
 // #region PD carpeta statica
 app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "https://apisamsara.tlea.online", "http://apisamsara.tlea.online"]);
+  res.header('Access-Control-Allow-Origin', ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "http://apisamsara.tlea.online"]);
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
