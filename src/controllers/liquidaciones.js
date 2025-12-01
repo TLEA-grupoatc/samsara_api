@@ -1403,7 +1403,7 @@ module.exports = app => {
             if (body.diferencia_diesel === 1) {
             setTimeout(async () => {
                 const docs = await prenominadocs.findAll({ where: { id_liquidacion: liquidacionId } });
-                const docLinks = docs.map(doc => `https://apisamsara.tlea.online/${doc.archivo}`);
+                const docLinks = docs.map(doc => `http://apisamsara.tlea.online/${doc.archivo}`);
                 const emailHtml = `
                 <h3>Folio: ${body.folio}, Operador: ${body.operador}</h3>
                 <h4>Liquidador: ${body.usuario}</h4>
@@ -3907,6 +3907,18 @@ module.exports = app => {
 
     app.crearDocumentoPrenomina = (req, res) => {
         let body = req.body;
+        var directorio = 'documentos/ticketsPrenominas/';
+        var fechacorta = body.fecha_creacion.replace('-', '').replace('-', '').replace(' ', '').replace(':', '').replace(':', '');
+
+        if(!fs.existsSync(directorio)) {
+            fs.mkdirSync(directorio, {recursive: true});
+        }
+
+        const [, base64Content] = body.evidencia.split(',');
+        var big1 = Buffer.from(base64Content, 'base64');
+
+        fs.writeFileSync(directorio + body.usuario_creacion + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcionE, big1); 
+        doc = directorio + body.usuario_creacion + '_' + fechacorta + '_' + body.nombre + '_' + body.descripcionE;
 
         let nuevoRegistro = new docparapres({
             operador: body.operador, 
@@ -3914,7 +3926,7 @@ module.exports = app => {
             monto: body.monto, 
             fecha: body.fecha, 
             titulo: body.titulo, 
-            evidencia: body.evidencia, 
+            evidencia: doc, 
             estatus: body.estatus, 
             fecha_creacion: body.fecha_creacion, 
             usuario_creacion: body.usuario_creacion, 

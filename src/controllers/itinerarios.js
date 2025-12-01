@@ -197,7 +197,7 @@ module.exports = app => {
             const listaordenes = await axios.get('https://servidorlocal.ngrok.app/itinerariosVO');
             const ordenes = listaordenes.data.Registros || [];
     
-            const listdeubicaciones = await axios.get('https://apisamsara.tlea.online/obtenerReporteUltimaLocacion');
+            const listdeubicaciones = await axios.get('http://apisamsara.tlea.online/obtenerReporteUltimaLocacion');
             const ubicaciones = listdeubicaciones.data.Reporte || [];
             
             var today = new Date();

@@ -44,7 +44,7 @@ module.exports = app => {
         try {
             const [viajesResp, empleadosResp, tractosAsignados, ultimasLiquidaciones, operadoresResp, actividades] = await Promise.all([
                 axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
-                axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
+                axios.get('http://api-rh.tlea.online/obtenerEmpleados'),
                 operador.findAll({ order: [['nombre', 'ASC']] }),
 
                 liquidacion.findAll({
@@ -82,7 +82,7 @@ module.exports = app => {
             const liquidacion = liquidacionesMap[nombre] || {};
             const viajes = viajesMap[nombre] || {};
 
-            const avatar = empleado?.avatar ? `https://api-rh.tlea.online/${empleado.avatar}` : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+            const avatar = empleado?.avatar ? `http://api-rh.tlea.online/${empleado.avatar}` : 'http://api-rh.tlea.online/images/avatars/avatar_default.png';
 
             const registros = fechasMes.map((fecha, i) => {
                 const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
@@ -143,7 +143,7 @@ module.exports = app => {
         }
 
         try {
-            const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
+            const response = await axios.get('http://api-rh.tlea.online/obtenerEmpleados');
             empleadosExternos = response.data.Empleados || [];
         }
         catch (err) {
@@ -202,7 +202,7 @@ module.exports = app => {
                 const ultimaLiquidacion = listaUltimaLiquidacion.find(e => e.operador == op.OPERADOR_NOMBRE);
                 const viajes = listaViajes.find(e => e.operador == op.OPERADOR_NOMBRE);
 
-                const avatar = empleadoExterno && empleadoExterno.avatar ? 'https://api-rh.tlea.online/' + empleadoExterno.avatar : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+                const avatar = empleadoExterno && empleadoExterno.avatar ? 'http://api-rh.tlea.online/' + empleadoExterno.avatar : 'http://api-rh.tlea.online/images/avatars/avatar_default.png';
                 const tractoTitular = tractos && tractos.tracto_titular ? tractos.tracto_titular : "";
                 const tractoActual = tractos && tractos.tracto_actual ? tractos.tracto_actual : "";
                 const esconflictivo = tractos && tractos.conflictivo ? tractos.conflictivo : 0;
@@ -1316,7 +1316,7 @@ module.exports = app => {
         try {
             const [viajesResp, empleadosResp, tractosAsignados, ultimasLiquidaciones, operadoresResp, actividades] = await Promise.all([
                 axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
-                axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
+                axios.get('http://api-rh.tlea.online/obtenerEmpleados'),
                 operador.findAll({ order: [['nombre', 'ASC']] }),
                 liquidacion.findAll({
                     attributes: [
@@ -1352,7 +1352,7 @@ module.exports = app => {
             const liquidacion = liquidacionesMap[nombre] || {};
             const viajes = viajesMap[nombre] || {};
 
-            const avatar = empleado?.avatar ? `https://api-rh.tlea.online/${empleado.avatar}` : 'https://api-rh.tlea.online/images/avatars/avatar_default.png';
+            const avatar = empleado?.avatar ? `http://api-rh.tlea.online/${empleado.avatar}` : 'http://api-rh.tlea.online/images/avatars/avatar_default.png';
 
             const registros = fechasMes.map((fecha, i) => {
                 const actividad = actividadesDelOperador.find(a => moment(a.fecha).format('YYYY-MM-DD') === fecha);
