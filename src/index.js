@@ -25,7 +25,7 @@ const socketIO = require('socket.io')(http, {
 
 
 app.use(cors({
-  origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "http://apisamsara.tlea.online", "https://apisamsara.tlea.online"]
+  origin: 'http://apisamsara.tlea.online'
 }));
 
 
