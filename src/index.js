@@ -23,10 +23,18 @@ const socketIO = require('socket.io')(http, {
   }
 });
 
+const allowedOrigin = 'http://apisamsara.tlea.online';
+
 
 app.use(cors({
-  origin: 'http://apisamsara.tlea.online'
+  origin: allowedOrigin,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true  // solo si vas a usar cookies/autorización cruzada
 }));
+
+app.options('*', cors()); // habilita preflight para todos
+
 
 
 app.use(express.static('./public'));
