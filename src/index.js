@@ -23,21 +23,21 @@ const socketIO = require('socket.io')(http, {
   }
 });
 
-// const allowedOrigin = '*';
+const allowedOrigin = 'https://as-app-suite-tlea-prod.azurewebsites.net';
 
-
-// app.use(cors({
-//   origin: allowedOrigin,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization'],
-//   credentials: true  // solo si vas a usar cookies/autorización cruzada
-// }));
-
-// app.options('*', cors()); // habilita preflight para todos
 
 app.use(cors({
-  origin: '*'
+  origin: allowedOrigin,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true  // solo si vas a usar cookies/autorización cruzada
 }));
+
+app.options('*', cors()); // habilita preflight para todos
+
+// app.use(cors({
+//   origin: '*'
+// }));
 
 app.use(express.static('./public'));
 app.set('port', 3010);
