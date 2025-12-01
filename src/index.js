@@ -13,7 +13,7 @@ const dotenv = require('dotenv').config();
 
 const path = require('path');
 const qrcode = require('qrcode-terminal');
-const { Client, LocalAuth } = require('whatsapp-web.js');
+// const { Client, LocalAuth } = require('whatsapp-web.js');
 
 const socketIO = require('socket.io')(http, {
   cors: {
