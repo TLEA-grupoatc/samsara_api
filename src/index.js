@@ -23,7 +23,7 @@ const socketIO = require('socket.io')(http, {
   }
 });
 
-const allowedOrigin = 'http://apisamsara.tlea.online';
+const allowedOrigin = '*';
 
 
 app.use(cors({
