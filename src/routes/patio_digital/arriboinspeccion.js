@@ -12,7 +12,7 @@ module.exports = app => {
     app.get('/arriboinspeccion/obtenerdetalle/:id_inspeccion_entrada', arriboinspeccion.obtenerDetallesInspeccion);
 
     app.post('/arriboinspeccion/confirmaringresofosa', arriboinspeccion.confirmarIngresoAFosa);
-    app.post('/arriboinspeccion/crearreportedanos', arriboinspeccion.crearReporteDanos);
+    // app.post('/arriboinspeccion/crearreportedanos', arriboinspeccion.crearReporteDanos);
     app.post('/arriboinspeccion/guardarinsp', arriboinspeccion.guardarChecklistInspeccion);
 
     app.patch('/arriboinspeccion/actualizarevidencias', [recibirVideosInspeccionEntrada], arriboinspeccion.actualizarEvidenciasInspeccionEntrada);
