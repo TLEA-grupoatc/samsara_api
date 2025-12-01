@@ -18,8 +18,8 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const socketIO = require('socket.io')(http, {
   cors: {
     origin: ["http://localhost:4200", "https://samsaraxtlea.tlea.online", "https://suite.tlea.online", "http://apisamsara.tlea.online"],
-    credentials: false,
-    methods: ["GET", "POST"]
+    // credentials: false,
+    // methods: ["GET", "POST"]
   }
 });
 
