@@ -1136,7 +1136,7 @@ async function ultimaubi(iduni) {
 }
 
 http.listen(app.get('port'), async () => {
-   await initWhatsClient();
+  //  await initWhatsClient();
   console.log(`Server on port ${app.get('port')}`.random);
 });
 
