@@ -907,59 +907,59 @@ app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
 
 
 
-app.post('/enviarWhatsuno', async (req, res) => {
-  const { numero, mensaje, intervaloMinutos = 0, repeticiones = 1 } = req.body || {};
-  if (!numero || !mensaje) {
-    return res.status(400).json({ error: 'Faltan parámetros: numero y mensaje' });
-  }
+// app.post('/enviarWhatsuno', async (req, res) => {
+//   const { numero, mensaje, intervaloMinutos = 0, repeticiones = 1 } = req.body || {};
+//   if (!numero || !mensaje) {
+//     return res.status(400).json({ error: 'Faltan parámetros: numero y mensaje' });
+//   }
 
-  try {
-    await initWhatsClient();
+//   try {
+//     await initWhatsClient();
 
-    // Espera a que el cliente esté listo (por si viene justo después de escanear el QR)
-    if (!isReady) {
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Timeout esperando WhatsApp ready')), 30000);
-        client.once('ready', () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-      });
-    }
+//     // Espera a que el cliente esté listo (por si viene justo después de escanear el QR)
+//     if (!isReady) {
+//       await new Promise((resolve, reject) => {
+//         const timeout = setTimeout(() => reject(new Error('Timeout esperando WhatsApp ready')), 30000);
+//         client.once('ready', () => {
+//           clearTimeout(timeout);
+//           resolve();
+//         });
+//       });
+//     }
 
-    const chatId = normalizeNumber(numero);
-    // const result = await client.sendMessage(chatId, String(mensaje));
+//     const chatId = normalizeNumber(numero);
+//     // const result = await client.sendMessage(chatId, String(mensaje));
 
-    const delayMs = intervaloMinutos * 60 * 1000;
+//     const delayMs = intervaloMinutos * 60 * 1000;
 
-    // Función para enviar mensaje
-    const enviarMensaje = async (intento) => {
-      try {
-        const result = await client.sendMessage(chatId, String(mensaje));
-        console.log(`✅ Mensaje ${intento}/${repeticiones} enviado a ${chatId}`);
-        if(intento === repeticiones) {
-          console.log('✅ Envíos completados.');
-        }
-      } catch (err) {
-        console.error(`❌ Error enviando mensaje ${intento}:`, err);
-      }
-    };
+//     // Función para enviar mensaje
+//     const enviarMensaje = async (intento) => {
+//       try {
+//         const result = await client.sendMessage(chatId, String(mensaje));
+//         console.log(`✅ Mensaje ${intento}/${repeticiones} enviado a ${chatId}`);
+//         if(intento === repeticiones) {
+//           console.log('✅ Envíos completados.');
+//         }
+//       } catch (err) {
+//         console.error(`❌ Error enviando mensaje ${intento}:`, err);
+//       }
+//     };
 
-    // Programa los envíos
-    for (let i = 0; i < repeticiones; i++) {
-      setTimeout(() => enviarMensaje(i + 1), i * delayMs);
-    }
+//     // Programa los envíos
+//     for (let i = 0; i < repeticiones; i++) {
+//       setTimeout(() => enviarMensaje(i + 1), i * delayMs);
+//     }
 
-    return res.json({
-      ok: true,
-      to: chatId,
-      Mensaje: 'Enviado con Exito!'
-    });
-  } catch (err) {
-    console.error('❌ Error /enviarWhats:', err);
-    return res.status(412).json({ ok: false, error: err.message || String(err) });
-  }
-});
+//     return res.json({
+//       ok: true,
+//       to: chatId,
+//       Mensaje: 'Enviado con Exito!'
+//     });
+//   } catch (err) {
+//     console.error('❌ Error /enviarWhats:', err);
+//     return res.status(412).json({ ok: false, error: err.message || String(err) });
+//   }
+// });
 
 
 
