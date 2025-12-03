@@ -1403,7 +1403,7 @@ module.exports = app => {
             if (body.diferencia_diesel === 1) {
             setTimeout(async () => {
                 const docs = await prenominadocs.findAll({ where: { id_liquidacion: liquidacionId } });
-                const docLinks = docs.map(doc => `http://apisamsara.tlea.online/${doc.archivo}`);
+                const docLinks = docs.map(doc => `https://apisamsara.tlea.online/${doc.archivo}`);
                 const emailHtml = `
                 <h3>Folio: ${body.folio}, Operador: ${body.operador}</h3>
                 <h4>Liquidador: ${body.usuario}</h4>

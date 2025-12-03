@@ -383,7 +383,7 @@ module.exports = app => {
         const startHour = ((parseInt(ho, 10) - 1 + 24) % 24).toString().padStart(2, '0');
         const endHour = parseInt(ho, 10).toString().padStart(2, '0');
 
-        const listdeubicaciones = await axios.get('http://apisamsara.tlea.online/obtenerReporteUltimaLocacion');
+        const listdeubicaciones = await axios.get('https://apisamsara.tlea.online/obtenerReporteUltimaLocacion');
         const ubicaciones = listdeubicaciones.data.Reporte || [];
         
         const batches = [];
