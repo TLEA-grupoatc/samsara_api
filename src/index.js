@@ -25,11 +25,6 @@ const socketIO = require('socket.io')(http, {
 
 
 
-app.use(cors({
-  origin: '*',
-
-}));
-
 app.use(express.static('./public'));
 app.set('port', 3010);
 app.use(express.urlencoded({extended: false}));         
