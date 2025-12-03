@@ -41,10 +41,13 @@ module.exports = app => {
         const daysInMonth = endOfMonth.date();
         const fechasMes = Array.from({ length: daysInMonth }, (_, i) => moment(startOfMonth).add(i, 'days').format('YYYY-MM-DD'));
 
+        var empleadosResp = []
+
+
         try {
-            const [viajesResp, empleadosResp, tractosAsignados, ultimasLiquidaciones, operadoresResp, actividades] = await Promise.all([
+            const [viajesResp, tractosAsignados, ultimasLiquidaciones, operadoresResp, actividades] = await Promise.all([
                 axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
-                axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
+                // axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
                 operador.findAll({ order: [['nombre', 'ASC']] }),
 
                 liquidacion.findAll({
@@ -66,7 +69,7 @@ module.exports = app => {
                 })
             ]);
 
-            const empleadosMap = Object.fromEntries(empleadosResp.data.Empleados.map(e => [e.numero_empleado, e]));
+            // const empleadosMap = Object.fromEntries(empleadosResp.data.Empleados.map(e => [e.numero_empleado, e]));
             const tractosMap = Object.fromEntries(tractosAsignados.map(t => [t.nombre, t]));
             const liquidacionesMap = Object.fromEntries(ultimasLiquidaciones.map(l => [l.operador, l]));
             const viajesMap = Object.fromEntries(viajesResp.data.Registros.map(v => [v.operador, v]));
@@ -77,7 +80,8 @@ module.exports = app => {
             const nombre = op.OPERADOR_NOMBRE;
             const numEmpleado = Number(op.operador_num_externo);
             const actividadesDelOperador = actividades.filter(a => a.nombre === nombre);
-            const empleado = empleadosMap[numEmpleado] || {};
+            const empleado =  {};
+            // const empleado = empleadosMap[numEmpleado] || {};
             const tracto = tractosMap[nombre] || {};
             const liquidacion = liquidacionesMap[nombre] || {};
             const viajes = viajesMap[nombre] || {};
@@ -142,13 +146,13 @@ module.exports = app => {
             listaViajes = [];
         }
 
-        try {
-            const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
-            empleadosExternos = response.data.Empleados || [];
-        }
-        catch (err) {
-            empleadosExternos = [];
-        }
+        // try {
+        //     const response = await axios.get('https://api-rh.tlea.online/obtenerEmpleados');
+        //     empleadosExternos = response.data.Empleados || [];
+        // }
+        // catch (err) {
+        //     empleadosExternos = [];
+        // }
         
         try {
             listaTractosAsignados = await operador.findAll({
@@ -1312,11 +1316,11 @@ module.exports = app => {
         const endOfMonth = moment(startOfMonth).endOf('month');
         const daysInMonth = endOfMonth.date();
         const fechasMes = Array.from({ length: daysInMonth }, (_, i) => moment(startOfMonth).add(i, 'days').format('YYYY-MM-DD'));
-
+        var empleadosResp = [];
         try {
-            const [viajesResp, empleadosResp, tractosAsignados, ultimasLiquidaciones, operadoresResp, actividades] = await Promise.all([
+            const [viajesResp, tractosAsignados, ultimasLiquidaciones, operadoresResp, actividades] = await Promise.all([
                 axios.get('https://servidorlocal.ngrok.app/obtenerViajesCortsLargos'),
-                axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
+                // axios.get('https://api-rh.tlea.online/obtenerEmpleados'),
                 operador.findAll({ order: [['nombre', 'ASC']] }),
                 liquidacion.findAll({
                     attributes: [
@@ -1336,7 +1340,7 @@ module.exports = app => {
                 })
             ]);
 
-            const empleadosMap = Object.fromEntries(empleadosResp.data.Empleados.map(e => [e.numero_empleado, e]));
+            // const empleadosMap = Object.fromEntries(empleadosResp.data.Empleados.map(e => [e.numero_empleado, e]));
             const tractosMap = Object.fromEntries(tractosAsignados.map(t => [t.nombre, t]));
             const liquidacionesMap = Object.fromEntries(ultimasLiquidaciones.map(l => [l.operador, l]));
             const viajesMap = Object.fromEntries(viajesResp.data.Registros.map(v => [v.operador, v]));
@@ -1347,7 +1351,8 @@ module.exports = app => {
             const nombre = op.OPERADOR_NOMBRE;
             const numEmpleado = Number(op.operador_num_externo);
             const actividadesDelOperador = actividades.filter(a => a.nombre === nombre);
-            const empleado = empleadosMap[numEmpleado] || {};
+            // const empleado = empleadosMap[numEmpleado] || {};
+            const empleado =  {};
             const tracto = tractosMap[nombre] || {};
             const liquidacion = liquidacionesMap[nombre] || {};
             const viajes = viajesMap[nombre] || {};
