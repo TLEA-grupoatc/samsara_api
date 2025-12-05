@@ -247,6 +247,7 @@ app.post('/webhookReseteoPre', bodyParser.raw({type: 'application/json'}), async
             km: resumen.distanceKm,
             direccion: ubi.location,
             geocerca: ubi.geocerca,
+            ultimoreseteo: registro[0].fecha_fin,
             fecha_inicio: moment(payload.data.conditions[0]['details']['suddenFuelLevelRise']['changeStartTime']).format('YYYY-MM-DD HH:mm:ss'),
             fecha_fin: moment(payload.data.conditions[0]['details']['suddenFuelLevelRise']['changeEndTime']).format('YYYY-MM-DD HH:mm:ss'),
             fecha_creacion: formato
@@ -259,6 +260,7 @@ app.post('/webhookReseteoPre', bodyParser.raw({type: 'application/json'}), async
               'km',
               'direccion',
               'geocerca',
+              'ultimoreseteo',
               'fecha_inicio',
               'fecha_fin',
               'fecha_creacion'

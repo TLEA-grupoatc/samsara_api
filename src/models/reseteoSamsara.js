@@ -29,6 +29,10 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         }, 
+        ultimoreseteo:{
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         fecha_inicio:{
             type: DataType.STRING,
             allowNull: true
