@@ -160,162 +160,166 @@ cron.schedule('*/30 * * * *', () => {
 
 
 
-  app.post('/webhookReseteoPre', bodyParser.raw({type: 'application/json'}), async (req, res) => {
-    const payload = req.body;
+app.post('/webhookReseteoPre', bodyParser.raw({type: 'application/json'}), async (req, res) => {
+  const payload = req.body;
 
-    // {
-    //   "eventId": "b6c7b167-80cf-4e65-b3d1-1391a6d61e71",
-    //   "eventTime": "2025-11-28T22:06:13.080Z",
-    //   "eventType": "AlertIncident",
-    //   "orgId": 10003072,
-    //   "webhookId": "6798490377790796",
-    //   "data": {
-    //     "configurationId": "420f17e7-3fbf-47d0-890a-33ae346141df",
-    //     "updatedAtTime": "2025-11-28T22:12:11Z",
-    //     "resolvedAtTime": "2025-11-28T22:06:13Z",
-    //     "happenedAtTime": "2025-11-28T22:06:13Z",
-    //     "isResolved": true,
-    //     "incidentUrl": "https://cloud.samsara.com/o/10003072/fleet/workflows/incidents/420f17e7-3fbf-47d0-890a-33ae346141df/1/281474987549216/1764367573080",
-    //     "conditions": [
-    //       {
-    //         "triggerId": 5034,
-    //         "description": "Sudden Fuel Level Rise",
-    //         "details": {
-    //           "suddenFuelLevelRise": {
-    //             "vehicle": {
-    //               "id": "281474987549216",
-    //               "externalIds": {
-    //                 "samsara.serial": "GCTUJN8W74",
-    //                 "samsara.vin": "3BKZL40X1SF554323"
-    //               },
-    //               "name": "TLEA-364",
-    //               "tags": [
-    //                 {
-    //                   "id": "4531263",
-    //                   "name": "UNIDAD 5"
-    //                 }
-    //               ],
-    //               "serial": "GCTUJN8W74"
-    //             },
-    //             "driver": {
-    //               "id": "53032485",
-    //               "name": "TORRES RAMIREZ ADOLFO"
-    //             },
-    //             "changeStartTime": "2025-11-28T22:02:10.401Z",
-    //             "changeEndTime": "2025-11-28T22:06:13.080Z",
-    //             "fuelLevelBeforeMillipercent": 61561,
-    //             "fuelLevelAfterMillipercent": 99200,
-    //             "location": {
-    //               "latitude": 20.576525,
-    //               "longitude": -100.444174
-    //             }
-    //           }
-    //         }
-    //       }
-    //     ]
-    //   }
-    // }
+  // {
+  //   "eventId": "b6c7b167-80cf-4e65-b3d1-1391a6d61e71",
+  //   "eventTime": "2025-11-28T22:06:13.080Z",
+  //   "eventType": "AlertIncident",
+  //   "orgId": 10003072,
+  //   "webhookId": "6798490377790796",
+  //   "data": {
+  //     "configurationId": "420f17e7-3fbf-47d0-890a-33ae346141df",
+  //     "updatedAtTime": "2025-11-28T22:12:11Z",
+  //     "resolvedAtTime": "2025-11-28T22:06:13Z",
+  //     "happenedAtTime": "2025-11-28T22:06:13Z",
+  //     "isResolved": true,
+  //     "incidentUrl": "https://cloud.samsara.com/o/10003072/fleet/workflows/incidents/420f17e7-3fbf-47d0-890a-33ae346141df/1/281474987549216/1764367573080",
+  //     "conditions": [
+  //       {
+  //         "triggerId": 5034,
+  //         "description": "Sudden Fuel Level Rise",
+  //         "details": {
+  //           "suddenFuelLevelRise": {
+  //             "vehicle": {
+  //               "id": "281474987549216",
+  //               "externalIds": {
+  //                 "samsara.serial": "GCTUJN8W74",
+  //                 "samsara.vin": "3BKZL40X1SF554323"
+  //               },
+  //               "name": "TLEA-364",
+  //               "tags": [
+  //                 {
+  //                   "id": "4531263",
+  //                   "name": "UNIDAD 5"
+  //                 }
+  //               ],
+  //               "serial": "GCTUJN8W74"
+  //             },
+  //             "driver": {
+  //               "id": "53032485",
+  //               "name": "TORRES RAMIREZ ADOLFO"
+  //             },
+  //             "changeStartTime": "2025-11-28T22:02:10.401Z",
+  //             "changeEndTime": "2025-11-28T22:06:13.080Z",
+  //             "fuelLevelBeforeMillipercent": 61561,
+  //             "fuelLevelAfterMillipercent": 99200,
+  //             "location": {
+  //               "latitude": 20.576525,
+  //               "longitude": -100.444174
+  //             }
+  //           }
+  //         }
+  //       }
+  //     ]
+  //   }
+  // }
 
-    try {
-      const hoy = new Date();
-      const formato = moment(hoy).format('YYYY-MM-DD HH:mm:ss');
+  try {
+    const hoy = new Date();
+    const formato = moment(hoy).format('YYYY-MM-DD HH:mm:ss');
 
-      const registro = await reseteoSamsara.findAll({
-        where: { 
-          id_samsara: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id'] 
-        },
-        order: [['fecha_fin', 'DESC']],
-        limit: 1
-      });
+    const registro = await reseteoSamsara.findAll({
+      where: { 
+        id_samsara: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id'] 
+      },
+      order: [['fecha_fin', 'DESC']],
+      limit: 1
+    });
 
-      if(registro.length > 0) {
-        Samsara.getVehicleStatsHistory({
-          startTime: registro[0].fecha_fin.replace(' ', 'T') + 'Z',
-          endTime: payload.eventTime,
-          vehicleIds: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id'],
-          types: 'fuelConsumedMilliliters,gpsDistanceMeters,gpsOdometerMeters'
-        })
-        .then(({ data }) => {
-          const resumen = buildVehicleSummary(data.data[0]);
+    if(registro.length > 0) {
+      var ubi = await ultimaubi(payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id']);
 
-            let nuevaAlerta = new reseteoSamsara({
-              id_samsara: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id'],
-              economico: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['name'],
-              diesel: resumen.fuelLiters,
-              km: resumen.distanceKm,
-              fecha_inicio: moment(payload.data.conditions[0]['details']['suddenFuelLevelRise']['changeStartTime']).format('YYYY-MM-DD HH:mm:ss'),
-              fecha_fin: moment(payload.data.conditions[0]['details']['suddenFuelLevelRise']['changeEndTime']).format('YYYY-MM-DD HH:mm:ss'),
-              fecha_creacion: formato
-            });
-            reseteoSamsara.create(nuevaAlerta.dataValues, {
-              fields: [
-                'id_samsara',
-                'economico',
-                'diesel',
-                'km',
-                'fecha_inicio',
-                'fecha_fin',
-                'fecha_creacion'
-              ]
-            });
-        }).catch(err => console.error(err));
-      }
+      Samsara.getVehicleStatsHistory({
+        startTime: registro[0].fecha_fin.replace(' ', 'T') + 'Z',
+        endTime: payload.eventTime,
+        vehicleIds: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id'],
+        types: 'fuelConsumedMilliliters,gpsDistanceMeters,gpsOdometerMeters'
+      })
+      .then(({ data }) => {
+        const resumen = buildVehicleSummary(data.data[0]);
+
+          let nuevaAlerta = new reseteoSamsara({
+            id_samsara: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['id'],
+            economico: payload.data.conditions[0]['details']['suddenFuelLevelRise']['vehicle']['name'],
+            diesel: resumen.fuelLiters,
+            km: resumen.distanceKm,
+            direccion: ubi.location,
+            geocerca: ubi.geocerca,
+            fecha_inicio: moment(payload.data.conditions[0]['details']['suddenFuelLevelRise']['changeStartTime']).format('YYYY-MM-DD HH:mm:ss'),
+            fecha_fin: moment(payload.data.conditions[0]['details']['suddenFuelLevelRise']['changeEndTime']).format('YYYY-MM-DD HH:mm:ss'),
+            fecha_creacion: formato
+          });
+          reseteoSamsara.create(nuevaAlerta.dataValues, {
+            fields: [
+              'id_samsara',
+              'economico',
+              'diesel',
+              'km',
+              'direccion',
+              'geocerca',
+              'fecha_inicio',
+              'fecha_fin',
+              'fecha_creacion'
+            ]
+          });
+      }).catch(err => console.error(err));
     }
-    catch (error) {
-      console.error('Error al obtener catalogo circuitos:', error);
-      return res.status(500).json({ 
-        OK: false,
-        msg: error,
-      });
-    }
+  }
+  catch (error) {
+    console.error('Error al obtener catalogo circuitos:', error);
+    return res.status(500).json({ 
+      OK: false,
+      msg: error,
+    });
+  }
 
-    function getDeltaFromTimeSeries(series = []) {
-      if (!Array.isArray(series) || series.length < 2) {
-        return null;
-      }
-
-      const first = series[0];
-      const last = series[series.length - 1];
-
-      if (first?.value == null || last?.value == null) {
-        return null;
-      }
-
-      return {
-        startTime: first.time,
-        endTime: last.time,
-        delta: last.value - first.value
-      };
+  function getDeltaFromTimeSeries(series = []) {
+    if (!Array.isArray(series) || series.length < 2) {
+      return null;
     }
 
-    function buildVehicleSummary(vehicle) {
-      const fuel = getDeltaFromTimeSeries(vehicle.fuelConsumedMilliliters);
-      const odo  = getDeltaFromTimeSeries(vehicle.gpsOdometerMeters); // usamos odómetro GPS
+    const first = series[0];
+    const last = series[series.length - 1];
 
-      const fuelMl     = fuel ? fuel.delta : null;
-      const fuelLiters = fuel ? fuel.delta / 1000 : null;        // ml → L
-      const distMeters = odo  ? odo.delta  : null;
-      const distKm     = odo  ? odo.delta  / 1000 : null;        // m → km
-
-      const kmPerLiter = fuelLiters && fuelLiters > 0 && distKm != null ? distKm / fuelLiters : null;
-
-      return {
-        id: vehicle.id,
-        name: vehicle.name,
-        fuelMl,          // consumo en mililitros
-        fuelLiters,      // consumo en litros
-        distanceMeters: distMeters,
-        distanceKm: distKm,
-        kmPerLiter,      // rendimiento aproximado
-        startTime: fuel?.startTime ?? odo?.startTime ?? null,
-        endTime:   fuel?.endTime   ?? odo?.endTime   ?? null
-      };
+    if (first?.value == null || last?.value == null) {
+      return null;
     }
 
-    res.status(200).send('Ok');
-  });
+    return {
+      startTime: first.time,
+      endTime: last.time,
+      delta: last.value - first.value
+    };
+  }
 
+  function buildVehicleSummary(vehicle) {
+    const fuel = getDeltaFromTimeSeries(vehicle.fuelConsumedMilliliters);
+    const odo  = getDeltaFromTimeSeries(vehicle.gpsOdometerMeters); // usamos odómetro GPS
 
+    const fuelMl     = fuel ? fuel.delta : null;
+    const fuelLiters = fuel ? fuel.delta / 1000 : null;        // ml → L
+    const distMeters = odo  ? odo.delta  : null;
+    const distKm     = odo  ? odo.delta  / 1000 : null;        // m → km
+
+    const kmPerLiter = fuelLiters && fuelLiters > 0 && distKm != null ? distKm / fuelLiters : null;
+
+    return {
+      id: vehicle.id,
+      name: vehicle.name,
+      fuelMl,          // consumo en mililitros
+      fuelLiters,      // consumo en litros
+      distanceMeters: distMeters,
+      distanceKm: distKm,
+      kmPerLiter,      // rendimiento aproximado
+      startTime: fuel?.startTime ?? odo?.startTime ?? null,
+      endTime:   fuel?.endTime   ?? odo?.endTime   ?? null
+    };
+  }
+
+  res.status(200).send('Ok');
+});
 
 
 app.post('/webhookAPITLEA', bodyParser.raw({type: 'application/json'}), async (req, res) => {

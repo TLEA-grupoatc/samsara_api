@@ -45,6 +45,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: false
         },
+        familia:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        subfamilia:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         verificado_por:{
             type: DataType.STRING,
             allowNull: true

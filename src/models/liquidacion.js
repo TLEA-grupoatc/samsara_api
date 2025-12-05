@@ -86,6 +86,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING,
             allowNull: true
         },
+        familia:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        subfamilia:{
+            type: DataType.STRING,
+            allowNull: true
+        },
         diferencia_diesel:{
             type: DataType.INTEGER,
             allowNull: true

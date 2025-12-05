@@ -21,6 +21,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.FLOAT,
             allowNull: true
         }, 
+        direccion:{
+            type: DataType.STRING,
+            allowNull: true
+        }, 
+        geocerca:{
+            type: DataType.STRING,
+            allowNull: true
+        }, 
         fecha_inicio:{
             type: DataType.STRING,
             allowNull: true
