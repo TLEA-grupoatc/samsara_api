@@ -56,6 +56,14 @@ module.exports = (sequelize, DataType) => {
         rechazado_por:{
             type: DataType.STRING,
             allowNull: true
+        },
+        familia:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        subfamilia:{
+            type: DataType.STRING,
+            allowNull: true
         }
     },
     {

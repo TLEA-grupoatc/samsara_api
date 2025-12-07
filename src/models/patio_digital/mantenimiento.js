@@ -66,6 +66,14 @@ module.exports = (sequelize, DataType) => {
             type: DataType.STRING(300),
             allowNull: true
         },
+        refaccion_mas_tardada: {
+            type: DataType.STRING(200),
+            allowNull: true
+        },
+        eta_refaccion: {
+            type: DataType.DATE,
+            allowNull: true
+        },
         creado_el: {
             type: DataType.DATE,
             allowNull: false,

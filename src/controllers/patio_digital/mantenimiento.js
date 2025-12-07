@@ -88,6 +88,39 @@ module.exports = app => {
     //     }
     // }
 
+    app.obtenerUnidadesEnMantenimiento = async (req, res) => {
+
+        try {
+
+            const { base } = req.params
+
+            const unidades = await Sequelize.query(
+                `
+                    SELECT
+                        PAU.unidad,
+                        MAN.carril
+                    FROM
+                        pd_pickandup PAU
+                        LEFT JOIN pd_mantenimiento MAN ON PAU.fk_mantenimiento = MAN.id_mantenimiento
+                    WHERE PAU.estatus = 'mantenimiento';
+                `,
+                {
+                    replacements: { base: base, },
+                    type: Sequelize.QueryTypes.SELECT
+                }
+            );
+
+            return res.status(200).json(unidades);
+
+        } catch (error) {
+            console.error('Error al obtener unidades en mantenimiento:', error);
+            return res.status(500).json({ 
+                OK: false,
+                msg: error,
+            });
+        }
+    }
+
     app.obtenerUnidadesCarrilesEspejo = async (req, res) => {
         try {
 
@@ -98,12 +131,15 @@ module.exports = app => {
                 SELECT
                     PAU.idpickandup,
                     PAU.unidad,
+                    -- CLI.cliente,
                     PAU.division,
                     PAU.unidad_negocio,
                     ENT.fecha_entrada AS fecha_ingreso_base,
                     INSP_ENT.fecha_hora_fin AS fecha_ingreso_taller,
                     INSP_ENT.id_inspeccion_entrada,
                     DATEDIFF(CURDATE(), DATE(INSP_ENT.fecha_hora_fin)) AS dias_taller,
+                    DATEDIFF(DATE(MAN.eta_refaccion), CURDATE()) AS dias_eta_refaccion,
+                    MAN.eta_refaccion,
                     MAN.carril,
                     MAN.estatus,
                     MAN.tipo_mtto,
@@ -123,6 +159,8 @@ module.exports = app => {
                     LEFT JOIN pd_pickandup PAU ON MAN.id_mantenimiento = PAU.fk_mantenimiento
                     LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
                     LEFT JOIN pd_inspeccion_entrada INSP_ENT ON PAU.fk_inspeccion_entrada = INSP_ENT.id_inspeccion_entrada
+                    -- LEFT JOIN unidad UN ON PAU.unidad = UN.name
+                    -- LEFT JOIN cliente CLI ON UN.idcliente = CLI.id_cliente
                 WHERE
                     MAN.carril LIKE 'e-%'
                     AND PAU.base = :base;
@@ -188,11 +226,14 @@ module.exports = app => {
                     PAU.idpickandup,
                     PAU.unidad,
                     PAU.division,
+                    -- CLI.cliente,
                     PAU.unidad_negocio,
                     ENT.fecha_entrada AS fecha_ingreso_base,
                     INSP_ENT.fecha_hora_fin AS 	fecha_ingreso_taller,
                     INSP_ENT.id_inspeccion_entrada,
                     DATEDIFF(CURDATE(), DATE(INSP_ENT.fecha_hora_fin)) AS dias_taller,
+                    DATEDIFF(DATE(MAN.eta_refaccion), CURDATE()) AS dias_eta_refaccion,
+                    MAN.eta_refaccion,
                     MAN.carril,
                     MAN.estatus,
                     MAN.tipo_mtto,
@@ -212,6 +253,8 @@ module.exports = app => {
                     LEFT JOIN pd_pickandup PAU ON MAN.id_mantenimiento = PAU.fk_mantenimiento
                     LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
                     LEFT JOIN pd_inspeccion_entrada INSP_ENT ON PAU.fk_inspeccion_entrada = INSP_ENT.id_inspeccion_entrada
+                    -- LEFT JOIN unidad UN ON PAU.unidad = UN.name
+                    -- LEFT JOIN cliente CLI ON UN.idcliente = CLI.id_cliente
                 WHERE
                     ( MAN.carril LIKE 't-%' OR MAN.carril = 'llan-1' OR MAN.carril = 'llan-2' OR MAN.carril = 'imagen' )
                     AND PAU.base = :base;
@@ -274,12 +317,15 @@ module.exports = app => {
                     SELECT
                         PAU.idpickandup,
                         PAU.unidad,
+                        -- CLI.cliente,
                         PAU.division,
                         PAU.unidad_negocio,
                         ENT.fecha_entrada AS fecha_ingreso_base,
                         INSP_ENT.id_inspeccion_entrada,
                         INSP_ENT.fecha_hora_fin AS fecha_ingreso_taller,
                         DATEDIFF(CURDATE(), INSP_ENT.fecha_hora_fin) AS dias_taller,
+                        DATEDIFF(DATE(MAN.eta_refaccion), CURDATE()) AS dias_eta_refaccion,
+                        MAN.eta_refaccion,
                         MAN.tipo_mtto,
                         MAN.id_mantenimiento,
                         MAN.estatus
@@ -288,6 +334,8 @@ module.exports = app => {
                         LEFT JOIN pd_entrada ENT ON PAU.fk_entrada = ENT.id_entrada
                         LEFT JOIN pd_inspeccion_entrada INSP_ENT ON PAU.fk_inspeccion_entrada = INSP_ENT.id_inspeccion_entrada
                         LEFT JOIN pd_mantenimiento MAN ON PAU.fk_mantenimiento = MAN.id_mantenimiento
+                        -- LEFT JOIN unidad UN ON PAU.unidad = UN.name
+                        -- LEFT JOIN cliente CLI ON UN.idcliente = CLI.id_cliente
                     WHERE
                         PAU.base = :base
                         AND PAU.estatus = :estatus
@@ -333,18 +381,43 @@ module.exports = app => {
 
             // console.log(req.body)
 
-            await actualizarCarril(id_mantenimiento_origen, carril_origen, id_usuario, t);
-
             if(id_mantenimiento_destino){
                 await actualizarCarril(id_mantenimiento_destino, carril_destino, id_usuario, t);
             }
+            
+            await actualizarCarril(id_mantenimiento_origen, carril_origen, id_usuario, t);
 
+            const unidadEnCarrilOrigen = await Mantenimiento.findAll({
+                attributes: ['id_mantenimiento'],
+                where: { carril: carril_origen },
+                transaction: t
+            });
+
+            const unidadEnCarrilDestino = await Mantenimiento.findAll({
+                attributes: ['id_mantenimiento'],
+                where: { carril: carril_destino },
+                transaction: t
+            });
+
+            // console.log(unidadEnCarrilOrigen.length);
+            // console.log(unidadEnCarrilDestino.length);
+
+            if(unidadEnCarrilOrigen.length > 1 || unidadEnCarrilDestino.length > 1){
+                await t.rollback();
+                return res.status(200).json({
+                    OK: false,
+                    msg: 'Espera un momento e intenta nuevamente',
+                    result: null
+                });
+            }
+            
             await t.commit();
 
+            // setTimeout(()=> {
+            // }, 5000)
             if(carril_origen.includes('e-') || carril_destino?.includes('e-')){
                 io.emit('MANTENIMIENTO_CARRILES_ESPEJO_ACTUALIZADOS')
             }
-
             
             if(
                    carril_origen.includes('t-')
@@ -361,6 +434,7 @@ module.exports = app => {
             if(carril_origen.includes('cua') || carril_destino?.includes('cua')){
                 io.emit('MANTENIMIENTO_CUARENTENA_ACTUALIZADA')
             }
+
 
             return res.status(200).json({
                 OK: true,
@@ -393,6 +467,8 @@ module.exports = app => {
                         'unidad',
                         'unidad_negocio',
                         'division',
+                        'rem_1',
+                        'rem_2',
                     ],
                     include: [
                         {
@@ -415,6 +491,8 @@ module.exports = app => {
                                 'eta_1',
                                 'eta_2',
                                 'comentarios',
+                                'eta_refaccion',
+                                'refaccion_mas_tardada',
                                 'estatus',
                                 'carril',
                                 'tracto_ot_correctivo',
@@ -1026,6 +1104,23 @@ module.exports = app => {
                     transaction: t
                 }
             );
+
+            // const checkCarril = await Mantenimiento.findAll({
+            //     attributes: ['id_mantenimiento'],
+            //     where: { carril: carril },
+            //     transaction: t
+            // });
+
+            // console.log(checkCarril.length)
+
+            // if(checkCarril.length >= 2) {
+            //     await t.rollback();
+            //     return res.status(200).json({
+            //         OK: false,
+            //         msg: 'Movimiento no permitido, carril ya ocupado',
+            //         result: null
+            //     });
+            // }
 
             if(id_mantenimiento){
                 await MovimientosCarriles.create(

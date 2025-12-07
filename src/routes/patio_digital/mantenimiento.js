@@ -20,4 +20,5 @@ module.exports = app => {
 
     app.patch('/mantenimiento/actualizarunidad', Mantenimiento.actualizarUnidadMantenimiento);
     
+    app.get('/mantenimiento/unidades/:base', Mantenimiento.obtenerUnidadesEnMantenimiento);
 }

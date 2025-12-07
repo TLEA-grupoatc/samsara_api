@@ -576,8 +576,6 @@ module.exports = app => {
                         nombresProcesados[nombreBase] = 1;
                     }
 
-
-
                     listadeitems.push({
                         id_pd: 0,
                         id_prenomina: null, 
@@ -592,7 +590,9 @@ module.exports = app => {
                         usuario: null,
                         verificado: null,
                         verificado_por: null,
-                        rechazado_por: null
+                        rechazado_por: null,
+                        familia: null,
+                        subfamilia: null
                     });
                 } 
                 else {
@@ -620,7 +620,9 @@ module.exports = app => {
                             usuario: docu.usuario || null,
                             verificado: docu.verificado,
                             verificado_por: docu.verificado_por || null,
-                            rechazado_por: docu.rechazado_por || null
+                            rechazado_por: docu.rechazado_por || null,
+                            familia: docu.familia || null,
+                            subfamilia: docu.subfamilia || null
                         });
                     });
                 }
@@ -1925,18 +1927,22 @@ module.exports = app => {
         let data = new prenominadocs({
             comentario_rechazo: req.params.comentario,
             verificado: 2,
-            rechazado_por: req.params.usuario
+            rechazado_por: req.params.usuario,
+            familia: req.params.familia,
+            subfamilia: req.params.subfamilia
         });
 
         prenominadocs.update(data.dataValues, {
             where: {
                 id_pd: req.params.id
             },
-            fields: ['comentario_rechazo', 'verificado', 'rechazado_por']
+            fields: ['comentario_rechazo', 'verificado', 'rechazado_por', 'familia', 'subfamilia']
         }).then(result => {
             if(req.params.tipo === 'liquidacion') {
                 let data = new liquidacion({
                     estado: 'RECHAZADO',
+                    familia: req.params.familia,
+                    subfamilia: req.params.subfamilia
                 });
         
                 liquidacion.update(data.dataValues, {
@@ -1944,7 +1950,7 @@ module.exports = app => {
                         id_liquidacion: req.params.idpl
                     },
                     individualHooks: true,
-                    fields: ['estado']
+                    fields: ['estado', 'familia', 'subfamilia']
                 }).then(result => {
                 }).catch(err => {
                 });
@@ -1952,6 +1958,8 @@ module.exports = app => {
             else {
                 let data = new prenomina({
                     estado: 'RECHAZADO',
+                    familia: req.params.familia,
+                    subfamilia: req.params.subfamilia
                 });
         
                 prenomina.update(data.dataValues, {
@@ -1959,7 +1967,7 @@ module.exports = app => {
                         id_prenomina: req.params.idpl
                     },
                     individualHooks: true,
-                    fields: ['estado']
+                    fields: ['estado', 'familia', 'subfamilia']
                 }).then(result => {
                 }).catch(err => {
                 });
@@ -3652,7 +3660,9 @@ module.exports = app => {
             unidad_negocio: body.unidad_negocio,
             liquidador: body.liquidador,
             incidencia: body.incidencia,
-            auditor: body.auditor
+            auditor: body.auditor,
+            familia: body.familia,
+            subfamilia: body.subfamilia
         });
 
         rechazoLiq.create(nuevoRechazo.dataValues, {
@@ -3664,7 +3674,9 @@ module.exports = app => {
                 'unidad_negocio', 
                 'liquidador', 
                 'incidencia', 
-                'auditor'
+                'auditor',
+                'familia',
+                'subfamilia'
             ]
         })
         .then(result => {
@@ -3724,7 +3736,9 @@ module.exports = app => {
             unidad_negocio: body.unidad_negocio,
             prenominista: body.prenominista,
             incidencia: body.incidencia,
-            auditor: body.auditor
+            auditor: body.auditor,
+            familia: body.familia,
+            subfamilia: body.subfamilia
         });
 
         rechazoPre.create(nuevoRechazo.dataValues, {
@@ -3736,7 +3750,9 @@ module.exports = app => {
                 'unidad_negocio', 
                 'prenominista', 
                 'incidencia', 
-                'auditor'
+                'auditor',
+                'familia',
+                'subfamilia'
             ]
         })
         .then(result => {

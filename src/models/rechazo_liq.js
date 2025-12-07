@@ -36,6 +36,14 @@ module.exports = (sequelize, DataType) => {
         auditor:{
             type: DataType.STRING,
             allowNull: true
+        },
+        familia:{
+            type: DataType.STRING,
+            allowNull: true
+        },
+        subfamilia:{
+            type: DataType.STRING,
+            allowNull: true
         }
     },
     {
