@@ -163,58 +163,6 @@ cron.schedule('*/30 * * * *', () => {
 app.post('/webhookReseteoPre', bodyParser.raw({type: 'application/json'}), async (req, res) => {
   const payload = req.body;
 
-  // {
-  //   "eventId": "b6c7b167-80cf-4e65-b3d1-1391a6d61e71",
-  //   "eventTime": "2025-11-28T22:06:13.080Z",
-  //   "eventType": "AlertIncident",
-  //   "orgId": 10003072,
-  //   "webhookId": "6798490377790796",
-  //   "data": {
-  //     "configurationId": "420f17e7-3fbf-47d0-890a-33ae346141df",
-  //     "updatedAtTime": "2025-11-28T22:12:11Z",
-  //     "resolvedAtTime": "2025-11-28T22:06:13Z",
-  //     "happenedAtTime": "2025-11-28T22:06:13Z",
-  //     "isResolved": true,
-  //     "incidentUrl": "https://cloud.samsara.com/o/10003072/fleet/workflows/incidents/420f17e7-3fbf-47d0-890a-33ae346141df/1/281474987549216/1764367573080",
-  //     "conditions": [
-  //       {
-  //         "triggerId": 5034,
-  //         "description": "Sudden Fuel Level Rise",
-  //         "details": {
-  //           "suddenFuelLevelRise": {
-  //             "vehicle": {
-  //               "id": "281474987549216",
-  //               "externalIds": {
-  //                 "samsara.serial": "GCTUJN8W74",
-  //                 "samsara.vin": "3BKZL40X1SF554323"
-  //               },
-  //               "name": "TLEA-364",
-  //               "tags": [
-  //                 {
-  //                   "id": "4531263",
-  //                   "name": "UNIDAD 5"
-  //                 }
-  //               ],
-  //               "serial": "GCTUJN8W74"
-  //             },
-  //             "driver": {
-  //               "id": "53032485",
-  //               "name": "TORRES RAMIREZ ADOLFO"
-  //             },
-  //             "changeStartTime": "2025-11-28T22:02:10.401Z",
-  //             "changeEndTime": "2025-11-28T22:06:13.080Z",
-  //             "fuelLevelBeforeMillipercent": 61561,
-  //             "fuelLevelAfterMillipercent": 99200,
-  //             "location": {
-  //               "latitude": 20.576525,
-  //               "longitude": -100.444174
-  //             }
-  //           }
-  //         }
-  //       }
-  //     ]
-  //   }
-  // }
 
   try {
     const hoy = new Date();
@@ -298,7 +246,7 @@ app.post('/webhookReseteoPre', bodyParser.raw({type: 'application/json'}), async
 
   function buildVehicleSummary(vehicle) {
     const fuel = getDeltaFromTimeSeries(vehicle.fuelConsumedMilliliters);
-    const odo  = getDeltaFromTimeSeries(vehicle.gpsOdometerMeters); // usamos odómetro GPS
+    const odo  = getDeltaFromTimeSeries(vehicle.gpsDistanceMeters); // usamos odómetro GPS
 
     const fuelMl     = fuel ? fuel.delta : null;
     const fuelLiters = fuel ? fuel.delta / 1000 : null;        // ml → L
@@ -902,11 +850,6 @@ app.post('/webhookEntradasSalidasGeocercas', async (req, res) => {
 
    res.status(200).send('Ok');
 });
-
-
-
-
-
 
 // app.post('/enviarWhatsuno', async (req, res) => {
 //   const { numero, mensaje, intervaloMinutos = 0, repeticiones = 1 } = req.body || {};
