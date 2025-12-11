@@ -88,6 +88,13 @@ cron.schedule('0 * * * *', () => {
       json: (data) => console.log(statusCode, data)
     })
   }); 
+
+  app.obtenerReporteporHora({}, {
+    json: (data) => console.log(data),
+    status: (statusCode) => ({
+      json: (data) => console.log(statusCode, data)
+    })
+  }); 
 });
 
 cron.schedule('0 */2 * * *', () => {   

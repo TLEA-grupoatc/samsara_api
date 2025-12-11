@@ -7,4 +7,7 @@ module.exports = app => {
     app.post('/createSolicitud', verificarToken, Send.createSolicitud);
 
     app.get('/obtenerInfoBitacora/:folio', verificarToken, Send.obtenerInfoBitacora);
+
+
+    app.get('/obtenerReseteoSamsaraporhora', Send.obtenerReseteoSamsaraporhora);
 }
