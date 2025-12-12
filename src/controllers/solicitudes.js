@@ -193,7 +193,6 @@ module.exports = app => {
                 const vehicles = data.data;
                 
                 vehicles.forEach(async (vehicle) => {
-                    console.log(`economico: ${vehicle.name}, id_samsara: ${vehicle.id}`);
                     
                     // ecos.forEach(async (unidad) => {
                         const registro = await reseteoSamsaraHora.findAll({
@@ -328,7 +327,7 @@ module.exports = app => {
         reseteoSamsaraHora.findAll({
             where: {
                 fecha_creacion: {
-                    [Op.between]: [formato + ' 00:00:00', formato + ' 23:59:59']
+                    [Op.between]: [req.params.fechaI + ' 00:00:00', req.params.fechaF + ' 23:59:59']
                 }
             },
             order: [['fecha_fin', 'DESC']]

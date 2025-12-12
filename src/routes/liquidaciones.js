@@ -138,6 +138,7 @@ module.exports = app => {
 
 
 
+    app.post('/obtenerUltimaLiquidacionOperador', Liq.obtenerUltimaLiquidacionOperador);
 
 
 

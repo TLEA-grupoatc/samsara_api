@@ -9,5 +9,5 @@ module.exports = app => {
     app.get('/obtenerInfoBitacora/:folio', verificarToken, Send.obtenerInfoBitacora);
 
 
-    app.get('/obtenerReseteoSamsaraporhora', Send.obtenerReseteoSamsaraporhora);
+    app.get('/obtenerReseteoSamsaraporhora/:fechaI/:fechaF', Send.obtenerReseteoSamsaraporhora);
 }

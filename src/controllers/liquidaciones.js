@@ -3652,6 +3652,8 @@ module.exports = app => {
     app.crearRechazoLiquidacion = (req, res) => {
         var body = req.body;
 
+        console.log(body)
+
         let nuevoRechazo = new rechazoLiq({
             fecha: body.fecha,
             id_liquidacion: body.id_liquidacion,
@@ -4086,6 +4088,28 @@ module.exports = app => {
     
 
 
+    app.obtenerUltimaLiquidacionOperador = (req, res) => {
+        let body = req.body;
+
+        liquidacion.findAll({
+            where: {
+                operador: body.operador,
+                estado: 'COMPLETO',
+            },
+            order: [['fecha', 'DESC']],
+            limit: 1
+        }).then(result => {
+            res.json({
+                OK: true,
+                Liquidacion: result
+            })
+        })
+        .catch(error => {
+            res.status(412).json({
+                msg: error.message
+            });
+        });
+    }
 
 
 
